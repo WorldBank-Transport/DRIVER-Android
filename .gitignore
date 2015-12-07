@@ -36,3 +36,8 @@ captures/
 .idea/libraries
 .DS_Store
 *~
+
+# jarjar links
+app/libs/
+app/jarjar-*.jar
+

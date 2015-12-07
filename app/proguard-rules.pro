@@ -80,14 +80,13 @@
 -dontwarn org.joda.convert.**
 -dontwarn org.joda.time.**
 
-# TODO: refine for joda time usage, or remove if not needed
-#-keep class org.joda.time.** { public *; }
-#-keep interface org.joda.time.** { public *; }
+-keep class org.joda.time.** { public *; }
+-keep interface org.joda.time.** { public *; }
 
 ## Joda Convert 1.6
 
-#-keep class org.joda.convert.** { public *; }
-#-keep interface org.joda.convert.** { public *; }
+-keep class org.joda.convert.** { public *; }
+-keep interface org.joda.convert.** { public *; }
 
 
 # support design
@@ -125,3 +124,64 @@
 -keep class com.fasterxml.jackson.databind.ObjectWriter {
     public ** writeValueAsString(**);
 }
+
+####### hibernate validator
+
+# hang onto dynamic things
+# TODO: refine
+-keep class org.hibernate.validator.** { public *; }
+-keep interface org.hibernate.validator.** { public *; }
+-keepnames class org.hibernate.validator.**
+#-keepclassmembers class org.hibernate.** { *; }
+
+-keep class javax.el.** { public *; }
+-keep interface javax.el.** { public *; }
+-keepclassmembers class javax.el.** { public *; }
+
+-keep class com.sun.el.** { public *; }
+-keep interface com.sun.el.** { public *; }
+
+# keep the constraint annotation defninitions
+-keep class javax.validation.** { public *; }
+-keep interface javax.validation.** { public *; }
+-keepclassmembers class javax.validation.constraints.** { *; }
+-keepnames class javax.validation.constraints.**
+
+# so obfuscation doesn't break hibernate validator
+-keepnames class javax.**
+-keepnames class ext.javax.**
+-keepnames class org.joda.**
+-keepnames class com.fasterxml.**
+-keepnames class com.sun.el.**
+
+-keep class com.fasterxml.jackson.databind.** { public *; }
+-keep interface com.fasterxml.jackson.databind.** { public *; }
+
+# TODO: wat
+-dontwarn com.fasterxml.jackson.databind.**
+
+-keepnames class org.jboss.logmanager.**
+-keepnames class org.apache.log4j.**
+-keepnames class org.slf4j.**
+
+# loggers
+-dontwarn org.jboss.logmanager.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.slf4j.**
+
+-dontwarn javax.script.**
+-dontwarn com.thoughtworks.paranamer.** # optional dependency (what does it do?)
+-dontwarn org.jsoup.** # optional dependency, for HTML parsing
+-dontwarn com.sun.activation.** # UI stuff in here
+-dontwarn javax.activation.** # more UI stuff
+
+-dontwarn java.lang.**
+-dontwarn java.beans.**
+
+# logger deps, ugh
+-dontwarn javax.swing.**
+-dontwarn java.awt.**
+-dontwarn javax.jms.**
+-dontwarn javax.management.**
+
+-dontwarn javax.xml.namespace.QName
