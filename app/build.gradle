@@ -47,12 +47,28 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        // can enable this if have >50K methods
+        // multiDexEnabled false
     }
+
     buildTypes {
-        release {
-            minifyEnabled false
+        debug {
+            debuggable true
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+        release {
+            minifyEnabled false
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    dexOptions {
+        incremental true
+        javaMaxHeapSize "3072M"
     }
 }
 
