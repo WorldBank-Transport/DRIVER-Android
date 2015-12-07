@@ -1,0 +1,31 @@
+{
+  "Person": [],
+  "Accident Details": {
+    "Description": "",
+    "_localId": "33c8c51c-4f67-4ad8-b06c-1e155d4c0619",
+    "number": "9",
+    "Severity": "Property"
+  },
+  "Vehicle": [
+    {
+      "Vehicle type": "Car",
+      "Insurance details": "",
+      "Chassis number": "",
+      "Make": "",
+      "_localId": "38045655-4764-40d7-9d29-4bf547bdf126",
+      "Model": "",
+      "Plate number": "TOI 464",
+      "Engine number": ""
+    },
+    {
+      "Vehicle type": "Car",
+      "Insurance details": "",
+      "Chassis number": "",
+      "Make": "",
+      "_localId": "9f399022-b96b-4ed3-8b38-afa649740b68",
+      "Model": "",
+      "Plate number": "ZBR 785",
+      "Engine number": ""
+    }
+  ]
+}

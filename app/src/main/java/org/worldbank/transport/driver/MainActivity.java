@@ -5,9 +5,20 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.worldbank.transport.driver.models.AccidentDetails;
+import org.worldbank.transport.driver.models.DriverSchema;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,10 +33,37 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, loadRecord(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    public String loadRecord() {
+        try {
+
+            BufferedReader ir = new BufferedReader(new InputStreamReader(getAssets()
+                    .open("json/data/DriverRecord.json"), "UTF-8"));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = ir.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            ir.close();
+            String responseStr = stringBuilder.toString();
+
+            Gson gson = new GsonBuilder().create();
+            DriverSchema record = gson.fromJson(responseStr, DriverSchema.class);
+
+            Log.d("MainActivity:loadRecord", responseStr);
+            final AccidentDetails deets = record.AccidentDetails;
+            return deets.Severity.name();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Something broke.";
+        }
     }
 
     @Override
