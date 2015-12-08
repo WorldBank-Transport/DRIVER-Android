@@ -1,4 +1,4 @@
-package org.worldbank.transport.driver;
+package org.worldbank.transport.driver.activities;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.AccidentDetails;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.tasks.ValidationTask;
