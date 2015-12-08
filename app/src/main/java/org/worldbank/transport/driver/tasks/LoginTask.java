@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.worldbank.transport.driver.staticmodels.DriverUserAuth;
+import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,6 +31,9 @@ import java.net.URL;
 /**
  * Represents an asynchronous login/registration task used to authenticate
  * the user.
+ *
+ * TODO: Use AccountAuthenticator instead:
+ * http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html
  */
 public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -107,6 +111,41 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             Log.d("LoginTask", "Parsed user ID: " + String.valueOf(auth.user));
             Log.d("LoginTask", "Parsed user token: " + auth.token);
 
+            if (auth.token != null && auth.token.length() > 0) {
+                // great, try fetching something now
+                urlConnection.disconnect();
+
+                // TODO: proper URL building
+                URL userInfoUrl = new URL("http://prs.azavea.com/api/users/" + String.valueOf(auth.user));
+
+                urlConnection = (HttpURLConnection) userInfoUrl.openConnection();
+                urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                urlConnection.setDoOutput(false);
+                urlConnection.setDoInput(true);
+                urlConnection.setRequestProperty("Authorization", "Token " + auth.token);
+
+                in = new BufferedInputStream(urlConnection.getInputStream());
+                ir = new BufferedReader(new InputStreamReader(in));
+                stringBuilder = new StringBuilder();
+                while ((line = ir.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+                ir.close();
+                in.close();
+                responseStr = stringBuilder.toString();
+
+                Log.d("LoginTask", "Got user info response: " + responseStr);
+
+                DriverUserInfo userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
+                Log.d("LoginTask", "Found user groups: " + userInfo.groups.toString());
+
+                // TODO: store user auth and info somewhere
+
+                if (!userInfo.hasWritePermission()) {
+                    Log.d("LoginTask", "User does not have privileges to add records!");
+                    // TODO: return appropriate message instead of logging in user
+                }
+            }
 
         } catch (MalformedURLException e) {
             Log.e("LoginTask", "Bad login URL");
@@ -123,11 +162,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             }
         }
 
-        if (auth != null && auth.token.length() > 0) {
-            return true;
-        }
-
-        return false;
+        return auth != null && auth.token != null && auth.token.length() > 0;
     }
 
     @Override
