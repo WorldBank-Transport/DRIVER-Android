@@ -6,6 +6,7 @@ import android.util.Log;
 
 import org.worldbank.transport.driver.R;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,11 +83,15 @@ public class DriverUserInfo {
         SharedPreferences preferences = context.getSharedPreferences(
                 context.getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
 
-        preferences.getInt(context.getString(R.string.shared_preferences_user_id_key), -1);
-        preferences.getString(context.getString(R.string.shared_preferences_username_key), "");
-        preferences.getString(context.getString(R.string.shared_preferences_token_key), "");
-        preferences.getString(context.getString(R.string.shared_preferences_email_key), "");
-        preferences.getStringSet(context.getString(R.string.shared_preferences_groups_key), new HashSet<String>(0));
+        id = preferences.getInt(context.getString(R.string.shared_preferences_user_id_key), -1);
+        username = preferences.getString(context.getString(R.string.shared_preferences_username_key), "");
+        token = preferences.getString(context.getString(R.string.shared_preferences_token_key), "");
+        email = preferences.getString(context.getString(R.string.shared_preferences_email_key), "");
+
+        Set<String> groupSet = preferences.getStringSet(
+                context.getString(R.string.shared_preferences_groups_key), new HashSet<String>(0));
+        groups = new ArrayList<>(groupSet.size());
+        groups.addAll(groupSet);
 
         Log.d("DriverUserInfo", "User info read in from shared preferences");
     }

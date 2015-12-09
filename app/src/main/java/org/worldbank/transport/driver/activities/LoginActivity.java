@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -46,6 +47,18 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
+
+        // check to see if previous login saved, and skip this screen if so
+        DriverUserInfo lastUser = app.getUserInfo();
+        if (lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
+            Log.d("LoginActivity", "Have saved user info; skipping login screen");
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -70,8 +83,6 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-        app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
     }
 
     /**
