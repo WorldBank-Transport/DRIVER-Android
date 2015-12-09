@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private TextView mErrorMessage;
 
     DriverApp app;
 
@@ -84,6 +85,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        mErrorMessage = (TextView) findViewById(R.id.error_message);
+        mErrorMessage.setText("");
     }
 
     /**
@@ -99,6 +102,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
+        mErrorMessage.setText("");
 
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
@@ -134,13 +138,12 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             // perform the user login attempt.
             showProgress(true);
             mAuthTask = new LoginTask(email, password, this);
-            mAuthTask.execute((Void) null);
+            mAuthTask.execute();
         }
     }
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        //return email.contains("@");
         return email.length() > 0;
     }
 
@@ -197,10 +200,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             startActivity(intent);
             finish();
         } else {
-            // TODO: better error messages
-            // use progress handler and separate callback?
-            mPasswordView.setError(getString(R.string.error_incorrect_password));
-            mPasswordView.requestFocus();
+            Log.e("LoginActivity", "LoginTask should not return null user info on success!");
         }
     }
 
@@ -208,6 +208,11 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     public void loginCancelled() {
         mAuthTask = null;
         showProgress(false);
+    }
+
+    @Override
+    public void loginError(String errorMessage) {
+        mErrorMessage.setText(errorMessage);
     }
 }
 

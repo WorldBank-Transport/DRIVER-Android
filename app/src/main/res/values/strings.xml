@@ -12,6 +12,11 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="error_incorrect_username_or_password">User name or password is incorrect.</string>
+    <string name="error_server_login">Server error logging in. Please try again at another time.</string>
+    <string name="error_user_cannot_write_records">User account does not have access to add records. Please contact a system administrator to gain write access.</string>
+    <string name="error_login_unknown">Unknown error logging in.</string>
+    <string name="error_login_network">Network error logging in.</string>
 
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>

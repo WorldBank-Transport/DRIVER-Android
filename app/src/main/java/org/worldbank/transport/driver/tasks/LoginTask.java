@@ -34,23 +34,25 @@ import java.net.URL;
 
 /**
  * Represents an asynchronous login/registration task used to authenticate the user.
+ * Only one login task should be executed at a time, as the URI builder used here is not threadsafe.
  *
  * TODO: Use system-wide Account Manager instead by subclassing AbstractAccountAuthenticator:
  * http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html
  */
-public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
+public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
     public interface LoginCallbackListener {
         void loginCompleted(DriverUserInfo userInfo);
         void loginCancelled();
+        void loginError(String errorMessage);
     }
-
-
-    private Context context = DriverAppContext.getContext();
 
     // Note that it is necessary to keep the trailing slash here
     private static final String TOKEN_ENDPOINT = "api-token-auth/";
+    private static final String USER_ENDPOINT = "api/users/";
+
     private URL tokenUrl;
+    private final Context context = DriverAppContext.getContext();
 
     private final String mUsername;
     private final String mPassword;
@@ -76,11 +78,10 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
     }
 
     @Override
-    protected DriverUserInfo doInBackground(Void... params) {
+    protected DriverUserInfo doInBackground(String... params) {
         HttpURLConnection urlConnection = null;
 
         // will contain fetched credentials if login successful
-        DriverUserAuth auth;
         DriverUserInfo userInfo = null;
 
         try {
@@ -101,10 +102,22 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
             writer.close();
             out.close();
 
-            // will get a 400 response if username/password invalid
-            if (urlConnection.getResponseCode() != 200) {
+            // check response
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode != 200) {
                 Log.e("LoginTask", "Failed to login. Got response: " +
                         urlConnection.getResponseCode() + ": " + urlConnection.getResponseMessage());
+                if (responseCode == 400) {
+                    // will get a 400 response if username/password invalid
+                    publishProgress(context.getString(R.string.error_incorrect_username_or_password));
+                } else {
+                    // send general "server error" message
+                    publishProgress(context.getString(R.string.error_server_login));
+                }
+
+                // bail now
+                urlConnection.disconnect();
+                cancel(true);
                 return null;
             }
 
@@ -119,20 +132,19 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
             in.close();
             String responseStr = stringBuilder.toString();
 
-            Log.d("LoginTask", "Got server response: " + responseStr);
-
             Gson gson = new GsonBuilder().create();
-            auth = gson.fromJson(responseStr, DriverUserAuth.class);
-
-            Log.d("LoginTask", "Parsed user ID: " + String.valueOf(auth.user));
-            Log.d("LoginTask", "Parsed user token: " + auth.token);
+            DriverUserAuth auth = gson.fromJson(responseStr, DriverUserAuth.class);
 
             if (auth.token != null && auth.token.length() > 0) {
-                // great, try fetching something now
+                // get user info, reusing some objects for the connection
                 urlConnection.disconnect();
 
-                // TODO: proper URL building
-                URL userInfoUrl = new URL("http://prs.azavea.com/api/users/" + String.valueOf(auth.user));
+                URL userInfoUrl = new URL(Uri.parse(context.getString(R.string.api_server_url))
+                        .buildUpon()
+                        .appendEncodedPath(USER_ENDPOINT)
+                        .appendPath(String.valueOf(auth.user))
+                        .build()
+                        .toString());
 
                 urlConnection = (HttpURLConnection) userInfoUrl.openConnection();
                 urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -150,34 +162,43 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
                 in.close();
                 responseStr = stringBuilder.toString();
 
-                Log.d("LoginTask", "Got user info response: " + responseStr);
-
                 userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
-                Log.d("LoginTask", "Found user groups: " + userInfo.groups.toString());
-
-                // TODO: store user auth and info somewhere
 
                 if (!userInfo.hasWritePermission()) {
                     Log.d("LoginTask", "User does not have privileges to add records!");
-                    // TODO: return appropriate message instead of logging in user
+                    publishProgress(context.getString(R.string.error_user_cannot_write_records));
+                    userInfo = null;
                 } else {
                     // set user token on user info object, for convenient storage and retrieval
                     if (!userInfo.setUserToken(auth)) {
-                        // nullify user info if it didn't work
+                        // Setting user token failed (shouldn't happen)
                         userInfo = null;
+                        publishProgress(context.getString(R.string.error_login_unknown));
                     }
                 }
+            } else {
+                // parsed auth response without error, but missing data (shouldn't happen)
+                publishProgress(context.getString(R.string.error_login_unknown));
             }
         } catch (IOException e) {
             Log.e("LoginTask", "Network error logging in");
             e.printStackTrace();
+            publishProgress(context.getString(R.string.error_login_network));
+            userInfo = null;
         } catch (JSONException e) {
             Log.e("LoginTask", "Error parsing JSON for login request");
             e.printStackTrace();
+            publishProgress(context.getString(R.string.error_login_unknown));
+            userInfo = null;
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
+        }
+
+        // use null userInfo object as a flag to cancel, so cleanup can happen after try/catch
+        if (userInfo == null) {
+            cancel(true);
         }
 
         return userInfo;
@@ -192,4 +213,17 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
     protected void onCancelled() {
         mListener.loginCancelled();
     }
+
+    /**
+     * When an error response is received, invoke error handler callback with error message,
+     * and cancel action.
+     * (There are no true progress updates.  This is being done to return the error.)
+     *
+     * @param errors Contains error object with descriptive message
+     */
+    @Override
+    protected void onProgressUpdate(String... errors) {
+        mListener.loginError(errors[0]);
+    }
+
 }
