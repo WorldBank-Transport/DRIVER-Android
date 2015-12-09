@@ -4,6 +4,8 @@ package org.worldbank.transport.driver.tasks;
  * Created by kathrynkillebrew on 12/8/15.
  */
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -12,6 +14,8 @@ import com.google.gson.GsonBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserAuth;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 
@@ -29,10 +33,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Represents an asynchronous login/registration task used to authenticate
- * the user.
+ * Represents an asynchronous login/registration task used to authenticate the user.
  *
- * TODO: Use AccountAuthenticator instead:
+ * TODO: Use system-wide Account Manager instead by subclassing AbstractAccountAuthenticator:
  * http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html
  */
 public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
@@ -42,8 +45,12 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
         void loginCancelled();
     }
 
-    // TODO: put URLs in templated config file
-    private static final String PASSWORD_LOGIN_URL = "http://prs.azavea.com/api-token-auth/";
+
+    private Context context = DriverAppContext.getContext();
+
+    // Note that it is necessary to keep the trailing slash here
+    private static final String TOKEN_ENDPOINT = "api-token-auth/";
+    private URL tokenUrl;
 
     private final String mUsername;
     private final String mPassword;
@@ -53,6 +60,19 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
         mUsername = username;
         mPassword = password;
         mListener = listener;
+
+        try {
+            tokenUrl = new URL(Uri.parse(context.getString(R.string.api_server_url))
+                    .buildUpon()
+                    .appendEncodedPath(TOKEN_ENDPOINT)
+                    .build()
+                    .toString());
+        } catch (MalformedURLException e) {
+            Log.e("LoginTask", "Bad login URL! Check if api_server_url set properly in configurables.xml.");
+            e.printStackTrace();
+        }
+
+        Log.d("LoginTask", "Going to attempt login with token endpoint: " + tokenUrl);
     }
 
     @Override
@@ -64,9 +84,7 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
         DriverUserInfo userInfo = null;
 
         try {
-            URL url = new URL(PASSWORD_LOGIN_URL);
-
-            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpURLConnection) tokenUrl.openConnection();
 
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             urlConnection.setDoOutput(true);
@@ -150,10 +168,6 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
                     }
                 }
             }
-
-        } catch (MalformedURLException e) {
-            Log.e("LoginTask", "Bad login URL");
-            e.printStackTrace();
         } catch (IOException e) {
             Log.e("LoginTask", "Network error logging in");
             e.printStackTrace();
@@ -167,7 +181,6 @@ public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
         }
 
         return userInfo;
-        //return auth != null && auth.token != null && auth.token.length() > 0;
     }
 
     @Override

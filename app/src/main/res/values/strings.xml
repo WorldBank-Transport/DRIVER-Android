@@ -14,10 +14,10 @@
     <string name="error_field_required">This field is required</string>
 
     <!-- Shared preferences -->
-    <string name="shared_preferences_file">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
-    <string name="shared_preferences_username_key">user_name</string>
-    <string name="shared_preferences_user_id_key">user_id</string>
-    <string name="shared_preferences_token_key">user_token</string>
-    <string name="shared_preferences_email_key">user_email</string>
-    <string name="shared_preferences_groups_key">user_groups</string>
+    <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
+    <string name="shared_preferences_username_key" translatable="false">user_name</string>
+    <string name="shared_preferences_user_id_key" translatable="false">user_id</string>
+    <string name="shared_preferences_token_key" translatable="false">user_token</string>
+    <string name="shared_preferences_email_key" translatable="false">user_email</string>
+    <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
 </resources>

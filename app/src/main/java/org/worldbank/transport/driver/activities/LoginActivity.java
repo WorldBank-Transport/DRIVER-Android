@@ -50,6 +50,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
 
+        // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
         DriverUserInfo lastUser = app.getUserInfo();
         if (lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
