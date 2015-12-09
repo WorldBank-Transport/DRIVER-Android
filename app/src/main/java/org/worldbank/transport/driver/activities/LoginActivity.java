@@ -18,6 +18,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.tasks.LoginTask;
 
 
@@ -36,6 +39,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+    DriverApp app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +70,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
     }
 
     /**
@@ -167,15 +174,19 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     }
 
     @Override
-    public void loginCompleted(boolean successful) {
+    public void loginCompleted(DriverUserInfo userInfo) {
         mAuthTask = null;
         showProgress(false);
 
-        if (successful) {
+        if (userInfo != null) {
+            // set user info on app singleton
+            app.setUserInfo(userInfo);
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         } else {
+            // TODO: better error messages
+            // use progress handler and separate callback?
             mPasswordView.setError(getString(R.string.error_incorrect_password));
             mPasswordView.requestFocus();
         }

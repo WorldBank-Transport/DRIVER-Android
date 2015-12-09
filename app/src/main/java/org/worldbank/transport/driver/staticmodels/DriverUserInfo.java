@@ -1,6 +1,14 @@
 package org.worldbank.transport.driver.staticmodels;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import org.worldbank.transport.driver.R;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by kathrynkillebrew on 12/8/15.
@@ -15,9 +23,72 @@ public class DriverUserInfo {
     public String email;
     public List<String> groups;
 
-    // Helper function to determine whether user has access to add new records or not.
+    private String token; // must be written from DriverUserAuth response
+
+    /* Determine whether user has access to add new records or not.
+     *
+     * @return True if user has access to write records.
+     */
     public boolean hasWritePermission() {
         return groups != null && (groups.contains(ADMIN_GROUP) || groups.contains(ANALYST_GROUP));
+    }
+
+    /* Set authentication token for this user.
+     *
+     * @param auth Authentication information for this user
+     * @return True if token set successfully
+     */
+    public boolean setUserToken(DriverUserAuth auth) {
+        if (auth == null || auth.token.isEmpty()) {
+            Log.e("DriverUserInfo", "Missing authentication info for user; cannot set");
+            return false;
+        }
+
+        if (auth.user != id) {
+            Log.e("DriverUserInfo", "Got authentication info for different user ID; cannot set");
+            return false;
+        }
+
+        token = auth.token;
+        Log.d("DriverUserInfo", "Authentication info set for user");
+        return true;
+    }
+
+    public String getUserToken() {
+        return token;
+    }
+
+    public void writeToSharedPreferences(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                context.getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear(); // clears last saved user, if there is one
+
+        editor.putInt(context.getString(R.string.shared_preferences_user_id_key), id);
+        editor.putString(context.getString(R.string.shared_preferences_username_key), username);
+        editor.putString(context.getString(R.string.shared_preferences_token_key), token);
+        editor.putString(context.getString(R.string.shared_preferences_email_key), email);
+
+        Set<String> groupSet = new HashSet<>(groups.size());
+        groupSet.addAll(groups);
+
+        editor.putStringSet(context.getString(R.string.shared_preferences_groups_key), groupSet);
+
+        editor.apply();
+        Log.d("DriverUserInfo", "User info written to shared preferences");
+    }
+
+    public void readFromSharedPreferences(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                context.getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
+
+        preferences.getInt(context.getString(R.string.shared_preferences_user_id_key), -1);
+        preferences.getString(context.getString(R.string.shared_preferences_username_key), "");
+        preferences.getString(context.getString(R.string.shared_preferences_token_key), "");
+        preferences.getString(context.getString(R.string.shared_preferences_email_key), "");
+        preferences.getStringSet(context.getString(R.string.shared_preferences_groups_key), new HashSet<String>(0));
+
+        Log.d("DriverUserInfo", "User info read in from shared preferences");
     }
 }
 

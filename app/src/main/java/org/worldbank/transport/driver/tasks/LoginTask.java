@@ -35,14 +35,14 @@ import java.net.URL;
  * TODO: Use AccountAuthenticator instead:
  * http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html
  */
-public class LoginTask extends AsyncTask<Void, Void, Boolean> {
+public class LoginTask extends AsyncTask<Void, Void, DriverUserInfo> {
 
     public interface LoginCallbackListener {
-        void loginCompleted(boolean successful);
+        void loginCompleted(DriverUserInfo userInfo);
         void loginCancelled();
     }
 
-    // TODO: put in templated config file
+    // TODO: put URLs in templated config file
     private static final String PASSWORD_LOGIN_URL = "http://prs.azavea.com/api-token-auth/";
 
     private final String mUsername;
@@ -56,14 +56,12 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
-        // TODO: attempt authentication against a network service.
-
-        // http://developer.android.com/reference/java/net/HttpURLConnection.html
+    protected DriverUserInfo doInBackground(Void... params) {
         HttpURLConnection urlConnection = null;
 
         // will contain fetched credentials if login successful
-        DriverUserAuth auth = null;
+        DriverUserAuth auth;
+        DriverUserInfo userInfo = null;
 
         try {
             URL url = new URL(PASSWORD_LOGIN_URL);
@@ -89,7 +87,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             if (urlConnection.getResponseCode() != 200) {
                 Log.e("LoginTask", "Failed to login. Got response: " +
                         urlConnection.getResponseCode() + ": " + urlConnection.getResponseMessage());
-                return false;
+                return null;
             }
 
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -136,7 +134,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
                 Log.d("LoginTask", "Got user info response: " + responseStr);
 
-                DriverUserInfo userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
+                userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
                 Log.d("LoginTask", "Found user groups: " + userInfo.groups.toString());
 
                 // TODO: store user auth and info somewhere
@@ -144,6 +142,12 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
                 if (!userInfo.hasWritePermission()) {
                     Log.d("LoginTask", "User does not have privileges to add records!");
                     // TODO: return appropriate message instead of logging in user
+                } else {
+                    // set user token on user info object, for convenient storage and retrieval
+                    if (!userInfo.setUserToken(auth)) {
+                        // nullify user info if it didn't work
+                        userInfo = null;
+                    }
                 }
             }
 
@@ -162,12 +166,13 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             }
         }
 
-        return auth != null && auth.token != null && auth.token.length() > 0;
+        return userInfo;
+        //return auth != null && auth.token != null && auth.token.length() > 0;
     }
 
     @Override
-    protected void onPostExecute(final Boolean success) {
-        mListener.loginCompleted(success);
+    protected void onPostExecute(final DriverUserInfo userInfo) {
+        mListener.loginCompleted(userInfo);
     }
 
     @Override
