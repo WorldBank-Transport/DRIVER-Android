@@ -1,5 +1,6 @@
 package org.worldbank.transport.driver.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -31,19 +32,25 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final AppCompatActivity thisActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d("MainActivity", "Going to load form...");
+                Intent intent = new Intent(thisActivity, RecordFormActivity.class);
+                startActivity(intent);
+                /*
                 Snackbar.make(view, loadRecord(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                */
             }
         });
     }
 
+    /*
     public String loadRecord() {
         try {
-
             BufferedReader ir = new BufferedReader(new InputStreamReader(getAssets()
                     .open("json/data/DriverRecord.json"), "UTF-8"));
 
@@ -98,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             return "Something broke.";
         }
     }
+    */
 
     private void showErrors(Boolean haveErrors) {
         String response = "YAY";
