@@ -5,7 +5,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.vrallev.gradle:jarjar-gradle:1.1.0'
         classpath 'com.github.flibbertigibbet.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.17-api-14'
         classpath 'com.google.code.gson:gson:2.4'
         classpath 'org.joda:joda-convert:1.8.1'
@@ -23,7 +22,6 @@ configurations {
     all*.exclude group: 'swingui', module: 'swingui'
 }
 
-apply plugin: 'net.vrallev.jarjar'
 apply plugin: 'jsonschema2pojo'
 apply plugin: 'com.android.application'
 
@@ -110,32 +108,8 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
 
-    // hibernate deps missing on android; use jarjar to include on javax
-    jarjar 'javax.xml.bind:jaxb-api:2.2.12'
-    jarjar 'javax.xml.stream:stax-api:1.0-2'
-
-    // validator lib -- use latest version still on Java 7
-    jarjar ('org.hibernate:hibernate-validator:5.1.3.Final') {
-        exclude module: 'test-utils'
-        exclude module: 'tck-runner'
-        exclude module: 'intergration'
-        exclude module: 'annotation-processor'
-        exclude module: 'performance'
-        exclude module: 'distribution'
-
-        exclude group: 'javax.validation', module: 'validation-api'
-    }
-
-    // validation deps
-    jarjar 'com.fasterxml:classmate:1.0.0'
-    jarjar 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
-    jarjar 'javax.el:javax.el-api:2.2.4'
-    jarjar 'org.glassfish.web:javax.el:2.2.6'
-    jarjar 'javax.enterprise:cdi-api:1.2'
-    jarjar 'javax.xml.bind:activation:1.0.2'
-
     // form builder
-    compile 'com.github.dkharrat.nexusdialog:nexusdialog:0.3.0'
+    compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
 
     // Android
     testCompile 'junit:junit:4.12'
@@ -208,27 +182,4 @@ jsonSchema2Pojo {
 
     // **EXPERIMENTAL** Whether to make the generated types Parcelable for Android
     parcelable = false
-}
-
-jarjar {
-    // required, path to the executable .jar file
-    jarJarFile 'jarjar-1.4.jar'
-
-    // optional, the rules for the jarjar tool
-    rules = [
-            'rule javax.xml.stream.** ext.javax.xml.stream.@1',
-            'rule javax.xml.bind.** ext.javax.xml.bind.@1'
-    ]
-
-    // optional, exclude files from the dependency .jar files
-    srcExcludes = ['META-INF/**']
-
-    // optional, default is build_repackaged.jar, the result .jar file name
-    outputName "build_repackaged.jar"
-
-    // optional, default is libs, the directory of the result .jar
-    outputDir 'libs'
-
-    // optional, default is false
-    ignoreJarJarResult false
 }

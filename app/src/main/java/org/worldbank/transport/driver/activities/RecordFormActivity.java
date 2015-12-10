@@ -1,9 +1,14 @@
 package org.worldbank.transport.driver.activities;
 
+import android.app.ActionBar;
+import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.github.dkharrat.nexusdialog.FormController;
-import com.github.dkharrat.nexusdialog.FormModel;
 import com.github.dkharrat.nexusdialog.FormWithAppCompatActivity;
 import com.github.dkharrat.nexusdialog.controllers.EditTextController;
 import com.github.dkharrat.nexusdialog.controllers.FormSectionController;
@@ -13,6 +18,7 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 import com.google.gson.annotations.SerializedName;
+import javax.validation.constraints.NotNull;
 
 // TODO: use these. They apply only to sections
 import org.jsonschema2pojo.annotations.Description;
@@ -20,58 +26,59 @@ import org.jsonschema2pojo.annotations.Title;
 import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Multiple;
 
+import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.Person;
 import org.worldbank.transport.driver.models.Vehicle;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import javax.validation.constraints.NotNull;
 
 /**
  * Created by kathrynkillebrew on 12/9/15.
  */
 public class RecordFormActivity extends FormWithAppCompatActivity {
+
+    // TODO: why does NexusDialog make onCreate public instead of protected
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
+
+        Button goBtn = new Button(this);
+        goBtn.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+
+        goBtn.setText(("Save")); // TODO: strings.xml
+        // TODO: Set its ID
+        containerView.addView(goBtn);
+
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+
+        goBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("RecordFormActivity", "Button clicked");
+                FormController controller = getFormController();
+                controller.validateInput();
+                controller.showValidationErrors();
+            }
+        });
+    }
+
+    @Override
+    protected FormController createFormController() {
+        return new FormController(this, new Person());
+    }
+
     @Override
     protected void initForm() {
 
-        FormController formController = getFormController();
+        final FormController formController = getFormController();
         formController.addSection(addSectionModel(Person.class));
-
-        final Person person = new Person();
-
-        FormModel formModel = new FormModel() {
-            @Override
-            protected void setBackingValue(String name, Object newValue) {
-                Log.d("RecordFormActivity", "Going to set " + name);
-                try {
-                    Person.class.getField(name).set(person, newValue);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            protected Object getBackingValue(String name) {
-                Log.d("RecordFormActivity", "Going to get " + name);
-
-                try {
-                    return Person.class.getField(name).get(person);
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-
-        formController.setModel(formModel);
 
         //getFormController().addSection(addSectionModel(Vehicle.class));
 
@@ -166,7 +173,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
                     break;
                 case text:
-                    section.addElement(new EditTextController(this, fieldName, fieldLabel, fieldLabel, isRequired));
+                    section.addElement(new EditTextController(this, fieldName, fieldLabel, fieldLabel));
                     break;
                 case reference:
                     Log.w("RecordFormActivity", "TODO: implement reference field type");

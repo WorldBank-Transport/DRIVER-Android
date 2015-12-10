@@ -27,15 +27,27 @@ import javax.validation.spi.ValidationProvider;
 public class ValidationTask<T> extends AsyncTask<T, String, Set<ConstraintViolation<T>>> {
 
     public interface ValidationCallbackListener {
-        void callback(boolean haveErrors);
+        void callback(Set<ConstraintViolation> violations);
     }
 
     ValidationCallbackListener listener;
+    String propertyName;
 
     private static Validator validator = getValidator();
 
     public ValidationTask(ValidationCallbackListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Optionally create a validation task for a specific property on the object
+     *
+     * @param listener The callback handler
+     * @param propertyName Name of the field on the object to validate
+     */
+    public ValidationTask(ValidationCallbackListener listener, String propertyName) {
+        this(listener);
+        this.propertyName = propertyName;
     }
 
     @Override
@@ -46,7 +58,14 @@ public class ValidationTask<T> extends AsyncTask<T, String, Set<ConstraintViolat
 
         long startTime = System.currentTimeMillis();
 
-        Set<ConstraintViolation<T>> errors = validator.validate(obj);
+        Set<ConstraintViolation<T>> errors;
+        if (propertyName != null) {
+            // validate only the specified property on the object
+            errors = validator.validateProperty(obj, propertyName);
+        } else {
+            // validate entire object if property not specified
+            errors = validator.validate(obj);
+        }
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
@@ -61,14 +80,14 @@ public class ValidationTask<T> extends AsyncTask<T, String, Set<ConstraintViolat
         return errors;
     }
 
-    protected void onPostExecute(Set<ConstraintViolation<T>> errors) {
+    protected void onPostExecute(Set<ConstraintViolation> errors) {
         if (errors.isEmpty()) {
             Log.d("ValidationTask", "Hooray, object is valid");
-            listener.callback(false);
         } else {
             Log.d("ValidationTask", "Validation errors found");
-            listener.callback(true);
         }
+
+        listener.callback(errors);
     }
 
     private static Validator getValidator() {

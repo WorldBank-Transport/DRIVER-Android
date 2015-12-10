@@ -17,7 +17,6 @@ import com.google.gson.GsonBuilder;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.AccidentDetails;
 import org.worldbank.transport.driver.models.DriverSchema;
-import org.worldbank.transport.driver.tasks.ValidationTask;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,65 +46,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    /*
-    public String loadRecord() {
-        try {
-            BufferedReader ir = new BufferedReader(new InputStreamReader(getAssets()
-                    .open("json/data/DriverRecord.json"), "UTF-8"));
-
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = ir.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-            ir.close();
-            String responseStr = stringBuilder.toString();
-
-            Gson gson = new GsonBuilder().create();
-            final DriverSchema record = gson.fromJson(responseStr, DriverSchema.class);
-
-            Log.d("MainActivity:loadRecord", responseStr);
-            final AccidentDetails deets = record.AccidentDetails;
-            Log.d("MainActivity", "Loaded record with severity " + deets.Severity.name());
-
-            final ValidationTask.ValidationCallbackListener listener3 = new ValidationTask.ValidationCallbackListener() {
-                @Override
-                public void callback(boolean haveErrors) {
-                    showErrors(haveErrors);
-                }
-            };
-
-            final ValidationTask.ValidationCallbackListener listener2 = new ValidationTask.ValidationCallbackListener() {
-                @Override
-                public void callback(boolean haveErrors) {
-                    showErrors(haveErrors);
-                    // try again, with an error
-                    deets.LocalId = "SOMETHINGINVALID";
-                    new ValidationTask<AccidentDetails>(listener3).execute(deets);
-                }
-            };
-
-            ValidationTask.ValidationCallbackListener listener = new ValidationTask.ValidationCallbackListener() {
-                @Override
-                public void callback(boolean haveErrors) {
-                    showErrors(haveErrors);
-
-                    // try again, with full record
-                    new ValidationTask<DriverSchema>(listener2).execute(record);
-                }
-            };
-
-            new ValidationTask<AccidentDetails>(listener).execute(deets);
-
-            return deets.Severity.name();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "Something broke.";
-        }
-    }
-    */
 
     private void showErrors(Boolean haveErrors) {
         String response = "YAY";

@@ -16,6 +16,8 @@
       "type": "object",
       "properties": {
         "License number": {
+          "minLength": 6,
+          "maxLength": 8,
           "isSearchable": false,
           "propertyOrder": 2,
           "type": "string",
