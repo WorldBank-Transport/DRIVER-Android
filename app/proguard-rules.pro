@@ -71,6 +71,11 @@
     @org.codehaus.jackson.annotate.* <init>(...);
 }
 
+# form builder
+-keep class com.github.dkharrat.nexusdialog.** { public *; }
+-keep interface com.github.dkharrat.nexusdialog.** { public *; }
+-keepnames class com.github.dkharrat.nexusdialog.**
+
 ####################
 # below configurations based on:
 # https://github.com/krschultz/android-proguard-snippets
