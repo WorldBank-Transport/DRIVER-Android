@@ -63,6 +63,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             public void onClick(View view) {
                 Log.d("RecordFormActivity", "Button clicked");
                 FormController controller = getFormController();
+                controller.resetValidationErrors();
                 controller.validateInput();
                 controller.showValidationErrors();
             }
