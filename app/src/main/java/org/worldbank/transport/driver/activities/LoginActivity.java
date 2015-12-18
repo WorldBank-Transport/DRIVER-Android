@@ -23,6 +23,7 @@ import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.tasks.LoginTask;
+import org.worldbank.transport.driver.utilities.LoginUrlBuilder;
 
 
 /**
@@ -45,6 +46,9 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     private TextView mErrorMessage;
 
     DriverApp app;
+
+    // public so server interactions can be mocked in testing
+    public LoginTask.LoginUrls mLoginUrlBuilder;
 
     /**
      * Non-default constructor for testing, to set the application context.
@@ -69,6 +73,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = mAppContext.getDriverApp();
+        mLoginUrlBuilder = new LoginUrlBuilder();
 
         // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
@@ -160,7 +165,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new LoginTask(email, password, this);
+            mAuthTask = new LoginTask(email, password, this, mLoginUrlBuilder);
             mAuthTask.execute();
         }
     }

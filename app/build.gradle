@@ -48,22 +48,24 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        // can enable this if have >50K methods
-        //multiDexEnabled false
+        // can enable this to allow >50K methods
+        multiDexEnabled false
     }
 
     buildTypes {
         debug {
             debuggable true
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            shrinkResources false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
         }
 
         release {
             minifyEnabled false
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            shrinkResources false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
         }
     }
 
@@ -82,7 +84,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     configurations {
-        all*.exclude group: 'junit', module: 'junit'
+       // all*.exclude group: 'junit', module: 'junit'
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
 
@@ -112,10 +114,25 @@ dependencies {
     compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
 
     // Android
+
+    // test dependencies
     testCompile 'junit:junit:4.12'
+
+    // mock web server and friends
+    androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
+    androidTestCompile 'com.squareup.okhttp:okhttp:2.7.0'
+    androidTestCompile 'com.squareup.okhttp:okhttp-testing-support:2.7.0'
+    androidTestCompile 'com.squareup.okhttp:okhttp-ws:2.7.0'
+    androidTestCompile 'org.bouncycastle:bcprov-jdk15on:1.53'
+    androidTestCompile 'com.squareup.okio:okio:1.6.0'
+    androidTestCompile 'org.hamcrest:hamcrest-core:1.3'
+    androidTestCompile 'com.squareup.okhttp:okhttp-android-support:2.7.0'
+    androidTestCompile 'com.squareup.okhttp:okhttp-urlconnection:2.7.0'
+    androidTestCompile 'org.codehaus.mojo:animal-sniffer-annotations:1.14'
+
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    //compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:multidex:1.0.1'
 }
 
 jsonSchema2Pojo {

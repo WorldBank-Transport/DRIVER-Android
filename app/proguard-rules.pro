@@ -190,3 +190,5 @@
 -dontwarn javax.management.**
 
 -dontwarn javax.xml.namespace.QName
+
+
