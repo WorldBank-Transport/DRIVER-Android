@@ -101,16 +101,16 @@
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="codemodel-2.6" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-2.6.3" level="project" />
-    <orderEntry type="library" exported="" name="gson-2.4" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-asl-1.9.11" level="project" />
+    <orderEntry type="library" exported="" name="gson-2.4" level="project" />
     <orderEntry type="library" exported="" name="commons-lang-2.6" level="project" />
     <orderEntry type="library" exported="" name="javax.annotation-api-1.2" level="project" />
     <orderEntry type="library" exported="" name="jackson-databind-2.6.3" level="project" />
     <orderEntry type="library" exported="" name="design-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="validation-api-1.1.0.Final" level="project" />
     <orderEntry type="library" exported="" name="commons-lang3-3.2.1" level="project" />
-    <orderEntry type="library" exported="" name="jsonschema2pojo-core-jsonschema2pojo-0.4.17-api-14" level="project" />
     <orderEntry type="library" exported="" name="jsonschema2pojo-jsonschema2pojo-0.4.17-api-14" level="project" />
+    <orderEntry type="library" exported="" name="jsonschema2pojo-core-jsonschema2pojo-0.4.17-api-14" level="project" />
     <orderEntry type="library" exported="" name="joda-convert-1.8.1" level="project" />
     <orderEntry type="library" exported="" name="javaparser-1.0.11" level="project" />
   </component>

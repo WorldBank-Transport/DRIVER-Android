@@ -35,6 +35,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
      */
     private LoginTask mAuthTask = null;
 
+    private DriverAppContext mAppContext;
+
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -44,12 +46,29 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
     DriverApp app;
 
+    /**
+     * Non-default constructor for testing, to set the application context.
+     * @param context Mock context
+     */
+    public LoginActivity(DriverAppContext context) {
+        super();
+        mAppContext = context;
+    }
+
+    /**
+     * Default constructor, for testing.
+     */
+    public LoginActivity() {
+        super();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
+        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        app = mAppContext.getDriverApp();
 
         // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
@@ -112,7 +131,11 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        } else if (!isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
