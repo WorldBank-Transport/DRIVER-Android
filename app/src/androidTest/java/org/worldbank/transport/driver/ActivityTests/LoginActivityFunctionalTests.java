@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.mockwebserver.MockResponse;
@@ -48,12 +49,14 @@ import java.sql.Driver;
 public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCase2<LoginActivity> {
 
     private LoginActivity activity;
+    private DriverApp app;
 
     // views
     AutoCompleteTextView usernameField;
     EditText passwordField;
     Button loginButton;
     View progress;
+    TextView errorMessage;
 
     public LoginActivityFunctionalTests() {
         super(LoginActivity.class);
@@ -63,15 +66,19 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
     protected void setUp() throws Exception {
         super.setUp();
 
-        // clear any saved user info from shared preferences
+        // clear any saved user info on device from shared preferences
         clearSharedPreferences();
 
         activity = getActivity();
+        DriverAppContext driverAppContext = new DriverAppContext((DriverApp) getInstrumentation()
+                .getTargetContext().getApplicationContext());
+        app = driverAppContext.getDriverApp();
 
         usernameField = (AutoCompleteTextView) activity.findViewById(R.id.email);
         passwordField = (EditText) activity.findViewById(R.id.password);
         loginButton = (Button) activity.findViewById(R.id.email_sign_in_button);
         progress = activity.findViewById(R.id.login_progress);
+        errorMessage = (TextView) activity.findViewById(R.id.error_message);
     }
 
     private void clearSharedPreferences() {
@@ -221,14 +228,11 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
 
             // paths here are the mocked ones in MockLoginUrlBuilder
             assertEquals("Expected login task to request user token first", "/token", firstRequest.getPath());
-            assertEquals("Expected login task to request user info second", "/user", firstRequest.getPath());
+            assertEquals("Expected login task to request user info second", "/user", secondRequest.getPath());
             server.shutdown();
             ////////////////////////////////
 
             // check user info was set
-            DriverAppContext driverAppContext = new DriverAppContext((DriverApp) instrumentation
-                    .getTargetContext().getApplicationContext());
-            DriverApp app = driverAppContext.getDriverApp();
             DriverUserInfo userInfo = app.getUserInfo();
 
             assertEquals("Username not set correctly", "superfoo", userInfo.username);
@@ -238,8 +242,7 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
             assertEquals("User should have write permission", true, userInfo.hasWritePermission());
             assertEquals("User token not set correctly", "15903f0d0dd44d79b6507f59470b5005", userInfo.getUserToken());
 
-            // unset user info for test state
-            // (next test will go straight to main activity if user info present)
+            // unset user info again for test state
             app.setUserInfo(null);
 
         } catch (IOException e) {
@@ -248,6 +251,71 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
         } catch (InterruptedException e) {
             e.printStackTrace();
             fail("Login activity test encountered error checking server requests");
+        }
+    }
+
+    @MediumTest
+    public void testAttemptLoginInsufficientPrivileges() {
+        final Instrumentation instrumentation = getInstrumentation();
+
+        // mock server responses
+        MockWebServer server = new MockWebServer();
+
+        try {
+            // mock server responses by setting the URLs that will be used by LoginTask
+            activity.mLoginUrlBuilder = new MockLoginUrlBuilder(server);
+
+            // prepare mock server responses
+            MockResponse tokenResponse = new MockResponse()
+                    .setHeader("Content-Type", "application/json; charset=UTF-8")
+                    .setBody("{\"token\":\"15903f0d0dd44d79b6507f59470b5005\",\"user\":42}");
+            server.enqueue(tokenResponse);
+
+            MockResponse userInfoResponse = new MockResponse()
+                    .setHeader("Content-Type", "application/json; charset=UTF-8")
+                    .setBody("{\"id\":42,\"url\":\"http://driver.example.com/api/users/42/\",\"username\":\"publicuser\",\"email\":\"publicuser@example.com\",\"groups\":[\"public\"],\"date_joined\":\"2015-12-01T22:56:04.039208Z\",\"is_staff\":false,\"is_superuser\":false}");
+            server.enqueue(userInfoResponse);
+            server.start();
+
+            /////////////
+            // fill out login form
+            instrumentation.waitForIdleSync();
+            TouchUtils.tapView(this, usernameField);
+            instrumentation.waitForIdleSync();
+            instrumentation.sendStringSync("publicuser");
+            TouchUtils.tapView(this, passwordField);
+            instrumentation.waitForIdleSync();
+            instrumentation.sendStringSync("somepassword");
+            instrumentation.waitForIdleSync();
+            /////////////
+
+            // set up a monitor to watch for activity change; block next activity from actually displaying
+            final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation.addMonitor(MainActivity.class.getName(), null, true);
+
+            // go!
+            TouchUtils.tapView(this, loginButton);
+            instrumentation.waitForIdleSync();
+
+            instrumentation.waitForMonitorWithTimeout(receiverActivityMonitor, 1000);
+
+            assertEquals("User without write access allowed to log in", 0, receiverActivityMonitor.getHits());
+
+            server.shutdown();
+
+            // check appropriate error message displayed
+            assertEquals("Progress indicator showing when login form has error",
+                    View.GONE, progress.getVisibility());
+
+            Context targetContext = getInstrumentation().getTargetContext();
+            assertEquals("Message about insufficient privileges not displayed",
+                    targetContext.getString(R.string.error_user_cannot_write_records), errorMessage.getText());
+
+            // check user info was ~not~ saved
+            assertEquals("Username should be empty after failed login", 0, app.getUserInfo().username.length());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("Login activity test encountered server error");
         }
     }
 

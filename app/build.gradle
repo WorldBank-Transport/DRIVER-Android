@@ -57,15 +57,15 @@ android {
             debuggable true
             minifyEnabled false
             shrinkResources false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            //testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
         }
 
         release {
             minifyEnabled false
             shrinkResources false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            //testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
         }
     }
 
@@ -84,7 +84,6 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     configurations {
-       // all*.exclude group: 'junit', module: 'junit'
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
 
@@ -99,6 +98,7 @@ dependencies {
         exclude module: 'jsonschema2pojo-integration-tests'
 
         exclude group: 'javax.validation', module: 'validation-api'
+        exclude group: 'junit', module: 'junit'
     }
 
     // used by jsonschema2pojo
@@ -112,8 +112,6 @@ dependencies {
 
     // form builder
     compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
-
-    // Android
 
     // test dependencies
     testCompile 'junit:junit:4.12'
@@ -130,6 +128,7 @@ dependencies {
     androidTestCompile 'com.squareup.okhttp:okhttp-urlconnection:2.7.0'
     androidTestCompile 'org.codehaus.mojo:animal-sniffer-annotations:1.14'
 
+    // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:multidex:1.0.1'
