@@ -77,8 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
-        DriverUserInfo lastUser = app.getUserInfo();
-        if (lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
+        if (haveSavedUserInfo()) {
             Log.d("LoginActivity", "Have saved user info; skipping login screen");
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
@@ -111,6 +110,20 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         mProgressView = findViewById(R.id.login_progress);
         mErrorMessage = (TextView) findViewById(R.id.error_message);
         mErrorMessage.setText("");
+    }
+
+    /**
+     * Helper to check if saved user info has been retrieved from shared preferences at launch.
+     *
+     * @return true if user info found
+     */
+    public boolean haveSavedUserInfo() {
+        DriverUserInfo lastUser = app.getUserInfo();
+        if (lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -243,5 +256,3 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         mErrorMessage.setText(errorMessage);
     }
 }
-
-

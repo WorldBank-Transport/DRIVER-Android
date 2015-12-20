@@ -2,7 +2,6 @@ package org.worldbank.transport.driver.ActivityTests;
 
 import android.app.Instrumentation;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
@@ -10,7 +9,6 @@ import android.test.UiThreadTest;
 import android.test.ViewAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -29,17 +27,13 @@ import org.worldbank.transport.driver.activities.MainActivity;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
-import org.worldbank.transport.driver.tasks.LoginTask;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.Driver;
 
 /**
  * Functional tests for the login activity.
@@ -290,7 +284,8 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
             /////////////
 
             // set up a monitor to watch for activity change; block next activity from actually displaying
-            final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation.addMonitor(MainActivity.class.getName(), null, true);
+            final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation
+                    .addMonitor(MainActivity.class.getName(), null, true);
 
             // go!
             TouchUtils.tapView(this, loginButton);
