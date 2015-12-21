@@ -1,6 +1,12 @@
 package org.worldbank.transport.driver.ActivityTests;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.test.ActivityUnitTestCase;
+import android.test.UiThreadTest;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Log;
 
 import org.worldbank.transport.driver.MockDriverContext;
 import org.worldbank.transport.driver.activities.LoginActivity;
@@ -26,6 +32,18 @@ public class LoginActivityUnitTests extends ActivityUnitTestCase<LoginActivity> 
 
         MockDriverContext driverContext = new MockDriverContext();
         DriverApp app = driverContext.getDriverApp();
+        setApplication(app);
+
+        // this fails due to activity being in sub-package
+        //Intent intent = new Intent(getInstrumentation().getTargetContext(), LoginActivity.class);
+        //startActivity(intent, null, null);
+
+        // launch activity this way as workaround for ComponentName bug in ActivityUnitCase:
+        // https://code.google.com/p/android/issues/detail?id=22737&q=activityunittestcase&colspec=ID%20Type%20Status%20Owner%20Summary%20Stars
+        setActivity(launchActivity("org.worldbank.transport.driver", LoginActivity.class, null));
+        LoginActivity activity = getActivity();
+
+        assertNotNull("Failed to launch login activity", activity);
 
         // set a user
         DriverUserAuth userAuth = new DriverUserAuth();
@@ -38,25 +56,37 @@ public class LoginActivityUnitTests extends ActivityUnitTestCase<LoginActivity> 
         userInfo.groups = new ArrayList<>();
         userInfo.groups.add("analyst");
         userInfo.setUserToken(userAuth);
-        app.setUserInfo(userInfo);
 
-        // start login activity with mocked user data
+        DriverApp usingApp = (DriverApp)activity.getApplication();
+        usingApp.setUserInfo(userInfo);
+
+        assertTrue("Saved user info not found on app launch", activity.haveSavedUserInfo());
+
+        activity.finish();
+    }
+
+    public void testNoUserFoundAtLaunch() {
+
+        MockDriverContext driverContext = new MockDriverContext();
+        DriverApp app = driverContext.getDriverApp();
         setApplication(app);
 
-        // launch activity this way as workaround for ComponentName bug in ActivityUnitCase:
-        // https://code.google.com/p/android/issues/detail?id=22737&q=activityunittestcase&colspec=ID%20Type%20Status%20Owner%20Summary%20Stars
-        setActivity(launchActivity("org.worldbank.transport.driver", LoginActivity.class, null));
-        LoginActivity activity = getActivity();
+        LoginActivity activity = launchActivity("org.worldbank.transport.driver", LoginActivity.class, null);
+        setActivity(activity);
 
         assertNotNull("Failed to launch login activity", activity);
 
-        assertTrue("Saved user info not found on app launch", activity.haveSavedUserInfo());
+        DriverApp usingApp = (DriverApp)activity.getApplication();
+        usingApp.setUserInfo(null);
+
+        assertFalse("User info found on app launch when none expected", activity.haveSavedUserInfo());
+
+        activity.finish();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        getActivity().finish();
     }
 
     @Override
