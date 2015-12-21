@@ -2,6 +2,8 @@ package org.worldbank.transport.driver.staticmodels;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 /**
  * Singleton to hold data used across the application.
@@ -12,11 +14,13 @@ public class DriverApp extends Application {
 
     private DriverUserInfo userInfo;
     private static Context mContext;
+    private static ConnectivityManager connMgr;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
+        connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     public static Context getContext() {
@@ -35,5 +39,13 @@ public class DriverApp extends Application {
             userInfo.readFromSharedPreferences(mContext);
         }
         return userInfo;
+    }
+
+    public static boolean getIsNetworkAvailable() {
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        }
+        return false;
     }
 }

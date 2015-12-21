@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserAuth;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
@@ -79,6 +80,13 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
     @Override
     protected DriverUserInfo doInBackground(String... params) {
+        if(!DriverApp.getIsNetworkAvailable()) {
+            // no network available. don't bother logging in
+            publishProgress(context.getString(R.string.error_no_network));
+            Log.d("LoginTask", "No network");
+            return null;
+        }
+
         HttpURLConnection urlConnection = null;
 
         // will contain fetched credentials if login successful

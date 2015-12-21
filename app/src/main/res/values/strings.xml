@@ -17,6 +17,7 @@
     <string name="error_user_cannot_write_records">User account does not have access to add records. Please contact a system administrator to gain write access.</string>
     <string name="error_login_unknown">Unknown error logging in.</string>
     <string name="error_login_network">Network error logging in.</string>
+    <string name="error_no_network">Network is not available.</string>
 
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
