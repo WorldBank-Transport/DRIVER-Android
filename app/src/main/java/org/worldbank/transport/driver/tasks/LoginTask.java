@@ -5,7 +5,6 @@ package org.worldbank.transport.driver.tasks;
  */
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -30,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -48,34 +46,31 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
         void loginError(String errorMessage);
     }
 
-    // Note that it is necessary to keep the trailing slash here
-    private static final String TOKEN_ENDPOINT = "api-token-auth/";
-    private static final String USER_ENDPOINT = "api/users/";
+    public interface LoginUrls {
+        // Backend endpoints. Note that it is necessary to keep the trailing slash here.
+        // Publicly accessible for testing convenience.
+        String TOKEN_ENDPOINT = "api-token-auth/";
+        String USER_ENDPOINT = "api/users/";
 
-    private URL tokenUrl;
+        URL userTokenUrl(String serverUrl);
+        URL userInfoUrl(String serverUrl, int userId);
+    }
+
+    private String serverUrl;
     private final Context context = DriverAppContext.getContext();
 
     private final String mUsername;
     private final String mPassword;
     private final LoginCallbackListener mListener;
+    private final LoginUrls mLoginUrls;
 
-    public LoginTask(String username, String password, LoginCallbackListener listener) {
+    public LoginTask(String username, String password, LoginCallbackListener listener, LoginUrls loginUrls) {
         mUsername = username;
         mPassword = password;
         mListener = listener;
+        mLoginUrls = loginUrls;
 
-        try {
-            tokenUrl = new URL(Uri.parse(context.getString(R.string.api_server_url))
-                    .buildUpon()
-                    .appendEncodedPath(TOKEN_ENDPOINT)
-                    .build()
-                    .toString());
-        } catch (MalformedURLException e) {
-            Log.e("LoginTask", "Bad login URL! Check if api_server_url set properly in configurables.xml.");
-            e.printStackTrace();
-        }
-
-        Log.d("LoginTask", "Going to attempt login with token endpoint: " + tokenUrl);
+        serverUrl = context.getString(R.string.api_server_url);
     }
 
     @Override
@@ -93,6 +88,9 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
         DriverUserInfo userInfo = null;
 
         try {
+            URL tokenUrl = mLoginUrls.userTokenUrl(serverUrl);
+            Log.d("LoginTask", "Going to attempt login with token endpoint: " + tokenUrl);
+
             urlConnection = (HttpURLConnection) tokenUrl.openConnection();
 
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -140,6 +138,9 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             in.close();
             String responseStr = stringBuilder.toString();
 
+            Log.d("LoginTask", "Token request response:");
+            Log.d("LoginTask", responseStr);
+
             Gson gson = new GsonBuilder().create();
             DriverUserAuth auth = gson.fromJson(responseStr, DriverUserAuth.class);
 
@@ -147,12 +148,8 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 // get user info, reusing some objects for the connection
                 urlConnection.disconnect();
 
-                URL userInfoUrl = new URL(Uri.parse(context.getString(R.string.api_server_url))
-                        .buildUpon()
-                        .appendEncodedPath(USER_ENDPOINT)
-                        .appendPath(String.valueOf(auth.user))
-                        .build()
-                        .toString());
+                URL userInfoUrl = mLoginUrls.userInfoUrl(serverUrl, auth.user);
+                Log.d("LoginTask", "Going to attempt fetching user info from endpoint: " + userInfoUrl);
 
                 urlConnection = (HttpURLConnection) userInfoUrl.openConnection();
                 urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -169,6 +166,9 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 ir.close();
                 in.close();
                 responseStr = stringBuilder.toString();
+
+                Log.d("LoginTask", "User info request response:");
+                Log.d("LoginTask", responseStr);
 
                 userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
 
@@ -190,6 +190,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             }
         } catch (IOException e) {
             Log.e("LoginTask", "Network error logging in");
+            // TODO: This is the error if there is no Internet connection; handle this specially
             e.printStackTrace();
             publishProgress(context.getString(R.string.error_login_network));
             userInfo = null;

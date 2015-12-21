@@ -28,7 +28,6 @@ import org.jsonschema2pojo.annotations.Multiple;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.Person;
-import org.worldbank.transport.driver.models.Vehicle;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -41,7 +40,7 @@ import java.util.HashMap;
  */
 public class RecordFormActivity extends FormWithAppCompatActivity {
 
-    // TODO: why does NexusDialog make onCreate public instead of protected
+    // TODO: why does NexusDialog make onCreate public instead of protected?
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +49,12 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         Button goBtn = new Button(this);
         goBtn.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+        goBtn.setId(R.id.record_save_button_id);
 
-        goBtn.setText(("Save")); // TODO: strings.xml
-        // TODO: Set its ID
+        goBtn.setText(getString(R.string.record_save_button));
         containerView.addView(goBtn);
 
+        // TODO: give this a toolbar going along with the one on main view
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
 
@@ -77,12 +77,9 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     protected void initForm() {
-
+        // TODO: set this up to have paginated sections with "save" button at the end
         final FormController formController = getFormController();
         formController.addSection(addSectionModel(Person.class));
-
-        //getFormController().addSection(addSectionModel(Vehicle.class));
-
     }
 
     private FormSectionController addSectionModel(Class sectionModel) {

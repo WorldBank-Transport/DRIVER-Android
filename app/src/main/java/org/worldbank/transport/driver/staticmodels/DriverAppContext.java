@@ -11,6 +11,12 @@ public class DriverAppContext {
 
     private DriverApp app;
 
+    /**
+     * Empty default constructor to override in test
+     */
+    public DriverAppContext() {
+    }
+
     // pass through calls to app
 
     public void setUserInfo(DriverUserInfo userInfo) {

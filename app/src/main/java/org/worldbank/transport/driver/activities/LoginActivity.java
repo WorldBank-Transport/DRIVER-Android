@@ -23,6 +23,7 @@ import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.tasks.LoginTask;
+import org.worldbank.transport.driver.utilities.LoginUrlBuilder;
 
 
 /**
@@ -35,6 +36,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
      */
     private LoginTask mAuthTask = null;
 
+    private DriverAppContext mAppContext;
+
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -44,17 +47,37 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
     DriverApp app;
 
+    // public so server interactions can be mocked in testing
+    public LoginTask.LoginUrls mLoginUrlBuilder;
+
+    /**
+     * Non-default constructor for testing, to set the application context.
+     * @param context Mock context
+     */
+    public LoginActivity(DriverAppContext context) {
+        super();
+        mAppContext = context;
+    }
+
+    /**
+     * Default constructor, for testing.
+     */
+    public LoginActivity() {
+        super();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        app = new DriverAppContext((DriverApp) getApplicationContext()).getDriverApp();
+        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        app = mAppContext.getDriverApp();
+        mLoginUrlBuilder = new LoginUrlBuilder();
 
         // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
-        DriverUserInfo lastUser = app.getUserInfo();
-        if (lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
+        if (haveSavedUserInfo()) {
             Log.d("LoginActivity", "Have saved user info; skipping login screen");
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
@@ -90,6 +113,20 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     }
 
     /**
+     * Helper to check if saved user info has been retrieved from shared preferences at launch.
+     *
+     * @return true if user info found
+     */
+    public boolean haveSavedUserInfo() {
+        DriverUserInfo lastUser = app.getUserInfo();
+        if (lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
@@ -112,7 +149,11 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        } else if (!isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -137,7 +178,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new LoginTask(email, password, this);
+            mAuthTask = new LoginTask(email, password, this, mLoginUrlBuilder);
             mAuthTask.execute();
         }
     }
@@ -215,5 +256,3 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         mErrorMessage.setText(errorMessage);
     }
 }
-
-

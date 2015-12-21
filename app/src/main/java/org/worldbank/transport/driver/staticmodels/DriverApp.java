@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.content.SharedPreferences;
+
+import org.worldbank.transport.driver.R;
 
 /**
  * Singleton to hold data used across the application.
@@ -27,9 +30,24 @@ public class DriverApp extends Application {
         return mContext;
     }
 
+    /**
+     * Sets current user for app and sets user info in shared preferences.
+     * Clears shared preferences for app if null user set (can be used on logout.)
+     * @param userInfo DriverUserInfo built from API user response in LoginTask
+     */
     public void setUserInfo(DriverUserInfo userInfo) {
         this.userInfo = userInfo;
-        userInfo.writeToSharedPreferences(mContext);
+
+        if (userInfo != null) {
+            userInfo.writeToSharedPreferences(mContext);
+        } else {
+            // clear shared preferences if user info is reset
+            SharedPreferences preferences = mContext.getSharedPreferences(
+                    mContext.getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.clear(); // clears last saved user, if there is one
+            editor.apply();
+        }
     }
 
     public DriverUserInfo getUserInfo() {
