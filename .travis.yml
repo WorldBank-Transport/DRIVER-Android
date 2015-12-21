@@ -1,4 +1,5 @@
 language: android
+jdk: oraclejdk7
 android:
   components:
     # use the latest revision of Android SDK Tools
@@ -29,20 +30,20 @@ android:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
 
-  # deal with caches
-  before_cache:
-    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-  cache:
-    directories:
-      - $HOME/.gradle/caches/
-      - $HOME/.gradle/wrapper/
+# deal with caches
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
-  before_install:
-    - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
+before_install:
+  - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
 
-  # Emulator Management: Create, Start and Wait
-  before_script:
-    - echo no | android create avd --force -n test -t android-15 --abi armeabi-v7a
-    - emulator -avd test -no-skin -no-audio -no-window &
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &
+# Emulator Management: Create, Start and Wait
+before_script:
+  - echo no | android create avd --force -n test -t android-15 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
