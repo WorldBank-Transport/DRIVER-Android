@@ -71,8 +71,6 @@ android {
         incremental true
         javaMaxHeapSize "3072M"
     }
-    productFlavors {
-    }
 }
 
 repositories {
