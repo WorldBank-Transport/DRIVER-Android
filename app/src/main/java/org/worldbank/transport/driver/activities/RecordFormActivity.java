@@ -40,7 +40,7 @@ import java.util.HashMap;
  */
 public class RecordFormActivity extends FormWithAppCompatActivity {
 
-    // TODO: why does NexusDialog make onCreate public instead of protected
+    // TODO: why does NexusDialog make onCreate public instead of protected?
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,9 +49,9 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         Button goBtn = new Button(this);
         goBtn.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+        goBtn.setId(R.id.record_save_button_id);
 
-        goBtn.setText(("Save")); // TODO: put in strings.xml
-        // TODO: Set its ID
+        goBtn.setText(getString(R.string.record_save_button));
         containerView.addView(goBtn);
 
         // TODO: give this a toolbar going along with the one on main view

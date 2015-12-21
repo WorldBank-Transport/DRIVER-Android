@@ -18,6 +18,9 @@
     <string name="error_login_unknown">Unknown error logging in.</string>
     <string name="error_login_network">Network error logging in.</string>
 
+    <!-- record form -->
+    <string name="record_save_button">Save</string>
+
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
     <string name="shared_preferences_username_key" translatable="false">user_name</string>
@@ -25,4 +28,5 @@
     <string name="shared_preferences_token_key" translatable="false">user_token</string>
     <string name="shared_preferences_email_key" translatable="false">user_email</string>
     <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
+
 </resources>

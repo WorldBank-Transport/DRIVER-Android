@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- view IDs programmatically referenced -->
+<resources>
+    <item name="record_save_button_id" type="id" />
+</resources>
