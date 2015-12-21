@@ -37,6 +37,9 @@ android:
       - $HOME/.gradle/caches/
       - $HOME/.gradle/wrapper/
 
+  before_install:
+    - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
+
   # Emulator Management: Create, Start and Wait
   before_script:
     - echo no | android create avd --force -n test -t android-15 --abi armeabi-v7a
