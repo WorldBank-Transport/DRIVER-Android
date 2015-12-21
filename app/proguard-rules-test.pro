@@ -1,25 +1,3 @@
--optimizationpasses 3
--dontusemixedcaseclassnames
--dontskipnonpubliclibraryclasses
--dontskipnonpubliclibraryclassmembers
--dontpreverify
--verbose
--dump class_files.txt
--printseeds seeds.txt
--printusage unused.txt
--printmapping mapping.txt
-
--dontobfuscate # comes in handy sometimes
-
--keepattributes EnclosingMethod,Signature,*Annotation*,SourceFile,LineNumberTable,Exceptions,InnerClasses,Deprecated
-
-# http://proguard.sourceforge.net/manual/examples.html#beans
--adaptresourcefilenames    **.properties,**.gif,**.jpg
--adaptresourcefilecontents **.properties,META-INF/MANIFEST.MF
-
--allowaccessmodification
--renamesourcefileattribute SourceFile
--repackageclasses ''
 
 ### Test dependencies
 # These will only be included when running tests, so keep them all
@@ -28,6 +6,12 @@
 -keepclassmembers class com.squareup.okhttp.** { *; }
 -keepnames class com.squareup.okhttp.**
 -keepnames interface com.squareup.okhttp.**
+
+-keepclassmembers class * {
+    @javax.naming.** *;
+    @java.nio.file.** *;
+    @com.squareup.okhttp.internal.huc.** *;
+}
 
 -keep class okio.Okio.** { *; }
 -keep interface okio.Okio.** { *; }
@@ -41,6 +25,12 @@
 -keepnames class org.bouncycastle.**
 -keepnames interface org.bouncycastle.**
 
+-keep class android.test.** { *; }
+-keep interface android.test.** { *; }
+-keepclassmembers class android.test.** { *; }
+-keepnames class android.test.**
+-keepnames interface android.test.**
+
 # Things referenced by testing libraries
 -keep class java.nio.file.** { *; }
 -keep class org.junit.** { *; }
@@ -51,6 +41,10 @@
 -keep class com.android.org.conscrypt.** { public *; }
 -keep class org.apache.harmony.xnet.provider.** { public *; }
 -keep class java.net.** { public *; }
+-keep class com.android.org.conscrypt.** { public *; }
+-keep class org.apache.harmony.xnet.** { public *; }
+-keep interface com.android.org.conscrypt.** { public *; }
+-keep interface org.apache.harmony.xnet.** { public *; }
 
 -keepnames class org.codehaus.**
 -keepnames class javax.naming.**
@@ -59,6 +53,7 @@
 -keepnames class com.android.**
 -keepnames class org.apache.harmony.**
 -keepnames class java.net.**
+-keepnames class com.android.org.**
 
 -keepnames interface org.codehaus.**
 -keepnames interface javax.naming.**
@@ -74,9 +69,11 @@
 -keepclassmembers class java.nio.file.** { *; }
 -keepclassmembers class javax.naming.** { *; }
 
--dontwarn junit.**
+## Can ignore warnings from some unused things in here
+-dontwarn javax.naming.**
+-dontwarn java.nio.file.**
+-dontwarn com.squareup.okhttp.internal.huc.**
 
-## Can ignore warnings from unused things
-#-dontwarn okio.**
-#-dontwarn com.squareup.okhttp.**
-#-dontwarn org.bouncycastle.**
+# ignore "library class implements program class" errors
+-dontwarn android.test.**
+

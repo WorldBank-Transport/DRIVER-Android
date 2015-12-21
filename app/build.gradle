@@ -28,7 +28,6 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
-
     // Must specify individually all duplicated files from libraries to exclude or pickFirst
     packagingOptions {
         exclude 'NOTICE'
@@ -41,7 +40,6 @@ android {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/DEPENDENCIES.txt'
     }
-
     defaultConfig {
         applicationId "org.worldbank.transport.driver"
         minSdkVersion 14
@@ -50,8 +48,9 @@ android {
         versionName "1.0"
         // can enable this to allow >50K methods
         multiDexEnabled true
-    }
 
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+    }
     buildTypes {
         debug {
             debuggable true
@@ -68,10 +67,11 @@ android {
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
         }
     }
-
     dexOptions {
         incremental true
         javaMaxHeapSize "3072M"
+    }
+    productFlavors {
     }
 }
 
@@ -81,15 +81,12 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     configurations {
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
-
     compile 'com.google.code.gson:gson:2.4'
-
-    compile ('com.github.flibbertigibbet:jsonschema2pojo:jsonschema2pojo-0.4.17-api-14') {
+    compile('com.github.flibbertigibbet:jsonschema2pojo:jsonschema2pojo-0.4.17-api-14') {
         // only want core
         exclude module: 'jsonschema2pojo-ant'
         exclude module: 'jsonschema2pojo-cli'
@@ -99,8 +96,8 @@ dependencies {
 
         exclude group: 'javax.validation', module: 'validation-api'
         exclude group: 'junit', module: 'junit'
+        exclude group: 'android', module: 'net'
     }
-
     // used by jsonschema2pojo
     compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'commons-lang:commons-lang:2.6'
@@ -109,13 +106,10 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
-
     // form builder
     compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
-
     // test dependencies
     testCompile 'junit:junit:4.12'
-
     // mock web server and friends
     androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp:2.7.0'
@@ -127,11 +121,11 @@ dependencies {
     androidTestCompile 'com.squareup.okhttp:okhttp-android-support:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp-urlconnection:2.7.0'
     androidTestCompile 'org.codehaus.mojo:animal-sniffer-annotations:1.14'
-
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:multidex:1.0.1'
+    // TODO: this is included in something else. what?
+    //compile 'com.android.support:multidex:1.0.1'
 }
 
 jsonSchema2Pojo {

@@ -41,6 +41,7 @@
 
 # keep things in this app (necessary for dynamic model references)
 -keep class org.worldbank.transport.driver.** { *; }
+-keep interface org.worldbank.transport.driver.** { *; }
 -keepclassmembers class org.worldbank.transport.driver.** { *; }
 -keepnames class org.worldbank.transport.driver.**
 
