@@ -1,49 +1,41 @@
 language: android
-jdk: oraclejdk7
 android:
   components:
-    # use the latest revision of Android SDK Tools
     - platform-tools
     - tools
-
-    # The BuildTools version used by your project
-    - build-tools-23.0.1
-
-    # The SDK version used to compile your project
-    - android-23
-
-    # Additional components
-    - extra-google-google_play_services
+    - extra-android-m2repository
     - extra-google-m2repository
-    - extra-android-m2repository
-    - addon-google_apis-google-23
-
-    # use an image pre-installed on Travis
-    - sys-img-armeabi-v7a-android-15
-
-    # support library
     - extra-android-support
-
-    - extra-android-m2repository
+    - android-23
+    - sys-img-armeabi-v7a-android-17
+    - addon-google_apis-google-17
+    - build-tools-23.0.2
 
   licenses:
-    - 'android-sdk-license-.+'
-    - 'google-gdk-license-.+'
-
-# deal with caches
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - 'android-*'
+    - '.*intel.+'
 
 before_install:
   - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
+  - echo yes | android update sdk --no-ui -a --filter android-23,tool,platform-tools,addon-google_apis-google-23,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
+  - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
 
-# Emulator Management: Create, Start and Wait
 before_script:
-  - echo no | android create avd --force -n test -t android-15 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
+  - ulimit -c unlimited -S # increase stack size
+  - echo no | android create avd --force -n test -t android-17 --abi armeabi-v7a --skin HVGA
+  - sleep 5
+  - emulator -avd test -no-skin -no-audio -no-window -no-boot-anim -dpi-device 480 &
+  - sleep 10
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
+  - sleep 5 && adb shell input keyevent 82 &
+  # NB: necessary to perform build step first and separately from test run
+  - ./gradlew build --stacktrace
+
+env:
+  global:
+    - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
+    - TERM=dumb
+
+script:
+  - ./gradlew connectedCheck --stacktrace

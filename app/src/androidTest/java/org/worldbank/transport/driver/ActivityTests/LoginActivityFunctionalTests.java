@@ -295,11 +295,18 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
 
             assertEquals("User without write access allowed to log in", 0, receiverActivityMonitor.getHits());
 
+            // give slower emulators a chance to catch up
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             server.shutdown();
 
             // check appropriate error message displayed
-            assertEquals("Progress indicator showing when login form has error",
-                    View.GONE, progress.getVisibility());
+            assertNotSame("Progress indicator still showing when login form has error",
+                    View.VISIBLE, progress.getVisibility());
 
             Context targetContext = getInstrumentation().getTargetContext();
             assertEquals("Message about insufficient privileges not displayed",

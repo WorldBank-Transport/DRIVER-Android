@@ -4,6 +4,7 @@ import android.app.Instrumentation;
 import android.support.v7.widget.AppCompatTextView;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
+import android.test.UiThreadTest;
 import android.test.ViewAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.github.dkharrat.nexusdialog.FormController;
@@ -58,6 +60,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     }
 
     @MediumTest
+    @UiThreadTest
     public void testValidationErrorDisplay() {
         ViewGroup containerView = (ViewGroup) activity.findViewById(R.id.form_elements_container);
         Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
@@ -69,41 +72,52 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         LinearLayout ctlView = (LinearLayout) licenseNoCtl.getView();
         List<View> licenseNoViews = getAllChildViews(ctlView);
 
-        ArrayList<AppCompatTextView> textViews = new ArrayList<>(2);
+        EditText licenseNoField = null;
+
+        // the first text view is the field label, and the second is for field error messages
+        boolean foundLabel = false;
+        AppCompatTextView errorMsgView = null;
+
         for (View view : licenseNoViews) {
             if (view instanceof AppCompatTextView) {
-                textViews.add((AppCompatTextView) view);
-                Log.d("RecordFormTests", "License # field text: " + ((AppCompatTextView) view).getText());
+                if (foundLabel) {
+                    errorMsgView = (AppCompatTextView) view;
+                } else {
+                    foundLabel = true;
+                }
+            } else if (view instanceof EditText) {
+                // the actual text entry field
+                licenseNoField = (EditText) view;
             }
         }
 
-        assertEquals("Unexpected number of text views in form control", 2, textViews.size());
+        assertNotNull("Did not find error message view for license number field", errorMsgView);
+        assertNotNull("Did not find text entry field for license number fiewd", licenseNoField);
 
         // test validation on license view
-        Instrumentation instrumentation = getInstrumentation();
-        instrumentation.waitForIdleSync();
-        TouchUtils.tapView(this, ctlView);
-        instrumentation.waitForIdleSync();
-        instrumentation.sendStringSync("123");
-        instrumentation.waitForIdleSync();
-        TouchUtils.scrollToBottom(this, activity, containerView);
-        instrumentation.waitForIdleSync();
-        TouchUtils.tapView(this, goButton);
-        instrumentation.waitForIdleSync();
+        licenseNoField.setText("123");
+        goButton.performClick();
 
-        assertEquals("Did not get expected license # field error", "size must be between 6 and 8", textViews.get(1).getText());
-        assertEquals("License # error view is not visible", View.VISIBLE, textViews.get(1).getVisibility());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("Did not get expected license # field error", "size must be between 6 and 8", errorMsgView.getText());
+        assertEquals("License # error view is not visible", View.VISIBLE, errorMsgView.getVisibility());
 
         // now test that error clears from display once it has been fixed
-        instrumentation.waitForIdleSync();
-        TouchUtils.tapView(this, ctlView);
-        instrumentation.waitForIdleSync();
-        instrumentation.sendStringSync("456");
-        instrumentation.waitForIdleSync();
-        TouchUtils.tapView(this, goButton);
-        instrumentation.waitForIdleSync();
+        licenseNoField.setText("123456");
+        goButton.performClick();
 
-        assertNotSame("License # error not cleared", View.VISIBLE, textViews.get(1).getVisibility());
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertNotSame("License # error not cleared", View.VISIBLE, errorMsgView.getVisibility());
     }
 
     // helper to recursively find all child views in a view hierarchy
