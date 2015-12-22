@@ -47,7 +47,7 @@ android {
         versionCode 1
         versionName "1.0"
         // can enable this to allow >50K methods
-        multiDexEnabled true
+        //multiDexEnabled true
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
@@ -127,7 +127,7 @@ dependencies {
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:multidex:1.0.1'
+    //compile 'com.android.support:multidex:1.0.1'
 }
 
 jsonSchema2Pojo {
