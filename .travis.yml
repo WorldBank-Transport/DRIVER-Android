@@ -21,6 +21,7 @@ before_install:
   - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
 
 before_script:
+  - ulimit -c unlimited -S # increase stack size
   - echo no | android create avd --force -n test -t android-17 --abi armeabi-v7a --skin HVGA
   - sleep 5
   - emulator -avd test -no-skin -no-audio -no-window -no-boot-anim -dpi-device 480 &
@@ -32,7 +33,9 @@ before_script:
   - ./gradlew build --stacktrace
 
 env:
-  - TERM=dumb
+  global:
+    - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
+    - TERM=dumb
 
 script:
   - ./gradlew connectedCheck --stacktrace
