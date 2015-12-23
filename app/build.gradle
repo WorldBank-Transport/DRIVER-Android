@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.flibbertigibbet.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.17-api-14'
+        classpath 'com.github.WorldBank-Transport.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.18-extra-annotations'
         classpath 'com.google.code.gson:gson:2.4'
         classpath 'org.joda:joda-convert:1.8.1'
         classpath 'javax.annotation:javax.annotation-api:1.2'
@@ -47,7 +47,7 @@ android {
         versionCode 1
         versionName "1.0"
         // can enable this to allow >50K methods
-        multiDexEnabled true
+        //multiDexEnabled true
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
@@ -70,6 +70,8 @@ android {
     dexOptions {
         incremental true
         javaMaxHeapSize "3072M"
+        // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
+        preDexLibraries = preDexEnabled && !travisBuild
     }
     lintOptions {
         abortOnError false
@@ -87,7 +89,7 @@ dependencies {
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
     compile 'com.google.code.gson:gson:2.4'
-    compile('com.github.flibbertigibbet:jsonschema2pojo:jsonschema2pojo-0.4.17-api-14') {
+    compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.18-extra-annotations') {
         // only want core
         exclude module: 'jsonschema2pojo-ant'
         exclude module: 'jsonschema2pojo-cli'
@@ -108,7 +110,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder
-    compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
+    compile 'com.github.azavea:AndroidValidatedForms:v1.0.0'
     // test dependencies
     testCompile 'junit:junit:4.12'
     // mock web server and friends
@@ -125,7 +127,7 @@ dependencies {
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:multidex:1.0.1'
+    //compile 'com.android.support:multidex:1.0.1'
 }
 
 jsonSchema2Pojo {

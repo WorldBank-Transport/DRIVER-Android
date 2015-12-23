@@ -36,6 +36,7 @@ env:
   global:
     - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
     - TERM=dumb
+    - MALLOC_ARENA_MAX=2
 
 script:
   - ./gradlew connectedCheck --stacktrace
