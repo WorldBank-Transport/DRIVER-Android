@@ -62,7 +62,6 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     @MediumTest
     @UiThreadTest
     public void testValidationErrorDisplay() {
-        ViewGroup containerView = (ViewGroup) activity.findViewById(R.id.form_elements_container);
         Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
 
         FormController formController = activity.getFormController();
@@ -92,7 +91,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         }
 
         assertNotNull("Did not find error message view for license number field", errorMsgView);
-        assertNotNull("Did not find text entry field for license number fiewd", licenseNoField);
+        assertNotNull("Did not find text entry field for license number field", licenseNoField);
 
         // test validation on license view
         licenseNoField.setText("123");
