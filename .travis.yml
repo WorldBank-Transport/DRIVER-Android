@@ -1,4 +1,11 @@
 language: android
+
+# use trusty beta builds for more memory
+# https://docs.travis-ci.com/user/ci-environment/
+
+sudo: true
+dist: trusty
+
 android:
   components:
     - platform-tools
@@ -37,7 +44,6 @@ env:
     - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
     - TERM=dumb
     - MALLOC_ARENA_MAX=2
-    - GRADLE_OPTS='-Dorg.gradle.jvmargs="-Xmx2560m -XX:+HeapDumpOnOutOfMemoryError"'
 
 script:
   - ./gradlew connectedCheck --stacktrace
