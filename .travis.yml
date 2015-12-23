@@ -1,10 +1,9 @@
 language: android
 
-# use trusty beta builds for more memory
+# to use trusty beta builds for more memory
 # https://docs.travis-ci.com/user/ci-environment/
-
-sudo: true
-dist: trusty
+# sudo: true
+# dist: trusty
 
 android:
   components:
@@ -23,6 +22,7 @@ android:
     - '.*intel.+'
 
 before_install:
+  - free -m # show available memory on VM
   - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
   - echo yes | android update sdk --no-ui -a --filter android-23,tool,platform-tools,addon-google_apis-google-23,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
   - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
@@ -44,6 +44,7 @@ env:
     - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
     - TERM=dumb
     - MALLOC_ARENA_MAX=2
+    - GRADLE_OPTS='-Dorg.gradle.jvmargs="-Xmx2560m -XX:+HeapDumpOnOutOfMemoryError"'
 
 script:
   - ./gradlew connectedCheck --stacktrace
