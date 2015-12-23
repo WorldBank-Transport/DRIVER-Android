@@ -69,7 +69,7 @@ android {
     }
     dexOptions {
         incremental true
-        javaMaxHeapSize "3072M"
+        javaMaxHeapSize "4096M"
         // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
         preDexLibraries = preDexEnabled && !travisBuild
     }
@@ -109,10 +109,13 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
+
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:v1.0.0'
+    compile 'com.github.azavea:AndroidValidatedForms:1.0.3'
+
     // test dependencies
     testCompile 'junit:junit:4.12'
+
     // mock web server and friends
     androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp:2.7.0'
@@ -124,6 +127,7 @@ dependencies {
     androidTestCompile 'com.squareup.okhttp:okhttp-android-support:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp-urlconnection:2.7.0'
     androidTestCompile 'org.codehaus.mojo:animal-sniffer-annotations:1.14'
+
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
