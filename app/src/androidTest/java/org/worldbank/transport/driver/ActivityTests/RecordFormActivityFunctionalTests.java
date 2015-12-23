@@ -15,8 +15,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-import com.github.dkharrat.nexusdialog.FormController;
-import com.github.dkharrat.nexusdialog.FormElementController;
+import com.azavea.androidvalidatedforms.FormController;
+import com.azavea.androidvalidatedforms.FormElementController;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;

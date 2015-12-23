@@ -8,11 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.github.dkharrat.nexusdialog.FormController;
-import com.github.dkharrat.nexusdialog.FormWithAppCompatActivity;
-import com.github.dkharrat.nexusdialog.controllers.EditTextController;
-import com.github.dkharrat.nexusdialog.controllers.FormSectionController;
-import com.github.dkharrat.nexusdialog.controllers.SelectionController;
+import com.azavea.androidvalidatedforms.FormController;
+import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
+import com.azavea.androidvalidatedforms.controllers.EditTextController;
+import com.azavea.androidvalidatedforms.controllers.FormSectionController;
+import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;

@@ -110,7 +110,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder
-    compile 'com.github.flibbertigibbet:NexusDialog:v0.3.3-hibernate'
+    compile 'com.github.azavea:AndroidValidatedForms:v1.0.0'
     // test dependencies
     testCompile 'junit:junit:4.12'
     // mock web server and friends
