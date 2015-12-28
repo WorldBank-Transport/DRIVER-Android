@@ -163,7 +163,7 @@
 -keep class com.fasterxml.jackson.databind.** { public *; }
 -keep interface com.fasterxml.jackson.databind.** { public *; }
 
-# TODO: wat
+# TODO: refine to retain less
 -dontwarn com.fasterxml.jackson.databind.**
 
 -keepnames class org.jboss.logmanager.**
