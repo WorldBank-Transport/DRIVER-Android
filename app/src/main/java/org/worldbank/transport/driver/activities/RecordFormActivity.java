@@ -27,7 +27,9 @@ import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Multiple;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.models.Person;
+import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -40,13 +42,58 @@ import java.util.HashMap;
  */
 public class RecordFormActivity extends FormWithAppCompatActivity {
 
+    // path to model classes created by jsonschema2pojo
+    // this must match the targetPackage declared in the gradle build file (with a trailing period)
+    private static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
+
+    public static final String SECTION_ID = "driver_section_id";
+
+    private DriverAppContext mAppContext;
+    DriverApp app;
+
+    private DriverSchema currentlyEditing;
+    private int sectionId;
+    private String sectionName;
+    private String[] sectionOrder;
+    private Class sectionClass;
+
+    /**
+     * Non-default constructor for testing, to set the application context.
+     * @param context Mock context
+     */
+    public RecordFormActivity(DriverAppContext context) {
+        super();
+        mAppContext = context;
+    }
+
+    /**
+     * Default constructor, for testing.
+     */
+    public RecordFormActivity() {
+        super();
+    }
+
+
+
     // TODO: why does NexusDialog make onCreate public instead of protected?
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // set up some state before calling super
+        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        app = mAppContext.getDriverApp();
+        currentlyEditing = app.getEditObject();
+
+        Bundle bundle = getIntent().getExtras();
+        sectionId = bundle.getInt(SECTION_ID);
+        sectionOrder = app.getSchemaSectionOrder();
+
+        // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
 
+        // now form has been built, add next or save button to it
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
 
+        // TODO: add next/previous/save buttons, as appropriate
         Button goBtn = new Button(this);
         goBtn.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
         goBtn.setId(R.id.record_save_button_id);
@@ -72,14 +119,54 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     protected FormController createFormController() {
-        return new FormController(this, new Person());
+        // pass section offset to activity in intent, then find that section to use here
+        try {
+            sectionName = sectionOrder[sectionId];
+            Field sectionField = DriverSchema.class.getField(sectionName);
+
+            // TODO: check if multiple, and if so, get list of things instead of the thing
+            Object section = sectionField.get(currentlyEditing);
+
+            // will not exist if creating a new record
+            if (section == null) {
+                Log.d("RecordFormActivity", "No section found with name " + sectionName);
+                // TODO: instantiate a new thing then
+                try {
+                    sectionClass = Class.forName(MODEL_PACKAGE + sectionName);
+                    section = sectionClass.newInstance();
+                    return new FormController(this, section);
+                } catch (ClassNotFoundException e) {
+                    Log.e("RecordFormActivity", "Could not fine class named " + sectionName);
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    Log.e("RecordFormActivity", "Failed to instantiate new section " + sectionName);
+                    e.printStackTrace();
+                }
+            } else {
+                // have existing values to edit
+                Log.d("RecordFormActivity", "Found existing section " + sectionName);
+                return new FormController(this, section);
+            }
+        } catch (NoSuchFieldException e) {
+            Log.e("RecordFormActivity", "Could not find section field " + sectionName);
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            Log.e("RecordFormActivity", "Do not have access to section field " + sectionName);
+            e.printStackTrace();
+        } catch (IndexOutOfBoundsException e) {
+            Log.e("RecordFormActivity", "Invalid form section offset: " + String.valueOf(sectionId));
+        }
+        return null;
     }
 
     @Override
     protected void initForm() {
-        // TODO: set this up to have paginated sections with "save" button at the end
         final FormController formController = getFormController();
-        formController.addSection(addSectionModel(Person.class));
+        if (sectionClass != null) {
+            formController.addSection(addSectionModel(sectionClass));
+        } else {
+            Log.e("RecordFormActivity", "No section class; cannot initialize form");
+        }
     }
 
     private FormSectionController addSectionModel(Class sectionModel) {
@@ -159,7 +246,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                     ArrayList<String> enumLabels = new ArrayList<>(enumFields.length);
                     for (Field enumField: enumFields) {
                         if (enumField.isEnumConstant()) {
-                            String enumLabel = ((SerializedName)enumField.getAnnotation(SerializedName.class)).value();
+                            String enumLabel = (enumField.getAnnotation(SerializedName.class)).value();
                             enumLabels.add(enumLabel);
                         }
                     }

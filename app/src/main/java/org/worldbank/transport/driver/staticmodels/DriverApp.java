@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 
 /**
  * Singleton to hold data used across the application.
@@ -26,6 +27,7 @@ public class DriverApp extends Application {
      * Object currently being edited (if any).
      */
     private DriverSchema editObject;
+    private String[] schemaSectionOrder;
 
     private static Context mContext;
     private static ConnectivityManager connMgr;
@@ -83,6 +85,19 @@ public class DriverApp extends Application {
     public void setEditObject(DriverSchema obj) {
         editObject = obj;
         Log.d("DriverApp", "Have set currently editing object");
+    }
+
+    /**
+     * Get the order in which the form sections should appear
+     * @return Array of ordered field names
+     */
+    public String[] getSchemaSectionOrder() {
+        // lazily fetch section ordering on first reference
+        if (schemaSectionOrder == null) {
+            schemaSectionOrder = DriverUtilities.getFieldOrder(DriverSchema.class);
+        }
+
+        return schemaSectionOrder;
     }
 
     public static boolean getIsNetworkAvailable() {

@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.d("MainActivity", "Going to load form...");
                 Intent intent = new Intent(thisActivity, RecordFormActivity.class);
+                intent.putExtra(RecordFormActivity.SECTION_ID, 0);
                 startActivity(intent);
             }
         });
