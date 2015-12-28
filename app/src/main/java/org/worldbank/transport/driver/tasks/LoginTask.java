@@ -79,6 +79,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             // no network available. don't bother logging in
             publishProgress(context.getString(R.string.error_no_network));
             Log.d("LoginTask", "No network");
+            cancel(true);
             return null;
         }
 
