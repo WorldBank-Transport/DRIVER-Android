@@ -39,6 +39,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by kathrynkillebrew on 12/9/15.
@@ -233,15 +234,6 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
             Log.d("RecordFormActivity", "Found sectionField " + sectionField.getName());
 
-            Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
-
-            if (multipleAnnotation != null && multipleAnnotation.value()) {
-                Log.d("RecordFormActivity", "Section " + sectionName + " has multiples");
-                // TODO: get list of things instead of the thing
-            } else {
-                Log.d("RecordFormActivity", "Section " + sectionName + " does NOT have multiples");
-            }
-
             // attempt to get the section from the currently editing model object;
             // it will not exist if creating a new record
             Object section = sectionField.get(currentlyEditing);
@@ -263,6 +255,36 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             } else {
                 // have existing values to edit
                 Log.d("RecordFormActivity", "Found existing section " + sectionName);
+            }
+
+            Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
+
+            if (multipleAnnotation != null && multipleAnnotation.value()) {
+                Log.d("RecordFormActivity", "Section " + sectionName + " has multiples");
+                // TODO: make list of things instead of the thing
+
+                // expect an ArrayList
+                Log.d("RecordFormActivity", "Section class is " + section.getClass().getName());
+
+                if (ArrayList.class.isInstance(section)) {
+                    Log.d("RecordFormActivity", "Section is a list class");
+                    ArrayList sectionList = (ArrayList) section;
+
+                    if (sectionList.size() == 0) {
+                        // TODO: create a new thing of correct type and add it
+
+                        sectionList.add(sectionClass.newInstance());
+                    }
+
+                    // TODO: deal with list presentation. For now, just use first one
+                    return new FormController(this, sectionList.get(0));
+                    ////////////////////////////////////////////////////
+
+                } else {
+                    Log.e("RecordFormActivity", "Section has unexpected type for multiple annotation");
+                }
+            } else {
+                Log.d("RecordFormActivity", "Section " + sectionName + " does NOT have multiples");
             }
 
             return new FormController(this, section);
