@@ -222,34 +222,57 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public FormController createFormController() {
+
+        // TODO: why is this getting called twice?
+        Log.d("RecordFormActivity", "createFormController called");
+
         // pass section offset to activity in intent, then find that section to use here
         try {
             sectionName = sectionOrder[sectionId];
             Field sectionField = DriverSchema.class.getField(sectionName);
 
-            // TODO: check if multiple, and if so, get list of things instead of the thing
-            Object section = sectionField.get(currentlyEditing);
+            Log.d("RecordFormActivity", "Found sectionField " + sectionField.getName());
 
-            // will not exist if creating a new record
+            Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
+
+            if (multipleAnnotation != null && multipleAnnotation.value()) {
+                Log.d("RecordFormActivity", "Section " + sectionName + " has multiples");
+                // TODO: get list of things instead of the thing
+            } else {
+                Log.d("RecordFormActivity", "Section " + sectionName + " does NOT have multiples");
+            }
+
+            // attempt to get the section from the currently editing model object;
+            // it will not exist if creating a new record
+            Object section = sectionField.get(currentlyEditing);
+            sectionClass = Class.forName(MODEL_PACKAGE + sectionName);
+
             if (section == null) {
                 Log.d("RecordFormActivity", "No section found with name " + sectionName);
-                // TODO: instantiate a new thing then
-                try {
-                    sectionClass = Class.forName(MODEL_PACKAGE + sectionName);
-                    section = sectionClass.newInstance();
-                    return new FormController(this, section);
-                } catch (ClassNotFoundException e) {
-                    Log.e("RecordFormActivity", "Could not fine class named " + sectionName);
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    Log.e("RecordFormActivity", "Failed to instantiate new section " + sectionName);
-                    e.printStackTrace();
+                // instantiate a new thing then
+                section = sectionClass.newInstance();
+
+                // add the new section to the currently editing model object
+                sectionField.set(currentlyEditing, section);
+
+                if (sectionField.get(currentlyEditing) == null) {
+                    Log.e("RecordFormActivity", "Section field is still null after set to new instance!");
+                } else {
+                    Log.d("RecordFormActivity", "Section field successfully set to new instance");
                 }
             } else {
                 // have existing values to edit
                 Log.d("RecordFormActivity", "Found existing section " + sectionName);
-                return new FormController(this, section);
             }
+
+            return new FormController(this, section);
+
+        } catch (ClassNotFoundException e) {
+            Log.e("RecordFormActivity", "Could not fine class named " + sectionName);
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            Log.e("RecordFormActivity", "Failed to instantiate new section " + sectionName);
+            e.printStackTrace();
         } catch (NoSuchFieldException e) {
             Log.e("RecordFormActivity", "Could not find section field " + sectionName);
             e.printStackTrace();
@@ -268,7 +291,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         if (sectionClass != null) {
             formController.addSection(addSectionModel(sectionClass));
         } else {
-            // TODO: getting here if have list of things for section
+            // TODO: getting here if have list of things for section, or existing section
             Log.e("RecordFormActivity", "No section class; cannot initialize form");
         }
     }
