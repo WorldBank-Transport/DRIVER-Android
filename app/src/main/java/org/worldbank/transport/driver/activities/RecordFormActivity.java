@@ -2,7 +2,6 @@ package org.worldbank.transport.driver.activities;
 
 import android.app.ActionBar;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,8 @@ import com.azavea.androidvalidatedforms.controllers.SelectionController;
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
+
+import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
@@ -73,11 +74,8 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         super();
     }
 
-
-
-    // TODO: why does NexusDialog make onCreate public instead of protected?
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = mAppContext.getDriverApp();
@@ -89,6 +87,14 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
+    }
+
+    /**
+     * This method gets called by the form building background task after it finishes.
+     */
+    @Override
+    public void displayForm() {
+        super.displayForm();
 
         // now form has been built, add next or save button to it
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
@@ -101,24 +107,23 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         goBtn.setText(getString(R.string.record_save_button));
         containerView.addView(goBtn);
 
-        // TODO: give this a toolbar going along with the one on main view
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-
+        final RecordFormActivity thisActivity = this;
         goBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("RecordFormActivity", "Button clicked");
-                FormController controller = getFormController();
-                controller.resetValidationErrors();
-                controller.validateInput();
-                controller.showValidationErrors();
+                Log.d("RecordFormActivity", "Validation button clicked");
+                new ValidationTask(thisActivity).execute();
             }
         });
     }
 
     @Override
-    protected FormController createFormController() {
+    public void validationComplete(boolean isValid) {
+        Log.d("RecordFormActivity", "Valid? " + String.valueOf(isValid));
+    }
+
+    @Override
+    public FormController createFormController() {
         // pass section offset to activity in intent, then find that section to use here
         try {
             sectionName = sectionOrder[sectionId];
@@ -160,7 +165,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     }
 
     @Override
-    protected void initForm() {
+    public void initForm() {
         final FormController formController = getFormController();
         if (sectionClass != null) {
             formController.addSection(addSectionModel(sectionClass));

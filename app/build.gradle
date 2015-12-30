@@ -111,7 +111,7 @@ dependencies {
     compile 'com.google.code.findbugs:jsr305:3.0.1'
 
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.0.3'
+    compile 'com.github.azavea:AndroidValidatedForms:1.0.5'
 
     // test dependencies
     testCompile 'junit:junit:4.12'
