@@ -156,7 +156,7 @@
     "AccidentDetails": {
       "multiple": false,
       "description": "Details for Accident",
-      "title": "Accident Details (Title)",
+      "title": "Accident Details",
       "required": [
         "_localId"
       ],

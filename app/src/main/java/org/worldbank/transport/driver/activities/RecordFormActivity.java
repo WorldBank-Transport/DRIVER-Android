@@ -23,7 +23,7 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
-// TODO: use these. They apply only to sections
+// annotations that apply only to sections
 import org.jsonschema2pojo.annotations.Description;
 import org.jsonschema2pojo.annotations.Title;
 import org.jsonschema2pojo.annotations.PluralTitle;
@@ -39,7 +39,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by kathrynkillebrew on 12/9/15.
@@ -49,8 +48,8 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     // path to model classes created by jsonschema2pojo
     // this must match the targetPackage declared in the gradle build file (with a trailing period)
     private static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
-
     public static final String SECTION_ID = "driver_section_id";
+    private static final String LOG_LABEL = "RecordFormActivity";
 
     private DriverAppContext mAppContext;
     DriverApp app;
@@ -60,6 +59,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     private String sectionName;
     private String[] sectionOrder;
     private Class sectionClass;
+    private String sectionLabel;
 
     // have next/previous sections
     private boolean haveNext = false;
@@ -133,7 +133,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             backBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.d("RecordFormActivity", "Back button clicked");
+                    Log.d(LOG_LABEL, "Back button clicked");
 
                     // set this to let callback know next action to take
                     goPrevious = true;
@@ -170,7 +170,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         goBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("RecordFormActivity", "Next/save button clicked");
+                Log.d(LOG_LABEL, "Next/save button clicked");
                 goPrevious = false;
                 new ValidationTask(thisActivity).execute();
             }
@@ -181,14 +181,13 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public void validationComplete(boolean isValid) {
-        Log.d("RecordFormActivity", "Valid? " + String.valueOf(isValid));
+        Log.d(LOG_LABEL, "Valid? " + String.valueOf(isValid));
 
         if (isValid) {
             proceed();
         } else {
             // validation errors found in section
-            // TODO: show warning dialog with options to proceed or stay to fix errors
-
+            // TODO: show warning dialog with options to proceed or stay to fix errors?
         }
 
     }
@@ -198,49 +197,50 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         if (goPrevious) {
             if (!havePrevious) {
-                Log.e("RecordFormActivity", "Trying to go to previous, but there is none!");
+                Log.e(LOG_LABEL, "Trying to go to previous, but there is none!");
                 return;
             } else {
                 goToSectionId--;
             }
         } else if (haveNext) {
-            Log.d("RecordFormActivity", "Proceed to next section now");
+            Log.d(LOG_LABEL, "Proceed to next section now");
             goToSectionId++;
         } else {
-            // at end; save
-            // TODO: now what
-            Log.d("RecordFormActivity", "Form complete! Now what?");
+            // TODO: at end; save
+            Log.d(LOG_LABEL, "Form complete! Now what?");
             ////////////////////////
             return;
         }
 
-        Log.d("RecordFormActivity", "Going to section #" + String.valueOf(goToSectionId));
+        Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
 
         Intent intent = new Intent(this, RecordFormActivity.class);
         intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
         startActivity(intent);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public FormController createFormController() {
 
         // TODO: why is this getting called twice?
-        Log.d("RecordFormActivity", "createFormController called");
+        Log.d(LOG_LABEL, "createFormController called");
 
         // pass section offset to activity in intent, then find that section to use here
         try {
             sectionName = sectionOrder[sectionId];
             Field sectionField = DriverSchema.class.getField(sectionName);
 
-            Log.d("RecordFormActivity", "Found sectionField " + sectionField.getName());
+            Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
 
             // attempt to get the section from the currently editing model object;
             // it will not exist if creating a new record
             Object section = sectionField.get(currentlyEditing);
             sectionClass = Class.forName(MODEL_PACKAGE + sectionName);
+            sectionLabel = sectionClass.getSimpleName();
 
             if (section == null) {
-                Log.d("RecordFormActivity", "No section found with name " + sectionName);
+                Log.d(LOG_LABEL, "No section found with name " + sectionName);
                 // instantiate a new thing then
                 section = sectionClass.newInstance();
 
@@ -248,31 +248,46 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                 sectionField.set(currentlyEditing, section);
 
                 if (sectionField.get(currentlyEditing) == null) {
-                    Log.e("RecordFormActivity", "Section field is still null after set to new instance!");
+                    Log.e(LOG_LABEL, "Section field is still null after set to new instance!");
                 } else {
-                    Log.d("RecordFormActivity", "Section field successfully set to new instance");
+                    Log.d(LOG_LABEL, "Section field successfully set to new instance");
                 }
             } else {
                 // have existing values to edit
-                Log.d("RecordFormActivity", "Found existing section " + sectionName);
+                Log.d(LOG_LABEL, "Found existing section " + sectionName);
             }
 
             Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
 
             if (multipleAnnotation != null && multipleAnnotation.value()) {
-                Log.d("RecordFormActivity", "Section " + sectionName + " has multiples");
+                Log.d(LOG_LABEL, "Section " + sectionName + " has multiples");
                 // TODO: make list of things instead of the thing
 
+                // get plural title for section label if have multiple
+                PluralTitle pluralAnnotation = sectionField.getAnnotation(PluralTitle.class);
+                if (pluralAnnotation != null) {
+                    String pluralTitle = pluralAnnotation.value();
+                    if (pluralTitle.length() > 0) {
+                        sectionLabel = pluralTitle;
+                    } else {
+                        Log.w(LOG_LABEL, "No plural title found for section");
+                    }
+                } else {
+                    Log.w(LOG_LABEL, "No plural title found for section");
+                }
+
                 // expect an ArrayList
-                Log.d("RecordFormActivity", "Section class is " + section.getClass().getName());
+                Log.d(LOG_LABEL, "Section class is " + section.getClass().getName());
 
                 if (ArrayList.class.isInstance(section)) {
-                    Log.d("RecordFormActivity", "Section is a list class");
+                    Log.d(LOG_LABEL, "Section is a list class");
                     ArrayList sectionList = (ArrayList) section;
 
                     if (sectionList.size() == 0) {
-                        // TODO: create a new thing of correct type and add it
+                        Log.d(LOG_LABEL, "Adding a thing to the section collection");
+                        // create a new thing of correct type and add it
 
+                        // this call produces an unchecked warning
                         sectionList.add(sectionClass.newInstance());
                     }
 
@@ -281,28 +296,41 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                     ////////////////////////////////////////////////////
 
                 } else {
-                    Log.e("RecordFormActivity", "Section has unexpected type for multiple annotation");
+                    Log.e(LOG_LABEL, "Section has unexpected type for multiple annotation");
                 }
             } else {
-                Log.d("RecordFormActivity", "Section " + sectionName + " does NOT have multiples");
+                Log.d(LOG_LABEL, "Section " + sectionName + " does NOT have multiples");
+
+                // use singular title for section label
+                Title titleAnnotation = sectionField.getAnnotation(Title.class);
+                if (titleAnnotation != null) {
+                    String title = titleAnnotation.value();
+                    if (title.length() > 0) {
+                        sectionLabel = title;
+                    } else {
+                        Log.w(LOG_LABEL, "No title found for section");
+                    }
+                } else {
+                    Log.w(LOG_LABEL, "No title found for section");
+                }
             }
 
             return new FormController(this, section);
 
         } catch (ClassNotFoundException e) {
-            Log.e("RecordFormActivity", "Could not fine class named " + sectionName);
+            Log.e(LOG_LABEL, "Could not fine class named " + sectionName);
             e.printStackTrace();
         } catch (InstantiationException e) {
-            Log.e("RecordFormActivity", "Failed to instantiate new section " + sectionName);
+            Log.e(LOG_LABEL, "Failed to instantiate new section " + sectionName);
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
-            Log.e("RecordFormActivity", "Could not find section field " + sectionName);
+            Log.e(LOG_LABEL, "Could not find section field " + sectionName);
             e.printStackTrace();
         } catch (IllegalAccessException e) {
-            Log.e("RecordFormActivity", "Do not have access to section field " + sectionName);
+            Log.e(LOG_LABEL, "Do not have access to section field " + sectionName);
             e.printStackTrace();
         } catch (IndexOutOfBoundsException e) {
-            Log.e("RecordFormActivity", "Invalid form section offset: " + String.valueOf(sectionId));
+            Log.e(LOG_LABEL, "Invalid form section offset: " + String.valueOf(sectionId));
         }
         return null;
     }
@@ -311,16 +339,19 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     public void initForm() {
         final FormController formController = getFormController();
         if (sectionClass != null) {
-            formController.addSection(addSectionModel(sectionClass));
+
+            // TODO: drop the variables, since they're class fields?
+            // or will we ever want multiple sections on a screen?
+            formController.addSection(addSectionModel(sectionClass, sectionLabel));
         } else {
             // TODO: getting here if have list of things for section, or existing section
-            Log.e("RecordFormActivity", "No section class; cannot initialize form");
+            Log.e(LOG_LABEL, "No section class; cannot initialize form");
         }
     }
 
-    private FormSectionController addSectionModel(Class sectionModel) {
+    private FormSectionController addSectionModel(Class sectionModel, String sectionLabel) {
         // TODO: section label would come from parent model
-        FormSectionController section = new FormSectionController(this, sectionModel.getSimpleName());
+        FormSectionController section = new FormSectionController(this, sectionLabel);
         Field[] fields = sectionModel.getDeclaredFields();
 
         // TODO: read/respect JsonPropertyOrder annotation, if present
@@ -331,7 +362,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         Class[] classes = sectionModel.getDeclaredClasses();
         for (Class clazz : classes) {
             if (clazz.isEnum()) {
-                Log.d("RecordFormActivity", "Found enum named " + clazz.getSimpleName());
+                Log.d(LOG_LABEL, "Found enum named " + clazz.getSimpleName());
                 enums.put(clazz.getSimpleName(), clazz);
             }
         }
@@ -348,18 +379,18 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             for (Annotation annotation: annotations) {
 
                 Class annotationType = annotation.annotationType();
-                Log.d("RecordFormActivity", fieldName + " has annotation " + annotationType.getName());
+                Log.d(LOG_LABEL, fieldName + " has annotation " + annotationType.getName());
 
                 if (annotationType.equals(IsHidden.class)) {
                     IsHidden isHidden = (IsHidden) annotation;
                     if (isHidden.value()) {
-                        Log.d("RecordFormActivity", "Skipping hidden field " + fieldName);
+                        Log.d(LOG_LABEL, "Skipping hidden field " + fieldName);
                         continue field_loop;
                     } else {
-                        Log.w("RecordFormActivity", "Have false isHidden annotation, which is inefficient. Better just leave it off.");
+                        Log.w(LOG_LABEL, "Have false isHidden annotation, which is inefficient. Better just leave it off.");
                     }
                 } else if (annotationType.equals(FieldType.class)) {
-                    Log.d("RecordFormActivity", "Found a field type annotation");
+                    Log.d(LOG_LABEL, "Found a field type annotation");
                     FieldType fieldTypeAnnotation = (FieldType) annotation;
                     fieldType = fieldTypeAnnotation.value();
                 } else if (annotationType.equals(SerializedName.class)) {
@@ -372,21 +403,21 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
             if (fieldType == null) {
                 // TODO: in this case, it's probably a subsection
-                Log.e("RecordFormActivity", "No field type found for field " + fieldName);
+                Log.e(LOG_LABEL, "No field type found for field " + fieldName);
                 continue;
             }
 
             switch (fieldType) {
                 case image:
-                    Log.w("RecordFormActivity", "TODO: implement image field type");
+                    Log.w(LOG_LABEL, "TODO: implement image field type");
                     break;
                 case selectlist:
-                    Log.d("RecordFormActivity", "Going to add select field");
+                    Log.d(LOG_LABEL, "Going to add select field");
                     // find enum with the options in it
                     Class enumClass = enums.get(fieldName);
 
                     if (enumClass == null) {
-                        Log.e("RecordFormActivity", "No enum class found for field named " + fieldName);
+                        Log.e(LOG_LABEL, "No enum class found for field named " + fieldName);
                         continue;
                     }
 
@@ -410,10 +441,10 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                     section.addElement(new EditTextController(this, fieldName, fieldLabel, fieldLabel));
                     break;
                 case reference:
-                    Log.w("RecordFormActivity", "TODO: implement reference field type");
+                    Log.w(LOG_LABEL, "TODO: implement reference field type");
                     break;
                 default:
-                    Log.e("RecordFormActivity", "Don't know what to do with field type " + fieldType.toString());
+                    Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
                     break;
             }
         }
