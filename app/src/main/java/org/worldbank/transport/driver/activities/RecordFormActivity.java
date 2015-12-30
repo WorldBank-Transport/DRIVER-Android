@@ -1,11 +1,13 @@
 package org.worldbank.transport.driver.activities;
 
 import android.app.ActionBar;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
@@ -58,6 +60,13 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     private String[] sectionOrder;
     private Class sectionClass;
 
+    // have next/previous sections
+    private boolean haveNext = false;
+    private boolean havePrevious = false;
+
+    // if selected action is to go to previous (if false, go to next or save)
+    private boolean goPrevious = false;
+
     /**
      * Non-default constructor for testing, to set the application context.
      * @param context Mock context
@@ -99,27 +108,116 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         // now form has been built, add next or save button to it
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
 
-        // TODO: add next/previous/save buttons, as appropriate
+        // reference to this, for use in button actions (validation task makes weak ref)
+        final RecordFormActivity thisActivity = this;
+
+        // put buttons in a relative layout for positioning on right or left
+        RelativeLayout buttonBar = new RelativeLayout(this);
+        buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT));
+
+        // add 'previous' button
+        if (sectionId > 0) {
+            havePrevious = true;
+            Button backBtn = new Button(this);
+            RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+            backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            backBtn.setLayoutParams(backBtnLayoutParams);
+
+            backBtn.setId(R.id.record_back_button_id);
+            backBtn.setText(getText(R.string.record_previous_button));
+            buttonBar.addView(backBtn);
+
+            backBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("RecordFormActivity", "Back button clicked");
+
+                    // set this to let callback know next action to take
+                    goPrevious = true;
+                    new ValidationTask(thisActivity).execute();
+                }
+            });
+        } else {
+            havePrevious = false;
+            goPrevious = false;
+        }
+
+        // add next/save button
         Button goBtn = new Button(this);
-        goBtn.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+        RelativeLayout.LayoutParams goBtnLayoutParams = new RelativeLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT,
+                ActionBar.LayoutParams.WRAP_CONTENT);
+        goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        goBtn.setLayoutParams(goBtnLayoutParams);
+
         goBtn.setId(R.id.record_save_button_id);
 
-        goBtn.setText(getString(R.string.record_save_button));
-        containerView.addView(goBtn);
+        if (sectionId < sectionOrder.length - 1) {
+            // add 'next' button
+            haveNext = true;
+            goBtn.setText(getString(R.string.record_next_button));
 
-        final RecordFormActivity thisActivity = this;
+        } else {
+            haveNext = false;
+            // add 'save' button
+            goBtn.setText(getString(R.string.record_save_button));
+        }
+
+        buttonBar.addView(goBtn);
+
         goBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("RecordFormActivity", "Validation button clicked");
+                Log.d("RecordFormActivity", "Next/save button clicked");
+                goPrevious = false;
                 new ValidationTask(thisActivity).execute();
             }
         });
+
+        containerView.addView(buttonBar);
     }
 
     @Override
     public void validationComplete(boolean isValid) {
         Log.d("RecordFormActivity", "Valid? " + String.valueOf(isValid));
+
+        if (isValid) {
+            proceed();
+        } else {
+            // validation errors found in section
+            // TODO: show warning dialog with options to proceed or stay to fix errors
+
+        }
+
+    }
+
+    private void proceed() {
+        int goToSectionId = sectionId;
+
+        if (goPrevious) {
+            if (!havePrevious) {
+                Log.e("RecordFormActivity", "Trying to go to previous, but there is none!");
+                return;
+            } else {
+                goToSectionId--;
+            }
+        } else if (haveNext) {
+            Log.d("RecordFormActivity", "Proceed to next section now");
+            goToSectionId++;
+        } else {
+            // at end; save
+            // TODO: now what
+            Log.d("RecordFormActivity", "Form complete! Now what?");
+            ////////////////////////
+            return;
+        }
+
+        Log.d("RecordFormActivity", "Going to section #" + String.valueOf(goToSectionId));
+
+        Intent intent = new Intent(this, RecordFormActivity.class);
+        intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
+        startActivity(intent);
     }
 
     @Override
@@ -170,6 +268,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         if (sectionClass != null) {
             formController.addSection(addSectionModel(sectionClass));
         } else {
+            // TODO: getting here if have list of things for section
             Log.e("RecordFormActivity", "No section class; cannot initialize form");
         }
     }
