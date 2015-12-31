@@ -114,9 +114,24 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     public void displayForm() {
         super.displayForm();
 
-        // now form has been built, add next or save button to it
+        // now form has been built, add previous, next, and/or save buttons to it
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
+        RelativeLayout buttonBar = buildButtonBar();
+        containerView.addView(buttonBar);
 
+        // alert that form is ready to go
+        formReady = true;
+        if (formReadyListener != null) {
+            formReadyListener.formReadyCallback();
+        }
+    }
+
+    /**
+     * Helper to build a layout with previous/next/save buttons.
+     *
+     * @return View with buttons with handlers added to it
+     */
+    private RelativeLayout buildButtonBar() {
         // reference to this, for use in button actions (validation task makes weak ref)
         final RecordFormActivity thisActivity = this;
 
@@ -185,13 +200,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             }
         });
 
-        containerView.addView(buttonBar);
-
-        // alert that form is ready to go
-        formReady = true;
-        if (formReadyListener != null) {
-            formReadyListener.formReadyCallback();
-        }
+        return buttonBar;
     }
 
     public boolean isFormReady() {
@@ -247,7 +256,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         Log.d(LOG_LABEL, "createFormController called");
 
-        // pass section offset to activity in intent, then find that section to use here
+        // section offset was passed to activity in intent; find section to use here
         try {
             sectionName = sectionOrder[sectionId];
             Field sectionField = DriverSchema.class.getField(sectionName);
@@ -371,11 +380,10 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     }
 
     private FormSectionController addSectionModel(Class sectionModel, String sectionLabel) {
-        // TODO: section label would come from parent model
         FormSectionController section = new FormSectionController(this, sectionLabel);
         Field[] fields = sectionModel.getDeclaredFields();
 
-        // TODO: read/respect JsonPropertyOrder annotation, if present
+        // TODO: read/respect JsonPropertyOrder annotation of fields, if present
 
         HashMap<String, Class> enums = new HashMap<>();
 
@@ -473,3 +481,4 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         return section;
     }
 }
+
