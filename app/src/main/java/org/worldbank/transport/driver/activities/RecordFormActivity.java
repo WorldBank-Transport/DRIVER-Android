@@ -245,7 +245,6 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     @Override
     public FormController createFormController() {
 
-        // TODO: why is this getting called twice?
         Log.d(LOG_LABEL, "createFormController called");
 
         // pass section offset to activity in intent, then find that section to use here
