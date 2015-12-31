@@ -5,8 +5,11 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 
 /**
  * Singleton to hold data used across the application.
@@ -15,7 +18,17 @@ import org.worldbank.transport.driver.R;
  */
 public class DriverApp extends Application {
 
+    /**
+     * Current user.
+     */
     private DriverUserInfo userInfo;
+
+    /**
+     * Object currently being edited (if any).
+     */
+    private DriverSchema editObject;
+    private String[] schemaSectionOrder;
+
     private static Context mContext;
     private static ConnectivityManager connMgr;
 
@@ -24,6 +37,7 @@ public class DriverApp extends Application {
         super.onCreate();
         mContext = this;
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        editObject = null;
     }
 
     public static Context getContext() {
@@ -57,6 +71,33 @@ public class DriverApp extends Application {
             userInfo.readFromSharedPreferences(mContext);
         }
         return userInfo;
+    }
+
+    public DriverSchema getEditObject() {
+        if (editObject == null) {
+            editObject = new DriverSchema();
+            Log.d("DriverApp", "Created new object to edit");
+        }
+
+        return editObject;
+    }
+
+    public void setEditObject(DriverSchema obj) {
+        editObject = obj;
+        Log.d("DriverApp", "Have set currently editing object");
+    }
+
+    /**
+     * Get the order in which the form sections should appear
+     * @return Array of ordered field names
+     */
+    public String[] getSchemaSectionOrder() {
+        // lazily fetch section ordering on first reference
+        if (schemaSectionOrder == null) {
+            schemaSectionOrder = DriverUtilities.getFieldOrder(DriverSchema.class);
+        }
+
+        return schemaSectionOrder;
     }
 
     public static boolean getIsNetworkAvailable() {

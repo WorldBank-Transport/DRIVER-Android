@@ -2,5 +2,7 @@
 
 <!-- view IDs programmatically referenced -->
 <resources>
+    <item name="record_button_bar_id" type="id" />
     <item name="record_save_button_id" type="id" />
+    <item name="record_back_button_id" type="id" />
 </resources>

@@ -295,14 +295,29 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
 
             assertEquals("User without write access allowed to log in", 0, receiverActivityMonitor.getHits());
 
-            // give slower emulators a chance to catch up
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            // wait for progress bar to be dismissed
+            instrumentation.runOnMainSync(new Runnable() {
+                @Override
+                public void run() {
+                    int counter = 0;
+                    while ((progress.getVisibility() == View.VISIBLE) && counter < 20) {
+                        try {
+                            Thread.sleep(1000);
+                            counter += 1;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
             server.shutdown();
+            instrumentation.waitForIdleSync();
 
             // check appropriate error message displayed
             assertNotSame("Progress indicator still showing when login form has error",

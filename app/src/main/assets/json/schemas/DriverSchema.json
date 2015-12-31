@@ -63,7 +63,7 @@
             {
               "source": "target",
               "value": "{{item._localId}}",
-              "title": ""
+              "title": "{{item.Vehicle type}} {{item.Make}} {{item.Model}}"
             }
           ],
           "type": "string",
@@ -156,7 +156,7 @@
     "AccidentDetails": {
       "multiple": false,
       "description": "Details for Accident",
-      "title": "Accident Details (Title)",
+      "title": "Accident Details",
       "required": [
         "_localId"
       ],
