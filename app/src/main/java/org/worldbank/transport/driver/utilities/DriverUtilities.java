@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * Static helper methods.
+ *
  * Created by kathrynkillebrew on 12/28/15.
  */
 public class DriverUtilities {

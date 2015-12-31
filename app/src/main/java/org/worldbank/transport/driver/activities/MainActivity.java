@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,17 +29,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                // TODO: remove
-                Log.d("MainActivity", "Going to load list...");
-                Intent intent = new Intent(thisActivity, RecordItemListActivity.class);
-                startActivity(intent);
-
-                /*
                 Log.d("MainActivity", "Going to load form...");
-                Intent intent = new Intent(thisActivity, RecordFormActivity.class);
+                Intent intent = new Intent(thisActivity,
+                        RecordFormPaginator.getActivityClassForSection(0));
                 intent.putExtra(RecordFormActivity.SECTION_ID, 0);
                 startActivity(intent);
-                */
+
             }
         });
     }
