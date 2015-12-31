@@ -31,5 +31,6 @@
     <string name="shared_preferences_token_key" translatable="false">user_token</string>
     <string name="shared_preferences_email_key" translatable="false">user_email</string>
     <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
+    <string name="title_activity_record_item_list">RecordItemListActivity</string>
 
 </resources>

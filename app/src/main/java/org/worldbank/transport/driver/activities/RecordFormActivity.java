@@ -235,6 +235,26 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             }
         } else if (haveNext) {
             Log.d(LOG_LABEL, "Proceed to next section now");
+
+            try {
+                sectionName = sectionOrder[sectionId + 1];
+                Field sectionField = DriverSchema.class.getField(sectionName);
+                if (sectionHasMultiple(sectionField)) {
+
+                    // TODO: next section has multiple entries
+                    // launch a separate list view intent
+                    Log.d(LOG_LABEL, "Next section has multiple entries");
+
+                }
+            } catch (NoSuchFieldException e) {
+                Log.e(LOG_LABEL, "Could not find section field " + sectionName);
+                e.printStackTrace();
+            } catch (IndexOutOfBoundsException e) {
+                Log.e(LOG_LABEL, "Invalid form section offset: " + String.valueOf(sectionId + 1));
+            }
+
+            //////////////////////////////
+
             goToSectionId++;
         } else {
             // TODO: at end; save
@@ -248,6 +268,16 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         Intent intent = new Intent(this, RecordFormActivity.class);
         intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
         startActivity(intent);
+    }
+
+    private boolean sectionHasMultiple(Field sectionField) {
+        Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
+
+        if (multipleAnnotation != null && multipleAnnotation.value()) {
+            return true;
+        }
+
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -287,9 +317,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                 Log.d(LOG_LABEL, "Found existing section " + sectionName);
             }
 
-            Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
-
-            if (multipleAnnotation != null && multipleAnnotation.value()) {
+            if (sectionHasMultiple(sectionField)) {
                 Log.d(LOG_LABEL, "Section " + sectionName + " has multiples");
                 // TODO: make list of things instead of the thing
 

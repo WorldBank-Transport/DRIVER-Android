@@ -27,10 +27,18 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                // TODO: remove
+                Log.d("MainActivity", "Going to load list...");
+                Intent intent = new Intent(thisActivity, RecordItemListActivity.class);
+                startActivity(intent);
+
+                /*
                 Log.d("MainActivity", "Going to load form...");
                 Intent intent = new Intent(thisActivity, RecordFormActivity.class);
                 intent.putExtra(RecordFormActivity.SECTION_ID, 0);
                 startActivity(intent);
+                */
             }
         });
     }
