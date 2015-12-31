@@ -7,6 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import org.worldbank.transport.driver.R;
@@ -72,6 +75,23 @@ public class RecordItemListActivity extends AppCompatActivity {
         recyclerViewAdapter = new FormItemListAdapter(testList);
         recyclerView.setAdapter(recyclerViewAdapter);
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_form_item_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_next) {
+            Log.d("RecordItemListActivity", "Next button clicked");
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }
