@@ -45,6 +45,10 @@ import java.util.HashMap;
  */
 public class RecordFormActivity extends FormWithAppCompatActivity {
 
+    public interface FormReadyListener {
+        void formReadyCallback();
+    }
+
     // path to model classes created by jsonschema2pojo
     // this must match the targetPackage declared in the gradle build file (with a trailing period)
     private static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
@@ -53,6 +57,10 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
     private DriverAppContext mAppContext;
     DriverApp app;
+
+    // flag that is true once form has been displayed
+    private boolean formReady = false;
+    private FormReadyListener formReadyListener;
 
     private DriverSchema currentlyEditing;
     private int sectionId;
@@ -114,6 +122,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
 
         // put buttons in a relative layout for positioning on right or left
         RelativeLayout buttonBar = new RelativeLayout(this);
+        buttonBar.setId(R.id.record_button_bar_id);
         buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
 
@@ -177,6 +186,20 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         });
 
         containerView.addView(buttonBar);
+
+        // alert that form is ready to go
+        formReady = true;
+        if (formReadyListener != null) {
+            formReadyListener.formReadyCallback();
+        }
+    }
+
+    public boolean isFormReady() {
+        return formReady;
+    }
+
+    public void setFormReadyListener(FormReadyListener listener) {
+        formReadyListener = listener;
     }
 
     @Override
@@ -189,7 +212,6 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             // validation errors found in section
             // TODO: show warning dialog with options to proceed or stay to fix errors?
         }
-
     }
 
     private void proceed() {
