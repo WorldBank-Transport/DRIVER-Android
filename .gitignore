@@ -32,11 +32,8 @@ captures/
 # Log Files
 *.log
 
-.idea/workspace.xml
-.idea/libraries
-.idea/gradle.xml
-.idea/misc.xml
-.idea/vcs.xml
+# IDE files
+.idea/
 
 .DS_Store
 *~
