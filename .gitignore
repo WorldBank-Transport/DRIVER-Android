@@ -34,6 +34,7 @@ captures/
 
 # IDE files
 .idea/
+app/app.iml
 
 .DS_Store
 *~
