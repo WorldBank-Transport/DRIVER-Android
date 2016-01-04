@@ -33,6 +33,11 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".activities.RecordFormItemActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".activities.RecordItemListActivity"
             android:label="@string/title_activity_record_item_list"
             android:parentActivityName=".activities.MainActivity"

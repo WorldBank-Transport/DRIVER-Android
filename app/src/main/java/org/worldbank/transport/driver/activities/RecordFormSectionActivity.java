@@ -12,6 +12,8 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
+import java.lang.reflect.Field;
+
 
 /**
  * Form for a section that does not contain multiple elements.
@@ -21,6 +23,11 @@ import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 public class RecordFormSectionActivity extends RecordFormActivity {
 
     private static final String LOG_LABEL = "FormSectionActivity";
+
+    @Override
+    protected Object getModelObject() {
+        return RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+    }
 
     /**
      * Helper to build a layout with previous/next/save buttons.

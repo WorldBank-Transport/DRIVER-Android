@@ -1,18 +1,19 @@
 package org.worldbank.transport.driver.activities;
 
 import android.app.ActionBar;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
-import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
-import org.jsonschema2pojo.annotations.PluralTitle;
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
+
 
 /**
  * Form for an item in a section that contains multiple elements.
@@ -22,6 +23,21 @@ import java.util.ArrayList;
 public class RecordFormItemActivity extends RecordFormActivity {
 
     private static final String LOG_LABEL = "FormItemActivity";
+    public static final String ITEM_INDEX = "driver_form_item_index";
+
+    private int itemIndex;
+
+    @Override
+    protected Object getModelObject() {
+        return RecordFormPaginator.getOrCreateListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        Bundle bundle = getIntent().getExtras();
+        itemIndex = bundle.getInt(ITEM_INDEX);
+        super.onCreate(savedInstanceState);
+    }
 
     /**
      * Helper to build a layout with previous/next/save buttons.
@@ -93,5 +109,6 @@ public class RecordFormItemActivity extends RecordFormActivity {
         Log.d(LOG_LABEL, "TODO: proceed.");
         // TODO: go back to section list view
         // save item on model if it isn't there already (probably should just be there already)
+        finish();
     }
 }

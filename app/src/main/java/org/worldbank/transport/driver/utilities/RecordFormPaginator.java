@@ -232,8 +232,38 @@ public class RecordFormPaginator {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    public static Object getOrCreateListItem(Field sectionField, Class sectionClass, Object currentlyEditing, int index) {
+        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        ArrayList items = getSectionList(section);
+
+        if (items.size() > index) {
+            Log.d(LOG_LABEL, "Returning existing list item at index " + index);
+            return items.get(index);
+        }
+
+        try {
+            if (items.size() == 0) {
+                Log.d(LOG_LABEL, "Created new list for section " + sectionField.getName());
+                sectionField.set(currentlyEditing, items);
+            }
+            Object item = sectionClass.newInstance();
+            items.add(index, item);
+            Log.d(LOG_LABEL, "Item added to section " + sectionField.getName());
+            return item;
+        } catch (InstantiationException e) {
+            Log.e(LOG_LABEL, "Failed to instantiate new list item " + sectionField.getName());
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            Log.e(LOG_LABEL, "Do not have access to section list field " + sectionField.getName());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static ArrayList getSectionList(Object section) {
-        Log.d(LOG_LABEL, "Section class is " + section.getClass().getName());
+        Log.d(LOG_LABEL, "Getting section list");
 
         if (ArrayList.class.isInstance(section)) {
             return (ArrayList) section;
@@ -243,21 +273,5 @@ public class RecordFormPaginator {
 
         return new ArrayList();
     }
-
-    // TODO: reuse this for adding new item
-    /*
-        if (sectionList.size() == 0) {
-            Log.d(LOG_LABEL, "Adding a thing to the section collection");
-            // create a new thing of correct type and add it
-
-            // this call produces an unchecked warning
-            sectionList.add(sectionClass.newInstance());
-        }
-
-        // TODO: deal with list presentation. For now, just use first one
-        return new FormController(this, sectionList.get(0));
-        ////////////////////////////////////////////////////
-
-    */
 
 }

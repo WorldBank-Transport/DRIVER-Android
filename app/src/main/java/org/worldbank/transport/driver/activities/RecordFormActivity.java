@@ -53,9 +53,14 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     private FormReadyListener formReadyListener;
 
     protected DriverSchema currentlyEditing;
+
+    // TODO: only belongs to sections
     protected int sectionId;
+
+    // TODO: rename to remove 'section' ('model'?)
     protected Class sectionClass;
     protected String sectionLabel;
+    protected Field sectionField;
 
     // have next/previous sections
     protected boolean haveNext = false;
@@ -142,15 +147,17 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     public abstract void proceed();
 
-    @SuppressWarnings("unchecked")
+    protected abstract Object getModelObject();
+
     @Override
     public FormController createFormController() {
 
         Log.d(LOG_LABEL, "createFormController called");
+
         String sectionName = RecordFormPaginator.getSectionName(sectionId);
 
         // section offset was passed to activity in intent; find section to use here
-        Field sectionField = RecordFormPaginator.getFieldForSectionName(sectionName);
+        sectionField = RecordFormPaginator.getFieldForSectionName(sectionName);
 
         if (sectionField == null) {
             Log.e(LOG_LABEL, "Section field named " + sectionName + " not found.");
@@ -159,7 +166,13 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
         Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
         sectionClass = RecordFormPaginator.getSectionClass(sectionName);
-        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+
+        if (sectionClass == null) {
+            Log.e(LOG_LABEL, "No section class; cannot initialize form");
+            return null;
+        }
+
+        Object section = getModelObject();
 
         // use singular title for form section label
         // TODO: also use 'Description' annotation somewhere?
@@ -178,11 +191,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     @Override
     public void initForm() {
         final FormController formController = getFormController();
-        if (sectionClass != null) {
-            formController.addSection(addSectionModel());
-        } else {
-            Log.e(LOG_LABEL, "No section class; cannot initialize form");
-        }
+        formController.addSection(addSectionModel());
     }
 
     private FormSectionController addSectionModel() {

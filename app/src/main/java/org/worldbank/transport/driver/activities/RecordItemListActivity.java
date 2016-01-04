@@ -16,8 +16,12 @@ import android.view.View;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.adapters.FormItemListAdapter;
+import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,34 +31,50 @@ public class RecordItemListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter recyclerViewAdapter;
-    private int sectionId;
+
+    private DriverAppContext mAppContext;
+    protected DriverSchema currentlyEditing;
+    protected int sectionId;
+    String sectionLabel;
+    Class sectionClass;
+    ArrayList sectionItems;
+
+    // constructors, for testing
+    public RecordItemListActivity(DriverAppContext context) {
+        super();
+        mAppContext = context;
+    }
+
+    public RecordItemListActivity() {
+        super();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // get the ID for this section first
+        // set up some state before calling super
+        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        currentlyEditing = mAppContext.getDriverApp().getEditObject();
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(RecordFormActivity.SECTION_ID);
-        String sectionLabel = RecordFormPaginator.getPluralTitle(sectionId);
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_record_item_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final RecordItemListActivity thisActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_item_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                int newItemIndex = sectionItems.size();
+                Intent intent = new Intent(thisActivity, RecordFormItemActivity.class);
+                intent.putExtra(RecordFormActivity.SECTION_ID, sectionId);
+                intent.putExtra(RecordFormItemActivity.ITEM_INDEX, newItemIndex);
+                startActivity(intent);
             }
         });
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(sectionLabel);
-        }
 
         // set up list view
         recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_View);
@@ -90,6 +110,55 @@ public class RecordItemListActivity extends AppCompatActivity {
 
         recyclerViewAdapter = new FormItemListAdapter(testList);
         recyclerView.setAdapter(recyclerViewAdapter);
+
+        buildItemList();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
+
+        // refresh item list whenever activity comes back into view
+        buildItemList();
+    }
+
+    private void buildItemList() {
+        Log.d(LOG_LABEL, "buildItemList called");
+        String sectionName = RecordFormPaginator.getSectionName(sectionId);
+
+        // section offset was passed to activity in intent; find section to use here
+        Field sectionField = RecordFormPaginator.getFieldForSectionName(sectionName);
+
+        if (sectionField == null) {
+            Log.e(LOG_LABEL, "Section field named " + sectionName + " not found.");
+            return;
+        }
+
+        Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
+        sectionClass = RecordFormPaginator.getSectionClass(sectionName);
+        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+
+        // use singular title for form section label
+        // TODO: also use 'Description' annotation somewhere?
+        sectionLabel = sectionClass.getSimpleName(); // default
+        sectionLabel = RecordFormPaginator.getPluralTitle(sectionField, sectionLabel);
+
+        // set up action bar with label
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(sectionLabel);
+        }
+
+        if (section != null) {
+            sectionItems = RecordFormPaginator.getSectionList(section);
+            // TODO: stuff here for item display
+            Log.d(LOG_LABEL, "Found " + sectionItems.size() + " list items");
+            /////////////////////////
+        } else {
+            Log.e(LOG_LABEL, "Section object not found for " + sectionName);
+        }
     }
 
     @Override
