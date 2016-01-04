@@ -10,10 +10,8 @@ import android.widget.RelativeLayout;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
-import java.lang.reflect.Field;
 
 /**
  * Form for a section that does not contain multiple elements.
@@ -103,9 +101,6 @@ public class RecordFormSectionActivity extends RecordFormActivity {
 
         return buttonBar;
     }
-
-    // TODO: this section movement logic will likely need to be shared somehow with the item list view
-    // Maybe should have a shared form-activity-launcher thing that decides what to do to fire up a form section.
 
     @Override
     public void proceed() {

@@ -16,6 +16,8 @@ import java.util.HashMap;
  */
 public class DriverUtilities {
 
+    private static final String LOG_LABEL = "DriverUtilities";
+
     /**
      * Returns the ordered list of field names for the given schema model.
      * @param model Class built by jsonschema2pojo with the json editor annotations
@@ -45,17 +47,22 @@ public class DriverUtilities {
                 if (nextField != null) {
                     fieldOrder.add(nextField);
                 } else {
-                    Log.e("DriverUtilities", "Found no field with serialized name " + nextName);
+                    Log.e(LOG_LABEL, "Found no field with serialized name " + nextName);
                 }
             }
 
-            // sanity check that all fields have an order and that all ordered fields have been found
-            if ((fieldOrder.size() != serializedNameOrder.length) || (fieldOrder.size() != fields.length)) {
-                Log.e("DriverUtilities", "Mismatch in field count for ordering");
+            // Sanity check that all fields have an order and that all ordered fields have been found.
+            // For non-section fields, there will be a hidden ID field that doesn't get listed in the order.
+            int fieldOrderSize = fieldOrder.size();
+            if ((fieldOrderSize != serializedNameOrder.length) || (fieldOrderSize < fields.length - 1)) {
+                Log.e(LOG_LABEL, "Mismatch in field count for ordering:");
+                Log.e(LOG_LABEL, "fieldOrder size: " + fieldOrder.size());
+                Log.e(LOG_LABEL, "fields length: " + fields.length);
+                Log.e(LOG_LABEL, "serializedNameOrder length: " + serializedNameOrder.length);
             }
 
         } else {
-            Log.e("DriverUtilities", "Class " + model.getSimpleName() + " has no JsonPropertyOrder");
+            Log.e(LOG_LABEL, "Class " + model.getSimpleName() + " has no JsonPropertyOrder");
 
             // Should always have JsonPropertyOrder declared by jsonschema2pojo,
             // but just in case, return a list of all fields in order declared if not.

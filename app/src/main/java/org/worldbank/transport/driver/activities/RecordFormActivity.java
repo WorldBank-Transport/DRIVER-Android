@@ -9,6 +9,7 @@ import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
 import com.azavea.androidvalidatedforms.controllers.EditTextController;
 import com.azavea.androidvalidatedforms.controllers.FormSectionController;
+import com.azavea.androidvalidatedforms.controllers.LabeledFieldController;
 import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
 import org.jsonschema2pojo.annotations.FieldType;
@@ -18,13 +19,11 @@ import org.jsonschema2pojo.annotations.IsHidden;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
-import org.jsonschema2pojo.annotations.Description;
-import org.jsonschema2pojo.annotations.Title;
-
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
 import java.lang.annotation.Annotation;
@@ -180,24 +179,20 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     public void initForm() {
         final FormController formController = getFormController();
         if (sectionClass != null) {
-            // TODO: drop the variables, since they're class fields?
-            // or will we ever want multiple sections on a screen?
-            formController.addSection(addSectionModel(sectionClass, sectionLabel));
+            formController.addSection(addSectionModel());
         } else {
             Log.e(LOG_LABEL, "No section class; cannot initialize form");
         }
     }
 
-    private FormSectionController addSectionModel(Class sectionModel, String sectionLabel) {
+    private FormSectionController addSectionModel() {
         FormSectionController section = new FormSectionController(this, sectionLabel);
-        Field[] fields = sectionModel.getDeclaredFields();
-
-        // TODO: read/respect JsonPropertyOrder annotation of fields, if present
+        Field[] fields = sectionClass.getDeclaredFields();
 
         HashMap<String, Class> enums = new HashMap<>();
 
         // find enums for select lists
-        Class[] classes = sectionModel.getDeclaredClasses();
+        Class[] classes = sectionClass.getDeclaredClasses();
         for (Class clazz : classes) {
             if (clazz.isEnum()) {
                 Log.d(LOG_LABEL, "Found enum named " + clazz.getSimpleName());
@@ -205,8 +200,12 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             }
         }
 
+        // map of field names to their form controls
+        HashMap<String, LabeledFieldController> fieldControls = new HashMap<>(fields.length);
+
         field_loop:
         for (Field field: fields) {
+            LabeledFieldController control = null;
             String fieldName = field.getName();
             String fieldLabel = fieldName;
             FieldTypes fieldType = null;
@@ -272,18 +271,36 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
 
                     // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
-                    section.addElement(new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList));
-
+                    control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
                     break;
                 case text:
-                    section.addElement(new EditTextController(this, fieldName, fieldLabel, fieldLabel));
+                    control = new EditTextController(this, fieldName, fieldLabel);
                     break;
                 case reference:
+                    // TODO: implement
                     Log.w(LOG_LABEL, "TODO: implement reference field type");
                     break;
                 default:
                     Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
                     break;
+            }
+
+            if (control != null) {
+                fieldControls.put(fieldName, control);
+            }
+        }
+
+        // read/respect JsonPropertyOrder annotation of fields, if present
+        // (if annotation missing, will add fields in order of declaration)
+        String[] orderedFields = DriverUtilities.getFieldOrder(sectionClass);
+
+        // add form controls in order
+        for (String nextField : orderedFields) {
+            LabeledFieldController control = fieldControls.get(nextField);
+            if (control != null) {
+                section.addElement(control);
+            } else {
+                Log.w(LOG_LABEL, "No control found for ordered field " + nextField);
             }
         }
 
