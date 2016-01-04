@@ -74,4 +74,34 @@ public class DriverUtilities {
 
         return fieldOrder.toArray(new String[fieldOrder.size()]);
     }
+
+    // TODO: much cleanup here. Build labels to show first three fields.
+    public static ArrayList<String> getListItemLabels(ArrayList items, Class sectionClass) {
+
+        String[] fieldOrders = getFieldOrder(sectionClass);
+        ArrayList<String> labels = new ArrayList<>(items.size());
+
+        try {
+            String fldOne = fieldOrders[0];
+            String fldTwo = fieldOrders[1];
+
+            Field fieldOne = sectionClass.getField(fldOne);
+            Field fieldTwo = sectionClass.getField(fldTwo);
+
+            String label;
+            for (Object item : items) {
+                Object one = fieldOne.get(item);
+                label = one.toString() + " - ";
+                Object two = fieldTwo.get(item);
+                label += two.toString();
+                labels.add(label);
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return labels;
+    }
 }

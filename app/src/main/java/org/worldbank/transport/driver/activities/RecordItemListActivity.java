@@ -19,6 +19,7 @@ import org.worldbank.transport.driver.adapters.FormItemListAdapter;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
 import java.lang.reflect.Field;
@@ -80,37 +81,6 @@ public class RecordItemListActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_View);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        ArrayList<String> testList = new ArrayList<>(Arrays.asList(
-                "zero",
-                "one",
-                "two",
-                "three",
-                "four",
-                "five",
-                "six",
-                "seven",
-                "eight",
-                "nine",
-                "ten",
-                "eleven",
-                "twelve",
-                "thirteen",
-                "fourteen",
-                "fifteen",
-                "sixteen",
-                "seventeen",
-                "eighteen",
-                "nineteen",
-                "twenty",
-                "twenty one",
-                "twenty two",
-                "twenty three",
-                "twenty four"
-        ));
-
-        recyclerViewAdapter = new FormItemListAdapter(testList);
-        recyclerView.setAdapter(recyclerViewAdapter);
-
         buildItemList();
     }
 
@@ -120,6 +90,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
 
         // refresh item list whenever activity comes back into view
+        //recyclerViewAdapter.notifyDataSetChanged();
         buildItemList();
     }
 
@@ -158,7 +129,14 @@ public class RecordItemListActivity extends AppCompatActivity {
             /////////////////////////
         } else {
             Log.e(LOG_LABEL, "Section object not found for " + sectionName);
+            return;
         }
+
+        //////////////////////////////////
+        ArrayList<String> testList = DriverUtilities.getListItemLabels(sectionItems, sectionClass);
+
+        recyclerViewAdapter = new FormItemListAdapter(testList);
+        recyclerView.setAdapter(recyclerViewAdapter);
     }
 
     @Override
