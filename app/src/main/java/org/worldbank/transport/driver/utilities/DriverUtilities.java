@@ -75,30 +75,56 @@ public class DriverUtilities {
         return fieldOrder.toArray(new String[fieldOrder.size()]);
     }
 
-    // TODO: much cleanup here. Build labels to show first three fields.
+    /**
+     * Build labels for list items by using the first n fields from the ordered field list.
+     *
+     * @param items Collection of items of type sectionClass to be labelled
+     * @param sectionClass Class of the collection members
+     *
+     * @return Collection of labels consisting of the first few fields, separated by hyphens.
+     *         Labels returned will be in same order as list of items passed in.
+     */
     public static ArrayList<String> getListItemLabels(ArrayList items, Class sectionClass) {
+
+        final int MAX_NUM_LABEL_FIELDS = 3;
 
         String[] fieldOrders = getFieldOrder(sectionClass);
         ArrayList<String> labels = new ArrayList<>(items.size());
 
+        // If there are less than MAX_NUM_LABEL_FIELDS fields in the section,
+        // use as many as are available.
+        ArrayList<Field> labelFields = new ArrayList<>(3);
+        int numLabelFields = MAX_NUM_LABEL_FIELDS;
+        if (numLabelFields >= fieldOrders.length) {
+            numLabelFields = fieldOrders.length - 1;
+        }
+
+        // get fields to use for the labels
         try {
-            String fldOne = fieldOrders[0];
-            String fldTwo = fieldOrders[1];
+            for (int i = 0; i < numLabelFields; i++) {
+                String labelFieldName = fieldOrders[i];
+                Field labelField = sectionClass.getField(labelFieldName);
+                labelFields.add(labelField);
+            }
+        } catch(NoSuchFieldException e) {
+            e.printStackTrace();
+        }
 
-            Field fieldOne = sectionClass.getField(fldOne);
-            Field fieldTwo = sectionClass.getField(fldTwo);
-
+        // build the labels
+        try {
             String label;
             for (Object item : items) {
-                Object one = fieldOne.get(item);
-                label = one.toString() + " - ";
-                Object two = fieldTwo.get(item);
-                label += two.toString();
+                label = "";
+                for (Field labelField : labelFields) {
+                    Object obj = labelField.get(item);
+                    if (label.length() > 0) {
+                        label += " - "; // separator
+                    }
+                    label += obj.toString();
+                }
                 labels.add(label);
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
 
