@@ -83,6 +83,9 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         RelativeLayout buttonBar = (RelativeLayout) activity.findViewById(R.id.record_button_bar_id);
         Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
 
+        assertNotNull(buttonBar);
+        assertNotNull(goButton);
+
         ViewAsserts.assertGroupContains(containerView, buttonBar);
         ViewAsserts.assertGroupContains(buttonBar, goButton);
         View root = containerView.getRootView();
