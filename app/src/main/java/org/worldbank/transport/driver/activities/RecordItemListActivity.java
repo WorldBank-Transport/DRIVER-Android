@@ -3,7 +3,6 @@ package org.worldbank.transport.driver.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,19 +18,17 @@ import org.worldbank.transport.driver.adapters.FormItemListAdapter;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
-import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class RecordItemListActivity extends AppCompatActivity {
 
     private static final String LOG_LABEL = "RecordItemListActivity";
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter recyclerViewAdapter;
+    private FormItemListAdapter recyclerViewAdapter;
 
     private DriverAppContext mAppContext;
     protected DriverSchema currentlyEditing;
@@ -64,16 +61,12 @@ public class RecordItemListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final RecordItemListActivity thisActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_item_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int newItemIndex = sectionItems.size();
-                Intent intent = new Intent(thisActivity, RecordFormItemActivity.class);
-                intent.putExtra(RecordFormActivity.SECTION_ID, sectionId);
-                intent.putExtra(RecordFormItemActivity.ITEM_INDEX, newItemIndex);
-                startActivity(intent);
+                launchItemForm(newItemIndex);
             }
         });
 
@@ -84,14 +77,20 @@ public class RecordItemListActivity extends AppCompatActivity {
         buildItemList();
     }
 
+    private void launchItemForm(int index) {
+        Intent intent = new Intent(this, RecordFormItemActivity.class);
+        intent.putExtra(RecordFormActivity.SECTION_ID, sectionId);
+        intent.putExtra(RecordFormItemActivity.ITEM_INDEX, index);
+        startActivity(intent);
+    }
+
     @Override
     protected void onPostResume() {
         super.onPostResume();
         Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
 
         // refresh item list whenever activity comes back into view
-        //recyclerViewAdapter.notifyDataSetChanged();
-        buildItemList();
+        recyclerViewAdapter.rebuildLabelList(sectionItems, sectionClass);
     }
 
     private void buildItemList() {
@@ -124,18 +123,21 @@ public class RecordItemListActivity extends AppCompatActivity {
 
         if (section != null) {
             sectionItems = RecordFormPaginator.getSectionList(section);
-            // TODO: stuff here for item display
             Log.d(LOG_LABEL, "Found " + sectionItems.size() + " list items");
-            /////////////////////////
         } else {
             Log.e(LOG_LABEL, "Section object not found for " + sectionName);
             return;
         }
 
-        //////////////////////////////////
-        ArrayList<String> testList = DriverUtilities.getListItemLabels(sectionItems, sectionClass);
+        FormItemListAdapter.FormItemClickListener clickListener = new FormItemListAdapter.FormItemClickListener() {
+            @Override
+            public void clickedItem(View view, int position) {
+                Log.d(LOG_LABEL, "Clicked item at position " + position);
+                launchItemForm(position);
+            }
+        };
 
-        recyclerViewAdapter = new FormItemListAdapter(testList);
+        recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, clickListener);
         recyclerView.setAdapter(recyclerViewAdapter);
     }
 
