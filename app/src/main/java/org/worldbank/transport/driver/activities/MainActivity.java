@@ -11,7 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.utilities.RecordFormPaginator;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d("MainActivity", "Going to load form...");
                 Intent intent = new Intent(thisActivity,
-                        RecordFormPaginator.getActivityClassForSection(0));
+                        RecordFormSectionManager.getActivityClassForSection(0));
                 intent.putExtra(RecordFormActivity.SECTION_ID, 0);
                 startActivity(intent);
 

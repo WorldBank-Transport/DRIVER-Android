@@ -10,9 +10,7 @@ import android.widget.RelativeLayout;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.utilities.RecordFormPaginator;
-
-import java.lang.reflect.Field;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
 /**
@@ -26,7 +24,7 @@ public class RecordFormSectionActivity extends RecordFormActivity {
 
     @Override
     protected Object getModelObject() {
-        return RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        return RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
     }
 
     /**
@@ -84,7 +82,7 @@ public class RecordFormSectionActivity extends RecordFormActivity {
 
         goBtn.setId(R.id.record_save_button_id);
 
-        if (RecordFormPaginator.sectionHasNext(sectionId)) {
+        if (RecordFormSectionManager.sectionHasNext(sectionId)) {
             // add 'next' button
             haveNext = true;
             goBtn.setText(getString(R.string.record_next_button));
@@ -133,7 +131,7 @@ public class RecordFormSectionActivity extends RecordFormActivity {
 
             Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
             Intent intent = new Intent(this,
-                    RecordFormPaginator.getActivityClassForSection(goToSectionId));
+                    RecordFormSectionManager.getActivityClassForSection(goToSectionId));
 
             intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
             startActivity(intent);

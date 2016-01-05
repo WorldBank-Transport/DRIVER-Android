@@ -10,7 +10,7 @@ import android.widget.RelativeLayout;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.utilities.RecordFormPaginator;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
 /**
@@ -27,7 +27,7 @@ public class RecordFormItemActivity extends RecordFormActivity {
 
     @Override
     protected Object getModelObject() {
-        return RecordFormPaginator.getOrCreateListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
+        return RecordFormSectionManager.getOrCreateListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class RecordFormItemActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Delete button clicked");
-                RecordFormPaginator.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
+                RecordFormSectionManager.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
                 finish();
             }
         });

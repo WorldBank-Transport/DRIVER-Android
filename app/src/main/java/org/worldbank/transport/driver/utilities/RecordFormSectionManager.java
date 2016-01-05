@@ -20,9 +20,9 @@ import java.util.ArrayList;
  *
  * Created by kathrynkillebrew on 1/4/16.
  */
-public class RecordFormPaginator {
+public class RecordFormSectionManager {
 
-    private static final String LOG_LABEL = "RecordFormPaginator";
+    private static final String LOG_LABEL = "FormSectionManager";
 
     private static String[] schemaSectionOrder;
 
@@ -37,7 +37,7 @@ public class RecordFormPaginator {
      * @return Either a form activity class, or form item list class if section has multiple items.
      */
     public static Class getActivityClassForSection(int sectionId) {
-        Log.d(LOG_LABEL, "Going to section #" + String.valueOf(sectionId));
+        Log.d(LOG_LABEL, "Going to section #" + sectionId);
 
         if (sectionHasMultiple(sectionId)) {
             return RecordItemListActivity.class;
@@ -129,15 +129,10 @@ public class RecordFormPaginator {
     /**
      * Get plural title for section (should exist for all fields that hold multiples).
      *
-     * @param sectionId Offset of section to check within ordered list of DriverSchema fields
+     * @param sectionField Field on DriverSchema class containing a collection
+     * @param defaultTitle Descriptive string to use if PluralTitle annotation not found
      * @return String plural title from 'PluralTitle' field annotation
      */
-    public static String getPluralTitle(int sectionId) {
-        String sectionName = getSectionName(sectionId);
-        Field sectionField = getFieldForSectionName(sectionName);
-        return getPluralTitle(sectionField, sectionName);
-    }
-
     public static String getPluralTitle(Field sectionField, String defaultTitle) {
 
         if (sectionField == null) {
@@ -234,7 +229,7 @@ public class RecordFormPaginator {
 
     @SuppressWarnings("unchecked")
     public static Object getOrCreateListItem(Field sectionField, Class sectionClass, Object currentlyEditing, int index) {
-        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        Object section = RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
         ArrayList items = getSectionList(section);
 
         if (items.size() > index) {
@@ -263,7 +258,7 @@ public class RecordFormPaginator {
     }
 
     public static boolean deleteListItem(Field sectionField, Class sectionClass, Object currentlyEditing, int index) {
-        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        Object section = RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
         ArrayList items = getSectionList(section);
 
         if (items.size() <= index) {

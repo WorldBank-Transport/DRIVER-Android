@@ -16,7 +16,6 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 
-import com.fasterxml.jackson.databind.util.EnumValues;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
@@ -25,7 +24,7 @@ import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
-import org.worldbank.transport.driver.utilities.RecordFormPaginator;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -155,10 +154,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
         Log.d(LOG_LABEL, "createFormController called");
 
-        String sectionName = RecordFormPaginator.getSectionName(sectionId);
+        String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
         // section offset was passed to activity in intent; find section to use here
-        sectionField = RecordFormPaginator.getFieldForSectionName(sectionName);
+        sectionField = RecordFormSectionManager.getFieldForSectionName(sectionName);
 
         if (sectionField == null) {
             Log.e(LOG_LABEL, "Section field named " + sectionName + " not found.");
@@ -166,7 +165,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
-        sectionClass = RecordFormPaginator.getSectionClass(sectionName);
+        sectionClass = RecordFormSectionManager.getSectionClass(sectionName);
 
         if (sectionClass == null) {
             Log.e(LOG_LABEL, "No section class; cannot initialize form");
@@ -178,7 +177,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         // use singular title for form section label
         // TODO: also use 'Description' annotation somewhere?
         sectionLabel = sectionClass.getSimpleName(); // default
-        sectionLabel = RecordFormPaginator.getSingleTitle(sectionField, sectionLabel);
+        sectionLabel = RecordFormSectionManager.getSingleTitle(sectionField, sectionLabel);
 
         if (section != null) {
             return new FormController(this, section);

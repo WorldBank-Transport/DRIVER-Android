@@ -18,7 +18,7 @@ import org.worldbank.transport.driver.adapters.FormItemListAdapter;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
-import org.worldbank.transport.driver.utilities.RecordFormPaginator;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -95,10 +95,10 @@ public class RecordItemListActivity extends AppCompatActivity {
 
     private void buildItemList() {
         Log.d(LOG_LABEL, "buildItemList called");
-        String sectionName = RecordFormPaginator.getSectionName(sectionId);
+        String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
         // section offset was passed to activity in intent; find section to use here
-        Field sectionField = RecordFormPaginator.getFieldForSectionName(sectionName);
+        Field sectionField = RecordFormSectionManager.getFieldForSectionName(sectionName);
 
         if (sectionField == null) {
             Log.e(LOG_LABEL, "Section field named " + sectionName + " not found.");
@@ -106,13 +106,13 @@ public class RecordItemListActivity extends AppCompatActivity {
         }
 
         Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
-        sectionClass = RecordFormPaginator.getSectionClass(sectionName);
-        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        sectionClass = RecordFormSectionManager.getSectionClass(sectionName);
+        Object section = RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
 
         // use singular title for form section label
         // TODO: also use 'Description' annotation somewhere?
         sectionLabel = sectionClass.getSimpleName(); // default
-        sectionLabel = RecordFormPaginator.getPluralTitle(sectionField, sectionLabel);
+        sectionLabel = RecordFormSectionManager.getPluralTitle(sectionField, sectionLabel);
 
         // set up action bar with label
         ActionBar actionBar = getSupportActionBar();
@@ -122,7 +122,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         }
 
         if (section != null) {
-            sectionItems = RecordFormPaginator.getSectionList(section);
+            sectionItems = RecordFormSectionManager.getSectionList(section);
             Log.d(LOG_LABEL, "Found " + sectionItems.size() + " list items");
         } else {
             Log.e(LOG_LABEL, "Section object not found for " + sectionName);
@@ -137,7 +137,7 @@ public class RecordItemListActivity extends AppCompatActivity {
             }
         };
 
-        String defaultItemLabel = RecordFormPaginator.getSingleTitle(sectionField, sectionLabel);
+        String defaultItemLabel = RecordFormSectionManager.getSingleTitle(sectionField, sectionLabel);
         recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, defaultItemLabel, clickListener);
         recyclerView.setAdapter(recyclerViewAdapter);
     }
@@ -146,7 +146,7 @@ public class RecordItemListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
 
-        if (RecordFormPaginator.sectionHasNext(sectionId)) {
+        if (RecordFormSectionManager.sectionHasNext(sectionId)) {
             Log.d(LOG_LABEL, "Form has at least one more section; use menu with next button");
             getMenuInflater().inflate(R.menu.menu_form_item_list_next, menu);
         } else {
@@ -178,7 +178,7 @@ public class RecordItemListActivity extends AppCompatActivity {
                 int goToSectionId = sectionId + 1;
                 Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
                 Intent intent = new Intent(this,
-                        RecordFormPaginator.getActivityClassForSection(goToSectionId));
+                        RecordFormSectionManager.getActivityClassForSection(goToSectionId));
 
                 intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
                 startActivity(intent);
