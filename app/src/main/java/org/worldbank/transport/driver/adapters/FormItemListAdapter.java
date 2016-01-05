@@ -21,6 +21,7 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
 
     private static final String LOG_LABEL = "FormItemListAdapter";
 
+    private String defaultLabel;
     private ArrayList<String> labelList;
     private FormItemClickListener clickListener;
 
@@ -45,13 +46,14 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
         }
     }
 
-    public FormItemListAdapter(ArrayList items, Class itemClass, FormItemClickListener clickListener) {
-        this.labelList = DriverUtilities.getListItemLabels(items, itemClass);
+    public FormItemListAdapter(ArrayList items, Class itemClass, String defaultLabel, FormItemClickListener clickListener) {
+        this.defaultLabel = defaultLabel;
         this.clickListener = clickListener;
+        this.labelList = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
     }
 
     public void rebuildLabelList(ArrayList items, Class itemClass) {
-        this.labelList = DriverUtilities.getListItemLabels(items, itemClass);
+        this.labelList = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
         notifyDataSetChanged();
     }
 

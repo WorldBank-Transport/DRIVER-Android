@@ -84,7 +84,7 @@ public class DriverUtilities {
      * @return Collection of labels consisting of the first few fields, separated by hyphens.
      *         Labels returned will be in same order as list of items passed in.
      */
-    public static ArrayList<String> getListItemLabels(ArrayList items, Class sectionClass) {
+    public static ArrayList<String> getListItemLabels(ArrayList items, Class sectionClass, String defaultLabel) {
 
         final int MAX_NUM_LABEL_FIELDS = 3;
 
@@ -113,8 +113,10 @@ public class DriverUtilities {
         // build the labels
         try {
             String label;
-            for (Object item : items) {
+            int itemsSize = items.size();
+            for (int i = 0; i < itemsSize; i++) {
                 label = "";
+                Object item = items.get(i);
                 for (Field labelField : labelFields) {
                     Object obj = labelField.get(item);
                     if (obj == null) {
@@ -131,6 +133,15 @@ public class DriverUtilities {
                     }
                     label += objString;
                 }
+
+                // add a default label if no values found to use
+                // {Field Label} - {Item #}
+                if (label.length() == 0) {
+                    label = defaultLabel;
+                    // append item number in list (starting with one)
+                    label += " - " + String.valueOf(i + 1);
+                }
+
                 labels.add(label);
             }
         } catch (IllegalAccessException e) {

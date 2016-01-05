@@ -137,7 +137,8 @@ public class RecordItemListActivity extends AppCompatActivity {
             }
         };
 
-        recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, clickListener);
+        String defaultItemLabel = RecordFormPaginator.getSingleTitle(sectionField, sectionLabel);
+        recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, defaultItemLabel, clickListener);
         recyclerView.setAdapter(recyclerViewAdapter);
     }
 

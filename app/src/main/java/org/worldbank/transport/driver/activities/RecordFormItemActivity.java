@@ -12,8 +12,6 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.utilities.RecordFormPaginator;
 
-import java.lang.reflect.Field;
-
 
 /**
  * Form for an item in a section that contains multiple elements.
