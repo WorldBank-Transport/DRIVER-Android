@@ -16,6 +16,7 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 
+import com.fasterxml.jackson.databind.util.EnumValues;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
@@ -267,7 +268,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         continue;
                     }
 
-                    Field[] enumFields = enumClass.getFields();
+                    // TODO: use serialized name annotation for enums?
+                    // enum fields are *not* returned in declared order (getEnumConstants returns declared order)
+                    /*
+                    Field[] enumFields = enumClass.getDeclaredFields();
 
                     ArrayList<String> enumLabels = new ArrayList<>(enumFields.length);
                     for (Field enumField: enumFields) {
@@ -276,8 +280,17 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             enumLabels.add(enumLabel);
                         }
                     }
+                    */
 
                     ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
+
+                    ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+                    for (Object enumConstant: enumValueObjectList) {
+                        enumLabels.add(enumConstant.toString());
+                    }
+
+                    Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
+                    Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
 
                     // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
                     control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
