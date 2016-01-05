@@ -53,24 +53,24 @@ public class RecordFormItemActivity extends RecordFormActivity {
         buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
 
-        // add 'cancel' button
-        Button cancelBtn = new Button(this);
+        // add 'delete' button
+        Button deleteBtn = new Button(this);
         RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        cancelBtn.setLayoutParams(backBtnLayoutParams);
+        deleteBtn.setLayoutParams(backBtnLayoutParams);
 
-        cancelBtn.setId(R.id.record_back_button_id);
-        cancelBtn.setText(getText(R.string.record_cancel_button));
-        buttonBar.addView(cancelBtn);
+        deleteBtn.setId(R.id.record_back_button_id);
+        deleteBtn.setText(getText(R.string.record_delete_button));
+        buttonBar.addView(deleteBtn);
 
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(LOG_LABEL, "Cancel button clicked");
-                // TODO: delete the object already created
+                Log.d(LOG_LABEL, "Delete button clicked");
+                RecordFormPaginator.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
                 finish();
             }
         });

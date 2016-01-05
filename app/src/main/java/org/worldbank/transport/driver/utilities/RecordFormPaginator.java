@@ -262,6 +262,25 @@ public class RecordFormPaginator {
         return null;
     }
 
+    public static boolean deleteListItem(Field sectionField, Class sectionClass, Object currentlyEditing, int index) {
+        Object section = RecordFormPaginator.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
+        ArrayList items = getSectionList(section);
+
+        if (items.size() <= index) {
+            Log.e(LOG_LABEL, "Cannot delete item from " + sectionField.getName() + " at index " + index + "; index out of range");
+            return false;
+        }
+
+        Object item = items.remove(index);
+        if (item == null) {
+            Log.e(LOG_LABEL, "Failed to delete from " + sectionField.getName() + " at index " + index);
+            return false;
+        } else {
+            Log.d(LOG_LABEL, "Successfully deleted item from " + sectionField.getName() + " at index " + index);
+            return true;
+        }
+    }
+
     public static ArrayList getSectionList(Object section) {
         Log.d(LOG_LABEL, "Getting section list");
 
