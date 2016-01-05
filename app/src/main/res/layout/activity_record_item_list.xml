@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".activities.MainActivity">
+    tools:context="org.worldbank.transport.driver.activities.RecordItemListActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,18 +21,18 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <include layout="@layout/content_record_item_list" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/record_list_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
+        android:id="@+id/record_item_list_fab"
         app:borderWidth="0dp"
         app:fabSize="normal"
         app:backgroundTint="@color/colorPrimary"
         app:rippleColor="@color/colorPrimaryDark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_plus_white_18dp" />
 
 </android.support.design.widget.CoordinatorLayout>

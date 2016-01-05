@@ -1,38 +1,30 @@
 package org.worldbank.transport.driver.activities;
 
-import android.app.ActionBar;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
 import com.azavea.androidvalidatedforms.controllers.EditTextController;
 import com.azavea.androidvalidatedforms.controllers.FormSectionController;
+import com.azavea.androidvalidatedforms.controllers.LabeledFieldController;
 import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 
-import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
-
-// annotations that apply only to sections
-import org.jsonschema2pojo.annotations.Description;
-import org.jsonschema2pojo.annotations.Title;
-import org.jsonschema2pojo.annotations.PluralTitle;
-import org.jsonschema2pojo.annotations.Multiple;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -41,40 +33,41 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
+ * Base class for creating dynamic forms for DriverSchema sections.
+ *
  * Created by kathrynkillebrew on 12/9/15.
  */
-public class RecordFormActivity extends FormWithAppCompatActivity {
+public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     public interface FormReadyListener {
         void formReadyCallback();
     }
 
-    // path to model classes created by jsonschema2pojo
-    // this must match the targetPackage declared in the gradle build file (with a trailing period)
-    private static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
     public static final String SECTION_ID = "driver_section_id";
     private static final String LOG_LABEL = "RecordFormActivity";
 
     private DriverAppContext mAppContext;
-    DriverApp app;
 
     // flag that is true once form has been displayed
     private boolean formReady = false;
     private FormReadyListener formReadyListener;
 
-    private DriverSchema currentlyEditing;
-    private int sectionId;
-    private String sectionName;
-    private String[] sectionOrder;
-    private Class sectionClass;
-    private String sectionLabel;
+    protected DriverSchema currentlyEditing;
+
+    // TODO: only belongs to sections
+    protected int sectionId;
+
+    // TODO: rename to remove 'section' ('model'?)
+    protected Class sectionClass;
+    protected String sectionLabel;
+    protected Field sectionField;
 
     // have next/previous sections
-    private boolean haveNext = false;
-    private boolean havePrevious = false;
+    protected boolean haveNext = false;
+    protected boolean havePrevious = false;
 
     // if selected action is to go to previous (if false, go to next or save)
-    private boolean goPrevious = false;
+    protected boolean goPrevious = false;
 
     /**
      * Non-default constructor for testing, to set the application context.
@@ -96,12 +89,10 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
-        app = mAppContext.getDriverApp();
-        currentlyEditing = app.getEditObject();
+        currentlyEditing = mAppContext.getDriverApp().getEditObject();
 
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(SECTION_ID);
-        sectionOrder = app.getSchemaSectionOrder();
 
         // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
@@ -114,77 +105,9 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
     public void displayForm() {
         super.displayForm();
 
-        // now form has been built, add next or save button to it
+        // now form has been built, add previous, next, and/or save buttons to it
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
-
-        // reference to this, for use in button actions (validation task makes weak ref)
-        final RecordFormActivity thisActivity = this;
-
-        // put buttons in a relative layout for positioning on right or left
-        RelativeLayout buttonBar = new RelativeLayout(this);
-        buttonBar.setId(R.id.record_button_bar_id);
-        buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT));
-
-        // add 'previous' button
-        if (sectionId > 0) {
-            havePrevious = true;
-            Button backBtn = new Button(this);
-            RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
-                    RelativeLayout.LayoutParams.WRAP_CONTENT);
-            backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            backBtn.setLayoutParams(backBtnLayoutParams);
-
-            backBtn.setId(R.id.record_back_button_id);
-            backBtn.setText(getText(R.string.record_previous_button));
-            buttonBar.addView(backBtn);
-
-            backBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.d(LOG_LABEL, "Back button clicked");
-
-                    // set this to let callback know next action to take
-                    goPrevious = true;
-                    new ValidationTask(thisActivity).execute();
-                }
-            });
-        } else {
-            havePrevious = false;
-            goPrevious = false;
-        }
-
-        // add next/save button
-        Button goBtn = new Button(this);
-        RelativeLayout.LayoutParams goBtnLayoutParams = new RelativeLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT,
-                ActionBar.LayoutParams.WRAP_CONTENT);
-        goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        goBtn.setLayoutParams(goBtnLayoutParams);
-
-        goBtn.setId(R.id.record_save_button_id);
-
-        if (sectionId < sectionOrder.length - 1) {
-            // add 'next' button
-            haveNext = true;
-            goBtn.setText(getString(R.string.record_next_button));
-
-        } else {
-            haveNext = false;
-            // add 'save' button
-            goBtn.setText(getString(R.string.record_save_button));
-        }
-
-        buttonBar.addView(goBtn);
-
-        goBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(LOG_LABEL, "Next/save button clicked");
-                goPrevious = false;
-                new ValidationTask(thisActivity).execute();
-            }
-        });
-
+        RelativeLayout buttonBar = buildButtonBar();
         containerView.addView(buttonBar);
 
         // alert that form is ready to go
@@ -193,6 +116,13 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             formReadyListener.formReadyCallback();
         }
     }
+
+    /**
+     * Helper to build a layout with buttons (previous/next/save/cancel).
+     *
+     * @return View with buttons with handlers added to it
+     */
+    public abstract RelativeLayout buildButtonBar();
 
     public boolean isFormReady() {
         return formReady;
@@ -209,178 +139,69 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
         if (isValid) {
             proceed();
         } else {
+            Log.w(LOG_LABEL, "TODO: handle validation errors");
             // validation errors found in section
             // TODO: show warning dialog with options to proceed or stay to fix errors?
         }
     }
 
-    private void proceed() {
-        int goToSectionId = sectionId;
+    public abstract void proceed();
 
-        if (goPrevious) {
-            if (!havePrevious) {
-                Log.e(LOG_LABEL, "Trying to go to previous, but there is none!");
-                return;
-            } else {
-                goToSectionId--;
-            }
-        } else if (haveNext) {
-            Log.d(LOG_LABEL, "Proceed to next section now");
-            goToSectionId++;
-        } else {
-            // TODO: at end; save
-            Log.d(LOG_LABEL, "Form complete! Now what?");
-            ////////////////////////
-            return;
-        }
+    protected abstract Object getModelObject();
 
-        Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
-
-        Intent intent = new Intent(this, RecordFormActivity.class);
-        intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public FormController createFormController() {
 
         Log.d(LOG_LABEL, "createFormController called");
 
-        // pass section offset to activity in intent, then find that section to use here
-        try {
-            sectionName = sectionOrder[sectionId];
-            Field sectionField = DriverSchema.class.getField(sectionName);
+        String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
-            Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
+        // section offset was passed to activity in intent; find section to use here
+        sectionField = RecordFormSectionManager.getFieldForSectionName(sectionName);
 
-            // attempt to get the section from the currently editing model object;
-            // it will not exist if creating a new record
-            Object section = sectionField.get(currentlyEditing);
-            sectionClass = Class.forName(MODEL_PACKAGE + sectionName);
-            sectionLabel = sectionClass.getSimpleName();
-
-            if (section == null) {
-                Log.d(LOG_LABEL, "No section found with name " + sectionName);
-                // instantiate a new thing then
-                section = sectionClass.newInstance();
-
-                // add the new section to the currently editing model object
-                sectionField.set(currentlyEditing, section);
-
-                if (sectionField.get(currentlyEditing) == null) {
-                    Log.e(LOG_LABEL, "Section field is still null after set to new instance!");
-                } else {
-                    Log.d(LOG_LABEL, "Section field successfully set to new instance");
-                }
-            } else {
-                // have existing values to edit
-                Log.d(LOG_LABEL, "Found existing section " + sectionName);
-            }
-
-            Multiple multipleAnnotation = sectionField.getAnnotation(Multiple.class);
-
-            if (multipleAnnotation != null && multipleAnnotation.value()) {
-                Log.d(LOG_LABEL, "Section " + sectionName + " has multiples");
-                // TODO: make list of things instead of the thing
-
-                // get plural title for section label if have multiple
-                PluralTitle pluralAnnotation = sectionField.getAnnotation(PluralTitle.class);
-                if (pluralAnnotation != null) {
-                    String pluralTitle = pluralAnnotation.value();
-                    if (pluralTitle.length() > 0) {
-                        sectionLabel = pluralTitle;
-                    } else {
-                        Log.w(LOG_LABEL, "No plural title found for section");
-                    }
-                } else {
-                    Log.w(LOG_LABEL, "No plural title found for section");
-                }
-
-                // expect an ArrayList
-                Log.d(LOG_LABEL, "Section class is " + section.getClass().getName());
-
-                if (ArrayList.class.isInstance(section)) {
-                    Log.d(LOG_LABEL, "Section is a list class");
-                    ArrayList sectionList = (ArrayList) section;
-
-                    if (sectionList.size() == 0) {
-                        Log.d(LOG_LABEL, "Adding a thing to the section collection");
-                        // create a new thing of correct type and add it
-
-                        // this call produces an unchecked warning
-                        sectionList.add(sectionClass.newInstance());
-                    }
-
-                    // TODO: deal with list presentation. For now, just use first one
-                    return new FormController(this, sectionList.get(0));
-                    ////////////////////////////////////////////////////
-
-                } else {
-                    Log.e(LOG_LABEL, "Section has unexpected type for multiple annotation");
-                }
-            } else {
-                Log.d(LOG_LABEL, "Section " + sectionName + " does NOT have multiples");
-
-                // use singular title for section label
-                Title titleAnnotation = sectionField.getAnnotation(Title.class);
-                if (titleAnnotation != null) {
-                    String title = titleAnnotation.value();
-                    if (title.length() > 0) {
-                        sectionLabel = title;
-                    } else {
-                        Log.w(LOG_LABEL, "No title found for section");
-                    }
-                } else {
-                    Log.w(LOG_LABEL, "No title found for section");
-                }
-            }
-
-            return new FormController(this, section);
-
-        } catch (ClassNotFoundException e) {
-            Log.e(LOG_LABEL, "Could not fine class named " + sectionName);
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            Log.e(LOG_LABEL, "Failed to instantiate new section " + sectionName);
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            Log.e(LOG_LABEL, "Could not find section field " + sectionName);
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            Log.e(LOG_LABEL, "Do not have access to section field " + sectionName);
-            e.printStackTrace();
-        } catch (IndexOutOfBoundsException e) {
-            Log.e(LOG_LABEL, "Invalid form section offset: " + String.valueOf(sectionId));
+        if (sectionField == null) {
+            Log.e(LOG_LABEL, "Section field named " + sectionName + " not found.");
+            return null;
         }
+
+        Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
+        sectionClass = RecordFormSectionManager.getSectionClass(sectionName);
+
+        if (sectionClass == null) {
+            Log.e(LOG_LABEL, "No section class; cannot initialize form");
+            return null;
+        }
+
+        Object section = getModelObject();
+
+        // use singular title for form section label
+        // TODO: also use 'Description' annotation somewhere?
+        sectionLabel = sectionClass.getSimpleName(); // default
+        sectionLabel = RecordFormSectionManager.getSingleTitle(sectionField, sectionLabel);
+
+        if (section != null) {
+            return new FormController(this, section);
+        } else {
+            Log.e(LOG_LABEL, "Section object not found for " + sectionName);
+        }
+
         return null;
     }
 
     @Override
     public void initForm() {
         final FormController formController = getFormController();
-        if (sectionClass != null) {
-
-            // TODO: drop the variables, since they're class fields?
-            // or will we ever want multiple sections on a screen?
-            formController.addSection(addSectionModel(sectionClass, sectionLabel));
-        } else {
-            // TODO: getting here if have list of things for section, or existing section
-            Log.e(LOG_LABEL, "No section class; cannot initialize form");
-        }
+        formController.addSection(addSectionModel());
     }
 
-    private FormSectionController addSectionModel(Class sectionModel, String sectionLabel) {
-        // TODO: section label would come from parent model
+    private FormSectionController addSectionModel() {
         FormSectionController section = new FormSectionController(this, sectionLabel);
-        Field[] fields = sectionModel.getDeclaredFields();
-
-        // TODO: read/respect JsonPropertyOrder annotation, if present
+        Field[] fields = sectionClass.getDeclaredFields();
 
         HashMap<String, Class> enums = new HashMap<>();
 
         // find enums for select lists
-        Class[] classes = sectionModel.getDeclaredClasses();
+        Class[] classes = sectionClass.getDeclaredClasses();
         for (Class clazz : classes) {
             if (clazz.isEnum()) {
                 Log.d(LOG_LABEL, "Found enum named " + clazz.getSimpleName());
@@ -388,8 +209,12 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             }
         }
 
+        // map of field names to their form controls
+        HashMap<String, LabeledFieldController> fieldControls = new HashMap<>(fields.length);
+
         field_loop:
         for (Field field: fields) {
+            LabeledFieldController control = null;
             String fieldName = field.getName();
             String fieldLabel = fieldName;
             FieldTypes fieldType = null;
@@ -423,7 +248,7 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
             }
 
             if (fieldType == null) {
-                // TODO: in this case, it's probably a subsection
+                // TODO: in this case, it's probably a subsection. Does that ever happen?
                 Log.e(LOG_LABEL, "No field type found for field " + fieldName);
                 continue;
             }
@@ -442,7 +267,10 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                         continue;
                     }
 
-                    Field[] enumFields = enumClass.getFields();
+                    // TODO: use serialized name annotation for enums?
+                    // enum fields are *not* returned in declared order (getEnumConstants returns declared order)
+                    /*
+                    Field[] enumFields = enumClass.getDeclaredFields();
 
                     ArrayList<String> enumLabels = new ArrayList<>(enumFields.length);
                     for (Field enumField: enumFields) {
@@ -451,25 +279,53 @@ public class RecordFormActivity extends FormWithAppCompatActivity {
                             enumLabels.add(enumLabel);
                         }
                     }
+                    */
 
                     ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
 
-                    // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
-                    section.addElement(new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList));
+                    ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+                    for (Object enumConstant: enumValueObjectList) {
+                        enumLabels.add(enumConstant.toString());
+                    }
 
+                    Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
+                    Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
+
+                    // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
+                    control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
                     break;
                 case text:
-                    section.addElement(new EditTextController(this, fieldName, fieldLabel, fieldLabel));
+                    control = new EditTextController(this, fieldName, fieldLabel);
                     break;
                 case reference:
+                    // TODO: implement
                     Log.w(LOG_LABEL, "TODO: implement reference field type");
                     break;
                 default:
                     Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
                     break;
             }
+
+            if (control != null) {
+                fieldControls.put(fieldName, control);
+            }
+        }
+
+        // read/respect JsonPropertyOrder annotation of fields, if present
+        // (if annotation missing, will add fields in order of declaration)
+        String[] orderedFields = DriverUtilities.getFieldOrder(sectionClass);
+
+        // add form controls in order
+        for (String nextField : orderedFields) {
+            LabeledFieldController control = fieldControls.get(nextField);
+            if (control != null) {
+                section.addElement(control);
+            } else {
+                Log.w(LOG_LABEL, "No control found for ordered field " + nextField);
+            }
         }
 
         return section;
     }
 }
+

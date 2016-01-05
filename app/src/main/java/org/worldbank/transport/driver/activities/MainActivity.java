@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -23,14 +24,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         final AppCompatActivity thisActivity = this;
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Log.d("MainActivity", "Going to load form...");
-                Intent intent = new Intent(thisActivity, RecordFormActivity.class);
+                Intent intent = new Intent(thisActivity,
+                        RecordFormSectionManager.getActivityClassForSection(0));
                 intent.putExtra(RecordFormActivity.SECTION_ID, 0);
                 startActivity(intent);
+
             }
         });
     }

@@ -22,6 +22,7 @@ import com.azavea.androidvalidatedforms.FormElementController;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;
+import org.worldbank.transport.driver.activities.RecordFormItemActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,23 +35,24 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by kathrynkillebrew on 12/21/15.
  */
-public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormActivity>
+public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormItemActivity>
     implements RecordFormActivity.FormReadyListener {
 
-    private RecordFormActivity activity;
+    private RecordFormItemActivity activity;
     private CountDownLatch displayLock;
 
     public RecordFormActivityFunctionalTests() {
-        super(RecordFormActivity.class);
+        super(RecordFormItemActivity.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormActivity.class);
+        Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormItemActivity.class);
         // go to Persons section
         intent.putExtra(RecordFormActivity.SECTION_ID, 2);
+        intent.putExtra(RecordFormItemActivity.ITEM_INDEX, 0);
         setActivityIntent(intent);
 
         activity = getActivity();
@@ -61,6 +63,35 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
             displayLock = new CountDownLatch(1);
             displayLock.await(3000, TimeUnit.MILLISECONDS);
         }
+
+        // make sure form is done rendering
+        waitForLoaderToDisappear();
+    }
+
+    private void waitForLoaderToDisappear() {
+        Instrumentation instrumentation = getInstrumentation();
+        instrumentation.waitForIdleSync();
+        final View loaderView = activity.findViewById(R.id.form_progress);
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                int counter = 0;
+                while ((loaderView.getVisibility() == View.VISIBLE) && counter < 10) {
+                    try {
+                        Thread.sleep(2000);
+                        counter += 1;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        instrumentation.waitForIdleSync();
     }
 
     @Override
@@ -80,6 +111,9 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         ViewGroup containerView = (ViewGroup) activity.findViewById(R.id.form_elements_container);
         RelativeLayout buttonBar = (RelativeLayout) activity.findViewById(R.id.record_button_bar_id);
         Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
+
+        assertNotNull(buttonBar);
+        assertNotNull(goButton);
 
         ViewAsserts.assertGroupContains(containerView, buttonBar);
         ViewAsserts.assertGroupContains(buttonBar, goButton);
@@ -137,27 +171,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         });
 
         // wait for validation to finish
-        instrumentation.runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                int counter = 0;
-                while ((loaderView.getVisibility() == View.VISIBLE) && counter < 10) {
-                    try {
-                        Thread.sleep(2000);
-                        counter += 1;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        instrumentation.waitForIdleSync();
+        waitForLoaderToDisappear();
 
         assertEquals("Did not get expected license # field error", "size must be between 6 and 8", errorMsgView.getText());
         assertEquals("License # error view is not visible", View.VISIBLE, errorMsgView.getVisibility());
@@ -172,27 +186,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         });
 
         // wait for validation to finish
-        instrumentation.runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                int counter = 0;
-                while ((loaderView.getVisibility() == View.VISIBLE) && counter < 10) {
-                    try {
-                        Thread.sleep(1000);
-                        counter += 1;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        instrumentation.waitForIdleSync();
+        waitForLoaderToDisappear();
 
         assertNotSame("License # error not cleared", View.VISIBLE, errorMsgView.getVisibility());
     }
