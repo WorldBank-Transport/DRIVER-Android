@@ -117,10 +117,19 @@ public class DriverUtilities {
                 label = "";
                 for (Field labelField : labelFields) {
                     Object obj = labelField.get(item);
+                    if (obj == null) {
+                        continue; // no value entered for this field
+                    }
+
+                    String objString = obj.toString();
+                    if (objString.length() == 0) {
+                        continue; // empty string representation for this field
+                    }
+
                     if (label.length() > 0) {
                         label += " - "; // separator
                     }
-                    label += obj.toString();
+                    label += objString;
                 }
                 labels.add(label);
             }
