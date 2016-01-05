@@ -23,6 +23,7 @@
     <string name="record_save_button">Save</string>
     <string name="record_next_button">Next</string>
     <string name="record_previous_button">Back</string>
+    <string name="record_cancel_button">Cancel</string>
 
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>

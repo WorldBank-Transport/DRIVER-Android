@@ -55,31 +55,27 @@ public class RecordFormItemActivity extends RecordFormActivity {
         buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
 
-        // TODO: add 'cancel' button
-        /*
-        Button backBtn = new Button(this);
+        // add 'cancel' button
+        Button cancelBtn = new Button(this);
         RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        backBtn.setLayoutParams(backBtnLayoutParams);
+        cancelBtn.setLayoutParams(backBtnLayoutParams);
 
-        backBtn.setId(R.id.record_back_button_id);
-        backBtn.setText(getText(R.string.record_previous_button));
-        buttonBar.addView(backBtn);
+        cancelBtn.setId(R.id.record_back_button_id);
+        cancelBtn.setText(getText(R.string.record_cancel_button));
+        buttonBar.addView(cancelBtn);
 
-        backBtn.setOnClickListener(new View.OnClickListener() {
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(LOG_LABEL, "Back button clicked");
-
-                // set this to let callback know next action to take
-                goPrevious = true;
-                new ValidationTask(thisActivity).execute();
+                Log.d(LOG_LABEL, "Cancel button clicked");
+                // TODO: delete the object already created
+                finish();
             }
         });
-        */
 
         // add save button
         Button goBtn = new Button(this);
@@ -88,6 +84,7 @@ public class RecordFormItemActivity extends RecordFormActivity {
         goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         goBtn.setLayoutParams(goBtnLayoutParams);
 
+        goBtn.setText(R.string.record_save_button);
         goBtn.setId(R.id.record_save_button_id);
 
         buttonBar.addView(goBtn);
@@ -106,9 +103,7 @@ public class RecordFormItemActivity extends RecordFormActivity {
 
     @Override
     public void proceed() {
-        Log.d(LOG_LABEL, "TODO: proceed.");
-        // TODO: go back to section list view
-        // save item on model if it isn't there already (probably should just be there already)
+        // item is saved on model already; simply close this view
         finish();
     }
 }
