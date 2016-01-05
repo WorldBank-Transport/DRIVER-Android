@@ -63,6 +63,31 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
             displayLock = new CountDownLatch(1);
             displayLock.await(3000, TimeUnit.MILLISECONDS);
         }
+
+        // make sure form is done rendering
+        Instrumentation instrumentation = getInstrumentation();
+        instrumentation.waitForIdleSync();
+        final View loaderView = activity.findViewById(R.id.form_progress);
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                int counter = 0;
+                while ((loaderView.getVisibility() == View.VISIBLE) && counter < 10) {
+                    try {
+                        Thread.sleep(1000);
+                        counter += 1;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        instrumentation.waitForIdleSync();
     }
 
     @Override
