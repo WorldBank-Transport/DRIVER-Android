@@ -22,6 +22,7 @@ import com.azavea.androidvalidatedforms.FormElementController;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;
+import org.worldbank.transport.driver.activities.RecordFormItemActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,23 +35,24 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by kathrynkillebrew on 12/21/15.
  */
-public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormActivity>
+public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormItemActivity>
     implements RecordFormActivity.FormReadyListener {
 
-    private RecordFormActivity activity;
+    private RecordFormItemActivity activity;
     private CountDownLatch displayLock;
 
     public RecordFormActivityFunctionalTests() {
-        super(RecordFormActivity.class);
+        super(RecordFormItemActivity.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormActivity.class);
+        Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormItemActivity.class);
         // go to Persons section
         intent.putExtra(RecordFormActivity.SECTION_ID, 2);
+        intent.putExtra(RecordFormItemActivity.ITEM_INDEX, 0);
         setActivityIntent(intent);
 
         activity = getActivity();
