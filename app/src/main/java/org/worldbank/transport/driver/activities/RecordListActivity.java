@@ -13,16 +13,23 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
-import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class RecordListActivity extends AppCompatActivity {
 
     private static final String LOG_LABEL = "RecordListActivity";
+    private static final DateFormat dateFormatter = SimpleDateFormat.getDateTimeInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,44 +38,56 @@ public class RecordListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
+        final DriverApp app = appContext.getDriverApp();
+
         // add record button
-        final AppCompatActivity thisActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Log.d("RecordListActivity", "Going to load form...");
-                Intent intent = new Intent(thisActivity,
-                        RecordFormSectionManager.getActivityClassForSection(0));
-                intent.putExtra(RecordFormActivity.SECTION_ID, 0);
-                startActivity(intent);
-
+                // In case user got back to home view via back button, clear any previously
+                // editing record so a new one may be created.
+                app.clearCurrentlyEditingRecord();
+                loadRecordForm();
             }
         });
 
-        RecordDatabaseManager mgr = new RecordDatabaseManager(this);
-        final Cursor cursor = mgr.readAllRecords();
-
         // set up list view
+
         ListView listView = (ListView) findViewById(R.id.record_list_view);
-        String[] useColumns = {DriverRecordContract.RecordEntry.COLUMN_DATA};
+        String[] useColumns = { DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT };
         int[] toViews = { R.id.record_list_item_entered_at };
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 getApplicationContext(),
                 R.layout.record_list_item,
-                cursor,
+                app.getAllRecords(),
                 useColumns,
                 toViews,
                 0);
+
+        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                if (columnIndex == 0) {
+                    long createdAt = cursor.getLong(0);
+                    String dateString = dateFormatter.format(new Date(createdAt));
+                    TextView textView = (TextView) view;
+                    textView.setText(dateString);
+                    return true;
+                }
+                return false;
+            }
+        });
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // id here is database _ID
-                Log.d(LOG_LABEL, "Clicked at position: " + position + " where the ID is: " + id);
-                // TODO: open record at ID
+                Log.d(LOG_LABEL, "Going to edit record with ID: " + id);
+                app.setCurrentlyEditingRecord(id);
+                loadRecordForm();
             }
         });
     }
@@ -93,5 +112,16 @@ public class RecordListActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Helper to launch record editor. Currently editing record should be set first, if going to
+     * edit an existing record.
+     */
+    private void loadRecordForm() {
+        Log.d(LOG_LABEL, "Going to load form...");
+        Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(0));
+        intent.putExtra(RecordFormActivity.SECTION_ID, 0);
+        startActivity(intent);
     }
 }

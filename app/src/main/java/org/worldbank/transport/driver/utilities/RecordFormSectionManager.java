@@ -90,7 +90,6 @@ public class RecordFormSectionManager {
             Log.e(LOG_LABEL, "Could not fine class named " + sectionName);
             e.printStackTrace();
         }
-
         return null;
     }
 

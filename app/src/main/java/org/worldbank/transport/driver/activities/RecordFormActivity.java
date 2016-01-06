@@ -1,9 +1,11 @@
 package org.worldbank.transport.driver.activities;
 
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
@@ -46,7 +48,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     public static final String SECTION_ID = "driver_section_id";
     private static final String LOG_LABEL = "RecordFormActivity";
 
-    private DriverAppContext mAppContext;
+    protected DriverAppContext mAppContext;
+    protected DriverApp app;
 
     // flag that is true once form has been displayed
     private boolean formReady = false;
@@ -54,10 +57,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     protected DriverSchema currentlyEditing;
 
-    // TODO: only belongs to sections
     protected int sectionId;
 
-    // TODO: rename to remove 'section' ('model'?)
     protected Class sectionClass;
     protected String sectionLabel;
     protected Field sectionField;
@@ -89,13 +90,25 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
-        currentlyEditing = mAppContext.getDriverApp().getEditObject();
+        app = mAppContext.getDriverApp();
+        currentlyEditing = app.getEditObject();
 
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(SECTION_ID);
 
         // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
+    }
+
+    protected void saveAndExit() {
+        if (app.saveRecordAndClearCurrentlyEditing()) {
+            Toast toast = Toast.makeText(this, getString(R.string.record_save_success), Toast.LENGTH_SHORT);
+            toast.show();
+            NavUtils.navigateUpFromSameTask(this);
+        } else {
+            Toast toast = Toast.makeText(this, getString(R.string.record_save_failure), Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
     /**
