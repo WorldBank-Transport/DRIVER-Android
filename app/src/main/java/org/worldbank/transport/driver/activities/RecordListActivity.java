@@ -14,7 +14,7 @@ import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
-public class MainActivity extends AppCompatActivity {
+public class RecordListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Log.d("MainActivity", "Going to load form...");
+                Log.d("RecordListActivity", "Going to load form...");
                 Intent intent = new Intent(thisActivity,
                         RecordFormSectionManager.getActivityClassForSection(0));
                 intent.putExtra(RecordFormActivity.SECTION_ID, 0);
