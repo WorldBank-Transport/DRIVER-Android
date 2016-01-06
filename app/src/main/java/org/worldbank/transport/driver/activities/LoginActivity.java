@@ -79,7 +79,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         // check to see if previous login saved, and skip this screen if so
         if (haveSavedUserInfo()) {
             Log.d("LoginActivity", "Have saved user info; skipping login screen");
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, RecordListActivity.class);
             startActivity(intent);
             finish();
         }
@@ -237,7 +237,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         if (userInfo != null) {
             // set user info on app singleton
             app.setUserInfo(userInfo);
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, RecordListActivity.class);
             startActivity(intent);
             finish();
         } else {

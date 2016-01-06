@@ -23,7 +23,7 @@ import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.worldbank.transport.driver.MockLoginUrlBuilder;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.LoginActivity;
-import org.worldbank.transport.driver.activities.MainActivity;
+import org.worldbank.transport.driver.activities.RecordListActivity;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
@@ -204,7 +204,7 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
             /////////////
 
             // set up a monitor to watch for activity change; block next activity from actually displaying
-            final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation.addMonitor(MainActivity.class.getName(), null, true);
+            final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation.addMonitor(RecordListActivity.class.getName(), null, true);
 
             // go!
             TouchUtils.tapView(this, loginButton);
@@ -285,7 +285,7 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
 
             // set up a monitor to watch for activity change; block next activity from actually displaying
             final Instrumentation.ActivityMonitor receiverActivityMonitor = instrumentation
-                    .addMonitor(MainActivity.class.getName(), null, true);
+                    .addMonitor(RecordListActivity.class.getName(), null, true);
 
             // go!
             TouchUtils.tapView(this, loginButton);
