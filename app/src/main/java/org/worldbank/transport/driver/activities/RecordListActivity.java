@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -47,19 +48,29 @@ public class RecordListActivity extends AppCompatActivity {
         });
 
         RecordDatabaseManager mgr = new RecordDatabaseManager(this);
-        long id1 = mgr.addRecord("foo", "some junk");
-        long id2 = mgr.addRecord("foo", "blah blah");
-
-        Cursor cursor = mgr.readAllRecords();
-        Log.d(LOG_LABEL, "ID 1: " + id1 + " ID 2: " + id2);
+        final Cursor cursor = mgr.readAllRecords();
 
         // set up list view
         ListView listView = (ListView) findViewById(R.id.record_list_view);
         String[] useColumns = {DriverRecordContract.RecordEntry.COLUMN_DATA};
-        int[] toViews = {android.R.id.text1};
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(getApplicationContext(), android.R.layout.simple_list_item_1,
-                cursor, useColumns, toViews, 0);
+        int[] toViews = { R.id.record_list_item_entered_at };
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                getApplicationContext(),
+                R.layout.record_list_item,
+                cursor,
+                useColumns,
+                toViews,
+                0);
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // id here is database _ID
+                Log.d(LOG_LABEL, "Clicked at position: " + position + " where the ID is: " + id);
+                // TODO: open record at ID
+            }
+        });
     }
 
     @Override

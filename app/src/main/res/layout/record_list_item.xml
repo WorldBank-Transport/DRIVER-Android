@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/record_list_item_layout"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/record_list_item_entered_at"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:textColor="@android:color/black"
+        android:padding="5dp">
+    </TextView>
+
+</LinearLayout>
