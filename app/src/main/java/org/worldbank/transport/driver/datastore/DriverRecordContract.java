@@ -25,10 +25,11 @@ public final class DriverRecordContract {
     }
 
     public static final String RECORD_TABLE_CREATE = "CREATE TABLE " + RecordEntry.TABLE_NAME + " (" +
+            RecordEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
             RecordEntry.COLUMN_ENTERED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
             RecordEntry.COLUMN_SCHEMA_VERSION + " TEXT, " +
-            RecordEntry.COLUMN_DATA + " TEXT, " +
-            ")";
+            RecordEntry.COLUMN_DATA + " TEXT" +
+            ");";
 
     public static final String RECORD_TABLE_DROP = "DROP TABLE IF EXISTS " + RecordEntry.TABLE_NAME;
 }

@@ -1,6 +1,7 @@
 package org.worldbank.transport.driver.activities;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -9,12 +10,18 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.datastore.DriverRecordContract;
+import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
 public class RecordListActivity extends AppCompatActivity {
+
+    private static final String LOG_LABEL = "RecordListActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +30,7 @@ public class RecordListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // add record button
         final AppCompatActivity thisActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -37,6 +45,21 @@ public class RecordListActivity extends AppCompatActivity {
 
             }
         });
+
+        RecordDatabaseManager mgr = new RecordDatabaseManager(this);
+        long id1 = mgr.addRecord("foo", "some junk");
+        long id2 = mgr.addRecord("foo", "blah blah");
+
+        Cursor cursor = mgr.readAllRecords();
+        Log.d(LOG_LABEL, "ID 1: " + id1 + " ID 2: " + id2);
+
+        // set up list view
+        ListView listView = (ListView) findViewById(R.id.record_list_view);
+        String[] useColumns = {DriverRecordContract.RecordEntry.COLUMN_DATA};
+        int[] toViews = {android.R.id.text1};
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(getApplicationContext(), android.R.layout.simple_list_item_1,
+                cursor, useColumns, toViews, 0);
+        listView.setAdapter(adapter);
     }
 
     @Override

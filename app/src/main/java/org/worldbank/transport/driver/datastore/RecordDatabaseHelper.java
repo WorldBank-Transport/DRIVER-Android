@@ -24,14 +24,15 @@ public class RecordDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: handle migrations. This drops any existing entries and recreates the table.
+        // Handle migrations here.
+        // This drops any existing entries and recreates the table.
         db.execSQL(DriverRecordContract.RECORD_TABLE_DROP);
         onCreate(db);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: handle migrations.
+        // handle migrations here
         onUpgrade(db, oldVersion, newVersion);
     }
 }

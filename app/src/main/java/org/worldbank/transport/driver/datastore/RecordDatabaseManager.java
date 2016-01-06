@@ -33,7 +33,9 @@ public class RecordDatabaseManager {
         values.put(DriverRecordContract.RecordEntry.COLUMN_SCHEMA_VERSION, schemaVersion);
         values.put(DriverRecordContract.RecordEntry.COLUMN_DATA, data);
 
-        return db.insert(DriverRecordContract.RecordEntry.TABLE_NAME, null, values);
+        long newId = db.insert(DriverRecordContract.RecordEntry.TABLE_NAME, null, values);
+        db.close();
+        return newId;
     }
 
     /**
