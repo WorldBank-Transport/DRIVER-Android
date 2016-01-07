@@ -29,6 +29,21 @@ public class RecordDatabaseManager {
 
     RecordDatabaseHelper dbHelper;
 
+    /**
+     * Constructor for use in testing, to use in-memory DB.
+     *
+     * @param context Context for the database
+     * @param amTesting True if running tests.
+     */
+    public RecordDatabaseManager(Context context, boolean amTesting) {
+        if (amTesting) {
+            dbHelper = new RecordDatabaseHelper(context, true);
+        } else {
+            Log.w(LOG_LABEL, "Should use other constructor for RecordDatabaseManager if not testing!");
+            dbHelper = new RecordDatabaseHelper(context);
+        }
+    }
+
     public RecordDatabaseManager(Context context) {
         dbHelper = new RecordDatabaseHelper(context);
     }
