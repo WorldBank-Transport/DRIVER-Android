@@ -25,6 +25,12 @@
     <string name="record_previous_button">Back</string>
     <string name="record_delete_button">Delete</string>
 
+    <!-- record status messages -->
+    <string name="record_save_success">Record saved</string>
+    <string name="record_save_failure">Failed to save record!</string>
+    <string name="record_item_delete_success">Item deleted</string>
+    <string name="record_item_delete_failure">Failed to delete item!</string>
+
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
     <string name="shared_preferences_username_key" translatable="false">user_name</string>

@@ -5,7 +5,7 @@ xmlns:tools="http://schemas.android.com/tools"
 tools:context=".activities.RecordItemListActivity">
 <item
     android:id="@+id/action_save"
-    android:orderInCategory="100"
+    android:orderInCategory="200"
     android:title="@string/record_save_button"
     app:showAsAction="ifRoom" />
 </menu>

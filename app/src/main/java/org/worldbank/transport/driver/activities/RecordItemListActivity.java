@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.adapters.FormItemListAdapter;
@@ -31,6 +33,7 @@ public class RecordItemListActivity extends AppCompatActivity {
     private FormItemListAdapter recyclerViewAdapter;
 
     private DriverAppContext mAppContext;
+    private DriverApp app;
     protected DriverSchema currentlyEditing;
     protected int sectionId;
     String sectionLabel;
@@ -51,7 +54,8 @@ public class RecordItemListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
-        currentlyEditing = mAppContext.getDriverApp().getEditObject();
+        app = mAppContext.getDriverApp();
+        currentlyEditing = app.getEditObject();
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(RecordFormActivity.SECTION_ID);
 
@@ -182,10 +186,19 @@ public class RecordItemListActivity extends AppCompatActivity {
 
                 intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
                 startActivity(intent);
+                return true;
 
             case R.id.action_save:
                 Log.d(LOG_LABEL, "Save button clicked");
-                // TODO: implement 'save' menu option
+                if (app.saveRecordAndClearCurrentlyEditing()) {
+                    Toast toast = Toast.makeText(this, getString(R.string.record_save_success), Toast.LENGTH_SHORT);
+                    toast.show();
+                    NavUtils.navigateUpFromSameTask(this);
+                } else {
+                    Toast toast = Toast.makeText(this, getString(R.string.record_save_failure), Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

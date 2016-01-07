@@ -16,8 +16,10 @@ public class MockDriverContext extends DriverAppContext {
     }
 
     public MockDriverContext() {
-        app = new DriverApp();
+        // create app for test environment to use in-memory DB
+        app = new DriverApp(true);
     }
+
     /**
      * @param driver_app Initialize from within the app with (DriverApp) getApplicationContext()
      */

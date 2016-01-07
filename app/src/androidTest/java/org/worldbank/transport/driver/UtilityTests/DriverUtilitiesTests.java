@@ -31,8 +31,6 @@ public class DriverUtilitiesTests extends AndroidTestCase {
     public void testFieldOrder() {
         String[] fieldOrder = DriverUtilities.getFieldOrder(TestPerson.class);
 
-        Log.i(LOG_LABEL, "Field order: " + fieldOrder);
-
         String[] expectedFieldOrder = {
                 "Name",
                 "Address",

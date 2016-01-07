@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
@@ -70,8 +71,15 @@ public class RecordFormItemActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Delete button clicked");
-                RecordFormSectionManager.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex);
-                finish();
+
+                if (RecordFormSectionManager.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex)) {
+                    Toast toast = Toast.makeText(thisActivity, getString(R.string.record_item_delete_success), Toast.LENGTH_SHORT);
+                    toast.show();
+                    finish();
+                } else {
+                    Toast toast = Toast.makeText(thisActivity, getString(R.string.record_item_delete_failure), Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
 

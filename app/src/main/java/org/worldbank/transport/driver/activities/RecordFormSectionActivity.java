@@ -2,10 +2,13 @@ package org.worldbank.transport.driver.activities;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
@@ -123,9 +126,8 @@ public class RecordFormSectionActivity extends RecordFormActivity {
                 Log.d(LOG_LABEL, "Proceed to next section now");
                 goToSectionId++;
             } else {
-                // TODO: at end; save
-                Log.d(LOG_LABEL, "Form complete! Now what?");
-                ////////////////////////
+                Log.d(LOG_LABEL, "Saving completed form");
+                saveAndExit();
                 return;
             }
 

@@ -17,16 +17,6 @@ public class DriverAppContext {
     public DriverAppContext() {
     }
 
-    // pass through calls to app
-
-    public void setUserInfo(DriverUserInfo userInfo) {
-        app.setUserInfo(userInfo);
-    }
-
-    public DriverUserInfo getUserInfo() {
-        return app.getUserInfo();
-    }
-
     /**
      *
      * @param driver_app Initialize from within the app with (DriverApp) getApplicationContext()
