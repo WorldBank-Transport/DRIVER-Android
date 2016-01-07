@@ -16,6 +16,8 @@ public class RecordDatabaseManager {
 
     private static final String LOG_LABEL = "DatabaseManager";
 
+    private static final String DATABASE_NAME = "driverdb";
+
     // use as WHERE clause to match on ID
     private static final String WHERE_ID = "_id= ?";
 
@@ -29,23 +31,25 @@ public class RecordDatabaseManager {
 
     RecordDatabaseHelper dbHelper;
 
+    private final SQLiteDatabase writableDb;
+    private final SQLiteDatabase readableDb;
+
     /**
-     * Constructor for use in testing, to use in-memory DB.
+     * Set up database for use. Will use in-memory database if amTesting flag is true.
      *
-     * @param context Context for the database
-     * @param amTesting True if running tests.
+     * @param context Context for database
+     * @param amTesting Use in-memory DB if true, otherwise use file-based DB.
      */
     public RecordDatabaseManager(Context context, boolean amTesting) {
         if (amTesting) {
-            dbHelper = new RecordDatabaseHelper(context, true);
+            Log.w(LOG_LABEL, "DB Manager will use in-memory DB. This should only happen in testing!");
+            dbHelper = new RecordDatabaseHelper(context, null);
         } else {
-            Log.w(LOG_LABEL, "Should use other constructor for RecordDatabaseManager if not testing!");
-            dbHelper = new RecordDatabaseHelper(context);
+            dbHelper = new RecordDatabaseHelper(context, DATABASE_NAME);
         }
-    }
 
-    public RecordDatabaseManager(Context context) {
-        dbHelper = new RecordDatabaseHelper(context);
+        writableDb = dbHelper.getWritableDatabase();
+        readableDb = dbHelper.getReadableDatabase();
     }
 
     /**
@@ -57,14 +61,23 @@ public class RecordDatabaseManager {
      */
     public long addRecord(String schemaVersion, String data) {
 
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
         ContentValues values = new ContentValues();
         values.put(DriverRecordContract.RecordEntry.COLUMN_SCHEMA_VERSION, schemaVersion);
         values.put(DriverRecordContract.RecordEntry.COLUMN_DATA, data);
 
-        long newId = db.insert(DriverRecordContract.RecordEntry.TABLE_NAME, null, values);
-        db.close();
+        writableDb.beginTransaction();
+        long newId = -1;
+        try {
+            newId = writableDb.insert(DriverRecordContract.RecordEntry.TABLE_NAME, null, values);
+            writableDb.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e(LOG_LABEL, "Database record insert failed");
+            e.printStackTrace();
+            newId = -1;
+        } finally {
+            writableDb.endTransaction();
+        }
+
         return newId;
     }
 
@@ -77,14 +90,23 @@ public class RecordDatabaseManager {
      */
     public int updateRecord(String data, long recordId) {
 
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
         String[] whereArgs = { String.valueOf(recordId) };
 
         ContentValues values = new ContentValues();
         values.put(DriverRecordContract.RecordEntry.COLUMN_DATA, data);
 
-        int affected = db.update(DriverRecordContract.RecordEntry.TABLE_NAME, values, WHERE_ID, whereArgs);
-        db.close();
+        writableDb.beginTransaction();
+        int affected = -1;
+        try {
+            affected = writableDb.update(DriverRecordContract.RecordEntry.TABLE_NAME, values, WHERE_ID, whereArgs);
+            writableDb.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e(LOG_LABEL, "Database record update failed for ID " + recordId);
+            e.printStackTrace();
+            affected = -1;
+        } finally {
+            writableDb.endTransaction();
+        }
         return affected;
     }
 
@@ -94,11 +116,10 @@ public class RecordDatabaseManager {
      * @return Database cursor to retrieve all records
      */
     public Cursor readAllRecords() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String sortOrder = DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT + " DESC";
 
-        return db.query(
+        return readableDb.query(
                 DriverRecordContract.RecordEntry.TABLE_NAME,
                 ALL_FIELDS, // columns
                 null,       // WHERE
@@ -116,12 +137,11 @@ public class RecordDatabaseManager {
      * @return Serialized string of the record data, or null on failure
      */
     public String getSerializedRecordWithId(long recordId) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String[] dataField = { DriverRecordContract.RecordEntry.COLUMN_DATA };
         String[] whereArgs = { String.valueOf(recordId) };
 
-        Cursor cursor = db.query(
+        Cursor cursor = readableDb.query(
                 DriverRecordContract.RecordEntry.TABLE_NAME,
                 dataField, // columns
                 WHERE_ID,   // WHERE
@@ -138,7 +158,6 @@ public class RecordDatabaseManager {
 
         String recordData = cursor.getString(0);
         cursor.close();
-        db.close();
         return recordData;
     }
 }

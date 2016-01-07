@@ -5,10 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.security.InvalidParameterException;
-
 
 /**
+ * Handles creation and version management of database.
+ *
  * Created by kathrynkillebrew on 1/5/16.
  */
 public class RecordDatabaseHelper extends SQLiteOpenHelper {
@@ -16,27 +16,19 @@ public class RecordDatabaseHelper extends SQLiteOpenHelper {
     private static final String LOG_LABEL = "DatabaseHelper";
 
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "driverdb";
 
     /**
-     * Constructor to use in-memory database. For use in testing only!
+     * Set up database. If databaseName is null, will use in-memory DB. Only do so when testing!
      *
      * @param context Context for database
-     * @param amTesting If true, will use in-memory database
+     * @param databaseName Name to use for database, or null for in-memory DB.
      */
-    public RecordDatabaseHelper(Context context, boolean amTesting) {
-        super(context, null, null, DATABASE_VERSION);
-        if (amTesting) {
-            Log.w(LOG_LABEL, "Creating in-memory database. Should be used in testing only!");
-        } else {
-            Log.w(LOG_LABEL, "Using database on file system. Should use the other constructor!");
-            throw(new InvalidParameterException(
-                    "Called testing-only constructor with amTesting=false. Use other constructor if not testing."));
-        }
-    }
+    public RecordDatabaseHelper(Context context, String databaseName) {
+        super(context, databaseName, null, DATABASE_VERSION);
 
-    public RecordDatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        if (databaseName == null) {
+            Log.w(LOG_LABEL, "Using in-memory database for testing");
+        }
     }
 
     @Override

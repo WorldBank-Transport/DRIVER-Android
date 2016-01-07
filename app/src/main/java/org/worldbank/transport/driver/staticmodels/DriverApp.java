@@ -38,6 +38,23 @@ public class DriverApp extends Application {
     private static ConnectivityManager connMgr;
     private static RecordDatabaseManager databaseManager;
 
+    private boolean amTesting = false;
+
+    /**
+     * Constructor for use in testing. Can use default constructor instead if not testing.
+     *
+     * @param amTesting True if in test environment.
+     */
+    public DriverApp(boolean amTesting) {
+        super();
+        this.amTesting = amTesting;
+    }
+
+    public DriverApp() {
+        super();
+        this.amTesting = false;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -45,7 +62,7 @@ public class DriverApp extends Application {
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         editObject = null;
         editObjectDatabaseId = -1;
-        databaseManager = new RecordDatabaseManager(mContext);
+        databaseManager = new RecordDatabaseManager(mContext, amTesting);
     }
 
     public static Context getContext() {
