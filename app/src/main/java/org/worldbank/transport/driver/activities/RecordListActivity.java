@@ -22,17 +22,26 @@ import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 
 public class RecordListActivity extends AppCompatActivity {
 
     private static final String LOG_LABEL = "RecordListActivity";
-    private static final DateFormat dateFormatter = SimpleDateFormat.getDateTimeInstance();
+
+    private static final DateFormat sourceDateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+
+    private static final DateFormat displayDateFormatter =
+            new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -54,7 +63,6 @@ public class RecordListActivity extends AppCompatActivity {
         });
 
         // set up list view
-
         ListView listView = (ListView) findViewById(R.id.record_list_view);
         String[] useColumns = { DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT };
         int[] toViews = { R.id.record_list_item_entered_at };
@@ -66,14 +74,25 @@ public class RecordListActivity extends AppCompatActivity {
                 toViews,
                 0);
 
+        sourceDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        displayDateFormatter.setTimeZone(TimeZone.getDefault());
         adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (columnIndex == 0) {
-                    long createdAt = cursor.getLong(0);
-                    String dateString = dateFormatter.format(new Date(createdAt));
+                // format created at date
+                if (columnIndex == 1) {
                     TextView textView = (TextView) view;
-                    textView.setText(dateString);
+                    // stored in SQLite as yyyy-mm-dd hh:mm:ss
+                    String createdAt = cursor.getString(1);
+                    try {
+                        Date date = sourceDateFormat.parse(createdAt);
+                        String dateString = displayDateFormatter.format(date);
+                        textView.setText(dateString);
+                    } catch (ParseException e) {
+                        Log.e(LOG_LABEL, "Failed to parse date string " + createdAt);
+                        e.printStackTrace();
+                        textView.setText(createdAt);
+                    }
                     return true;
                 }
                 return false;
@@ -115,8 +134,8 @@ public class RecordListActivity extends AppCompatActivity {
     }
 
     /**
-     * Helper to launch record editor. Currently editing record should be set first, if going to
-     * edit an existing record.
+     * Helper to launch record editor. Currently editing record should be set first
+     * (or cleared, if adding a new record).
      */
     private void loadRecordForm() {
         Log.d(LOG_LABEL, "Going to load form...");
