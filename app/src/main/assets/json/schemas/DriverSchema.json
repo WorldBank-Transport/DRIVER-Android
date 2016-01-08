@@ -6,7 +6,7 @@
     "Person": {
       "multiple": true,
       "description": "A person involved in the accident",
-      "title": "Person (This is the title)",
+      "title": "Person",
       "required": [
         "_localId"
       ],
@@ -16,8 +16,6 @@
       "type": "object",
       "properties": {
         "License number": {
-          "minLength": 6,
-          "maxLength": 8,
           "isSearchable": false,
           "propertyOrder": 2,
           "type": "string",
@@ -63,7 +61,7 @@
             {
               "source": "target",
               "value": "{{item._localId}}",
-              "title": "{{item.Vehicle type}} {{item.Make}} {{item.Model}}"
+              "title": ""
             }
           ],
           "type": "string",
@@ -166,6 +164,45 @@
       "definitions": {},
       "type": "object",
       "properties": {
+        "Description": {
+          "isSearchable": false,
+          "propertyOrder": 3,
+          "type": "string",
+          "fieldType": "text",
+          "format": "textarea"
+        },
+        "Surface condition": {
+          "enum": [
+            "Dry",
+            "Wet",
+            "Muddy",
+            "Flooded"
+          ],
+          "displayType": "select",
+          "propertyOrder": 7,
+          "fieldType": "selectlist",
+          "isSearchable": false,
+          "type": "string"
+        },
+        "Main cause": {
+          "enum": [
+            "Vehicle defect",
+            "Road defect",
+            "Human error"
+          ],
+          "displayType": "select",
+          "propertyOrder": 2,
+          "fieldType": "selectlist",
+          "isSearchable": true,
+          "type": "string"
+        },
+        "_localId": {
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "type": "string",
+          "options": {
+            "hidden": true
+          }
+        },
         "Traffic control": {
           "enum": [
             "None",
@@ -195,80 +232,6 @@
           "isSearchable": true,
           "type": "string"
         },
-        "Surface condition": {
-          "enum": [
-            "Dry",
-            "Wet",
-            "Muddy",
-            "Flooded"
-          ],
-          "displayType": "select",
-          "propertyOrder": 7,
-          "fieldType": "selectlist",
-          "isSearchable": false,
-          "type": "string"
-        },
-        "Light": {
-          "enum": [
-            "Daylight",
-            "Dawn/dusk",
-            "Night (lit)",
-            "Night (unlit)"
-          ],
-          "displayType": "select",
-          "propertyOrder": 6,
-          "fieldType": "selectlist",
-          "isSearchable": false,
-          "type": "string"
-        },
-        "Main cause": {
-          "enum": [
-            "Vehicle defect",
-            "Road defect",
-            "Human error"
-          ],
-          "displayType": "select",
-          "propertyOrder": 2,
-          "fieldType": "selectlist",
-          "isSearchable": true,
-          "type": "string"
-        },
-        "Weather": {
-          "enum": [
-            "Fair",
-            "Rain",
-            "Wind",
-            "Smoke",
-            "Fog",
-            "Drizzle",
-            "Storm"
-          ],
-          "displayType": "select",
-          "propertyOrder": 5,
-          "fieldType": "selectlist",
-          "isSearchable": true,
-          "type": "string"
-        },
-        "_localId": {
-          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
-          "type": "string",
-          "options": {
-            "hidden": true
-          }
-        },
-        "Surface type": {
-          "enum": [
-            "Concrete",
-            "Asphalt",
-            "Gravel",
-            "Earth"
-          ],
-          "displayType": "select",
-          "propertyOrder": 8,
-          "fieldType": "selectlist",
-          "isSearchable": false,
-          "type": "string"
-        },
         "Collision type": {
           "enum": [
             "Head on",
@@ -288,19 +251,25 @@
           "isSearchable": true,
           "type": "string"
         },
-        "Description": {
+        "Surface type": {
+          "enum": [
+            "Concrete",
+            "Asphalt",
+            "Gravel",
+            "Earth"
+          ],
+          "displayType": "select",
+          "propertyOrder": 8,
+          "fieldType": "selectlist",
           "isSearchable": false,
-          "propertyOrder": 3,
-          "type": "string",
-          "fieldType": "text",
-          "format": "textarea"
+          "type": "string"
         }
       }
     },
     "Vehicle": {
       "multiple": true,
       "description": "A vehicle involved in the accident",
-      "title": "Vehicle (Title)",
+      "title": "Vehicle",
       "required": [
         "_localId"
       ],
@@ -373,7 +342,7 @@
           "displayType": "select",
           "propertyOrder": 0,
           "fieldType": "selectlist",
-          "isSearchable": false,
+          "isSearchable": true,
           "type": "string"
         },
         "Insurance details": {
@@ -467,17 +436,26 @@
         "$ref": "#/definitions/Person"
       },
       "type": "array",
+      "options": {
+        "collapsed": true
+      },
       "propertyOrder": 2
     },
-    "Accident Details": {
-      "$ref": "#/definitions/AccidentDetails",
-      "propertyOrder": 0
+    "AccidentDetails": {
+      "propertyOrder": 0,
+      "options": {
+        "collapsed": true
+      },
+      "$ref": "#/definitions/AccidentDetails"
     },
     "Vehicle": {
       "items": {
         "$ref": "#/definitions/Vehicle"
       },
       "type": "array",
+      "options": {
+        "collapsed": true
+      },
       "propertyOrder": 1
     }
   }

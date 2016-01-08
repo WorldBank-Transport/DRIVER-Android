@@ -23,6 +23,9 @@ public class DriverApp extends Application {
 
     private static final String LOG_LABEL = "DriverApp";
 
+    // TODO: track current schema version
+    private static final String CURRENT_SCHEMA = "4407772d-939a-4dcb-9e62-1aec284c2d77";
+
     /**
      * Current user.
      */
@@ -148,8 +151,7 @@ public class DriverApp extends Application {
             }
         } else {
             // add new record
-            // TODO: track current schema in app
-            long newId = databaseManager.addRecord("TODO_CURRENT_SCHEMA", serializedEditObject);
+            long newId = databaseManager.addRecord(CURRENT_SCHEMA, serializedEditObject);
             if (newId > -1) {
                 return true;
             } else {
