@@ -1,14 +1,21 @@
 package org.worldbank.transport.driver.staticmodels;
 
+import android.location.Location;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
+import org.worldbank.transport.driver.annotations.ConstantFieldType;
+import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Constant fields that exist for every record, in addition to those specified in DriverSchema.
@@ -35,21 +42,26 @@ public class DriverConstantFields {
     // DatePickerController is available in form builder library
     // set to 'hidden' so can be presented on their own
 
-    @IsHidden(true)
-    public String occurredFrom;
+    // TODO: is it occurredFrom or occurredTo that is the field set in the web form?
 
+    // TODO: how to get/track time component?
+
+    @ConstantFieldType(ConstantFieldTypes.date)
+    @NotNull
+    public Date occurredFrom;
+
+    // TODO: set to match value of occurredFrom before upload
     @IsHidden(true)
-    public String occuredTo;
+    //@ConstantFieldType(ConstantFieldTypes.date)
+    public String occurredTo;
 
     // TODO: how to set/control?
     // Can do GPS with only satellite (and no Internet). Could do offline maps too, maybe with OSMDroid.
-    @IsHidden(true)
-    public double latitude;
-    @IsHidden(true)
-    public double longitude;
+    @ConstantFieldType(ConstantFieldTypes.location)
+    public Location location;
 
 
-    // TODO: make enumerations for these two options
+    // select fields with enumerations
     @SerializedName("Weather")
     @Expose
     @FieldType(FieldTypes.selectlist)

@@ -77,6 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         // TODO: start from a different activity to do this check and bypass loading this activity?
         // check to see if previous login saved, and skip this screen if so
+
         if (haveSavedUserInfo()) {
             Log.d("LoginActivity", "Have saved user info; skipping login screen");
             Intent intent = new Intent(this, RecordListActivity.class);

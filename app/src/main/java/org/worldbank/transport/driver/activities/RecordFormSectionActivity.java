@@ -47,34 +47,29 @@ public class RecordFormSectionActivity extends RecordFormActivity {
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
 
         // add 'previous' button
-        if (sectionId > 0) {
-            havePrevious = true;
-            Button backBtn = new Button(this);
-            RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.WRAP_CONTENT,
-                    RelativeLayout.LayoutParams.WRAP_CONTENT);
+        havePrevious = true;
+        Button backBtn = new Button(this);
+        RelativeLayout.LayoutParams backBtnLayoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-            backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            backBtn.setLayoutParams(backBtnLayoutParams);
+        backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        backBtn.setLayoutParams(backBtnLayoutParams);
 
-            backBtn.setId(R.id.record_back_button_id);
-            backBtn.setText(getText(R.string.record_previous_button));
-            buttonBar.addView(backBtn);
+        backBtn.setId(R.id.record_back_button_id);
+        backBtn.setText(getText(R.string.record_previous_button));
+        buttonBar.addView(backBtn);
 
-            backBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.d(LOG_LABEL, "Back button clicked");
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(LOG_LABEL, "Back button clicked");
 
-                    // set this to let callback know next action to take
-                    goPrevious = true;
-                    new ValidationTask(thisActivity).execute();
-                }
-            });
-        } else {
-            havePrevious = false;
-            goPrevious = false;
-        }
+                // set this to let callback know next action to take
+                goPrevious = true;
+                new ValidationTask(thisActivity).execute();
+            }
+        });
 
         // add next/save button
         Button goBtn = new Button(this);
@@ -116,12 +111,7 @@ public class RecordFormSectionActivity extends RecordFormActivity {
             int goToSectionId = sectionId;
 
             if (goPrevious) {
-                if (!havePrevious) {
-                    Log.e(LOG_LABEL, "Trying to go to previous, but there is none!");
-                    return;
-                } else {
-                    goToSectionId--;
-                }
+                goToSectionId--;
             } else if (haveNext) {
                 Log.d(LOG_LABEL, "Proceed to next section now");
                 goToSectionId++;

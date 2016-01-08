@@ -139,8 +139,8 @@ public class RecordListActivity extends AppCompatActivity {
      */
     private void loadRecordForm() {
         Log.d(LOG_LABEL, "Going to load form...");
-        Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(0));
-        intent.putExtra(RecordFormActivity.SECTION_ID, 0);
+        Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(-1));
+        intent.putExtra(RecordFormActivity.SECTION_ID, -1);
         startActivity(intent);
     }
 }

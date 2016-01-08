@@ -65,7 +65,7 @@ public class DriverUtilities {
             Log.e(LOG_LABEL, "Class " + model.getSimpleName() + " has no JsonPropertyOrder");
 
             // Should always have JsonPropertyOrder declared by jsonschema2pojo,
-            // but just in case, return a list of all fields in order declared if not.
+            // but just in case, return in order found by getDeclaredFields.
 
             for (Field field: fields) {
                 fieldOrder.add(field.getName());

@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
+import com.azavea.androidvalidatedforms.controllers.DatePickerController;
 import com.azavea.androidvalidatedforms.controllers.EditTextController;
 import com.azavea.androidvalidatedforms.controllers.FormSectionController;
 import com.azavea.androidvalidatedforms.controllers.LabeledFieldController;
@@ -22,6 +23,8 @@ import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.annotations.ConstantFieldType;
+import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
@@ -232,6 +235,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             String fieldLabel = fieldName;
             FieldTypes fieldType = null;
             boolean isRequired = false;
+            ConstantFieldTypes constantFieldType = null;
 
             Annotation[] annotations = field.getDeclaredAnnotations();
 
@@ -257,69 +261,95 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     fieldLabel = serializedName.value();
                 } else if (annotationType.equals(NotNull.class)) {
                     isRequired = true;
+                } else if (annotationType.equals(ConstantFieldType.class)) {
+                    Log.d(LOG_LABEL, "Found a constant field type annotation");
+                    ConstantFieldType constantFieldTypeAnnotation = (ConstantFieldType) annotation;
+                    constantFieldType = constantFieldTypeAnnotation.value();
                 }
             }
 
-            if (fieldType == null) {
-                // TODO: in this case, it's probably a subsection. Does that ever happen?
-                Log.e(LOG_LABEL, "No field type found for field " + fieldName);
-                continue;
-            }
+            if (fieldType != null) {
+                // have a jsonschema2pojo field type
+                switch (fieldType) {
+                    case image:
+                        Log.w(LOG_LABEL, "TODO: implement image field type");
+                        break;
+                    case selectlist:
+                        Log.d(LOG_LABEL, "Going to add select field");
+                        // find enum with the options in it
+                        Class enumClass = enums.get(fieldName);
 
-            switch (fieldType) {
-                case image:
-                    Log.w(LOG_LABEL, "TODO: implement image field type");
-                    break;
-                case selectlist:
-                    Log.d(LOG_LABEL, "Going to add select field");
-                    // find enum with the options in it
-                    Class enumClass = enums.get(fieldName);
-
-                    if (enumClass == null) {
-                        Log.e(LOG_LABEL, "No enum class found for field named " + fieldName);
-                        continue;
-                    }
-
-                    ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
-                    ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
-
-                    for (Object enumConstant: enumValueObjectList) {
-                        String prettyLabel = enumConstant.toString();
-
-                        Enum myEnum = (Enum) enumConstant;
-                        Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
-
-                        // Find the field of the same name as the enum constant, to get its label from
-                        // the SerializedName annotation.
-                        try {
-                            Field enumField = enumClass.getField(myEnum.name());
-                            SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
-                            if (serializedName != null) {
-                                prettyLabel = serializedName.value();
-                            }
-                        } catch (NoSuchFieldException e) {
-                            Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
-                            e.printStackTrace();
+                        if (enumClass == null) {
+                            Log.e(LOG_LABEL, "No enum class found for field named " + fieldName);
+                            continue;
                         }
-                        enumLabels.add(prettyLabel);
+
+                        ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
+                        ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+
+                        for (Object enumConstant : enumValueObjectList) {
+                            String prettyLabel = enumConstant.toString();
+
+                            Enum myEnum = (Enum) enumConstant;
+                            Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
+
+                            // Find the field of the same name as the enum constant, to get its label from
+                            // the SerializedName annotation.
+                            try {
+                                Field enumField = enumClass.getField(myEnum.name());
+                                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
+                                if (serializedName != null) {
+                                    prettyLabel = serializedName.value();
+                                }
+                            } catch (NoSuchFieldException e) {
+                                Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
+                                e.printStackTrace();
+                            }
+                            enumLabels.add(prettyLabel);
+                        }
+
+                        Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
+                        Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
+
+                        // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
+                        break;
+                    case text:
+                        control = new EditTextController(this, fieldName, fieldLabel);
+                        break;
+                    case reference:
+                        // TODO: implement
+                        Log.w(LOG_LABEL, "TODO: implement reference field type");
+                        break;
+                    default:
+                        Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
+                        break;
+                }
+            } else {
+                if (constantFieldType == null) {
+                    // TODO: in this case, it's probably a subsection. Does that ever happen?
+                    Log.e(LOG_LABEL, "No field type found for field " + fieldName);
+                    continue;
+                } else {
+                    // have a constant field type
+                    switch (constantFieldType) {
+                        case date:
+                            Log.d(LOG_LABEL, "Going to add date control to constant field");
+
+                            control = new DatePickerController(this, fieldName, fieldLabel);
+
+                            // TODO: format date and set if required
+                            //control = new DatePickerController(this, fieldName, fieldLabel, isRequired, dateDisplayFormat);
+                            break;
+                        case location:
+                            // TODO: implement
+                            Log.w(LOG_LABEL, "Found location field type. TODO: implement");
+                            break;
+                        default:
+                            Log.e(LOG_LABEL, "Unrecognized constant field type " + constantFieldType);
+                            break;
                     }
-
-                    Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
-                    Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
-
-                    // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
-                    control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
-                    break;
-                case text:
-                    control = new EditTextController(this, fieldName, fieldLabel);
-                    break;
-                case reference:
-                    // TODO: implement
-                    Log.w(LOG_LABEL, "TODO: implement reference field type");
-                    break;
-                default:
-                    Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
-                    break;
+                }
             }
 
             if (control != null) {
@@ -328,7 +358,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         // read/respect JsonPropertyOrder annotation of fields, if present
-        // (if annotation missing, will add fields in order of declaration)
         String[] orderedFields = DriverUtilities.getFieldOrder(sectionClass);
 
         // add form controls in order

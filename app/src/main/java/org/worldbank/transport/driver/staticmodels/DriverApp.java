@@ -13,6 +13,8 @@ import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.models.DriverSchema;
 
+import java.sql.Driver;
+
 
 /**
  * Singleton to hold data used across the application.
@@ -36,6 +38,7 @@ public class DriverApp extends Application {
      */
     private DriverSchema editObject;
     private long editObjectDatabaseId;
+    private DriverConstantFields editConstants;
 
     private static Context mContext;
     private static ConnectivityManager connMgr;
@@ -65,6 +68,7 @@ public class DriverApp extends Application {
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         editObject = null;
         editObjectDatabaseId = -1;
+        editConstants = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
     }
 
@@ -109,6 +113,15 @@ public class DriverApp extends Application {
         }
 
         return editObject;
+    }
+
+    public DriverConstantFields getEditConstants() {
+        if (editConstants == null) {
+            editConstants = new DriverConstantFields();
+            Log.d(LOG_LABEL, "Created new constant fields set");
+        }
+
+        return editConstants;
     }
 
     /**
