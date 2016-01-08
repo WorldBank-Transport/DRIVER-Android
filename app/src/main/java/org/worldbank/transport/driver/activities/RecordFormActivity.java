@@ -30,6 +30,8 @@ import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -280,25 +282,28 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         continue;
                     }
 
-                    // TODO: use serialized name annotation for enums?
-                    // enum fields are *not* returned in declared order (getEnumConstants returns declared order)
-                    /*
-                    Field[] enumFields = enumClass.getDeclaredFields();
-
-                    ArrayList<String> enumLabels = new ArrayList<>(enumFields.length);
-                    for (Field enumField: enumFields) {
-                        if (enumField.isEnumConstant()) {
-                            String enumLabel = (enumField.getAnnotation(SerializedName.class)).value();
-                            enumLabels.add(enumLabel);
-                        }
-                    }
-                    */
-
                     ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
-
                     ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+
                     for (Object enumConstant: enumValueObjectList) {
-                        enumLabels.add(enumConstant.toString());
+                        String prettyLabel = enumConstant.toString();
+
+                        Enum myEnum = (Enum) enumConstant;
+                        Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
+
+                        // Find the field of the same name as the enum constant, to get its label from
+                        // the SerializedName annotation.
+                        try {
+                            Field enumField = enumClass.getField(myEnum.name());
+                            SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
+                            if (serializedName != null) {
+                                prettyLabel = serializedName.value();
+                            }
+                        } catch (NoSuchFieldException e) {
+                            Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
+                            e.printStackTrace();
+                        }
+                        enumLabels.add(prettyLabel);
                     }
 
                     Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
