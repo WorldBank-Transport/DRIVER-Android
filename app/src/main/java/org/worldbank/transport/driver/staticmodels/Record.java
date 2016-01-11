@@ -20,32 +20,14 @@ public class Record {
     private DriverSchema editObject;
     private long editObjectDatabaseId;
     private DriverConstantFields editConstants;
-
-    public static Record getSavedRecord(long databaseId) {
-        RecordDatabaseManager databaseManager = DriverApp.getDatabaseManager();
-
-        String serializedRecordData = databaseManager.getSerializedRecordWithId(databaseId);
-
-        if (serializedRecordData == null) {
-            Log.e(LOG_LABEL, "Failed to get record with ID: " + databaseId);
-            return null;
-        }
-
-        DriverSchema editObject = DriverSchemaSerializer.readRecord(serializedRecordData);
-
-        if (editObject == null) {
-            return null;
-        }
-
-        // TODO: save/fetch constant fields
-        return new Record(editObject, databaseId, new DriverConstantFields());
-    }
+    private String recordSchemaVersion;
 
     // constructor for editing an existing record
-    public Record(DriverSchema editObject, long editObjectDatabaseId, DriverConstantFields editConstants) {
+    public Record(DriverSchema editObject, long editObjectDatabaseId, DriverConstantFields editConstants, String recordSchemaVersion) {
         this.editObject = editObject;
         this.editObjectDatabaseId = editObjectDatabaseId;
         this.editConstants = editConstants;
+        this.recordSchemaVersion = recordSchemaVersion;
     }
 
     // constructor to make a new record

@@ -283,7 +283,9 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     case selectlist:
                         Log.d(LOG_LABEL, "Going to add select field");
                         // find enum with the options in it
-                        Class enumClass = enums.get(fieldName);
+                        String enumFieldName = field.getType().getSimpleName();
+                        Log.d(LOG_LABEL, "Using enum field name " + enumFieldName);
+                        Class enumClass = enums.get(enumFieldName);
 
                         if (enumClass == null) {
                             Log.e(LOG_LABEL, "No enum class found for field named " + fieldName);

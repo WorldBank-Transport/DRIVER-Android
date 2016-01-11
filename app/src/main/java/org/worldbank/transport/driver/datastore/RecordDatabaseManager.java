@@ -4,11 +4,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 import android.util.Log;
 
+import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
+import org.worldbank.transport.driver.staticmodels.Record;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -219,5 +223,83 @@ public class RecordDatabaseManager {
         String recordData = cursor.getString(0);
         cursor.close();
         return recordData;
+    }
+
+    public Record getRecordById(long recordId) {
+
+        String[] whereArgs = { String.valueOf(recordId) };
+
+        Cursor cursor = readableDb.query(
+                DriverRecordContract.RecordEntry.TABLE_NAME,
+                ALL_FIELDS, // columns
+                WHERE_ID,   // WHERE
+                whereArgs,  // WHERE args
+                null,       // GROUP BY
+                null,       // HAVING
+                null        // ORDER BY
+        );
+
+        if (!cursor.moveToFirst()) {
+            Log.e(LOG_LABEL, "Record with ID " + recordId + " not found!");
+            return null;
+        }
+
+        // find column offsets in response
+        int dataColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_DATA);
+        int schemaColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_SCHEMA_VERSION);
+
+        // fetch fields
+        String recordData = cursor.getString(dataColumn);
+        DriverConstantFields constants = readStoredConstants(cursor);
+        String schemaVersion = cursor.getString(schemaColumn);
+        cursor.close();
+
+        DriverSchema recordObject;
+        if (recordData == null) {
+            Log.e(LOG_LABEL, "Cannot deserialize null record data string!");
+        }
+
+        recordObject = DriverSchemaSerializer.readRecord(recordData);
+        if (recordObject == null) {
+            Log.e(LOG_LABEL, "Failed to deserialize record data for id " + recordId);
+        }
+
+        return new Record(recordObject, recordId, constants, schemaVersion);
+    }
+
+    /**
+     * Helper to rebuild constant fields object from a retrieved record.
+     *
+     * @param cursor Read cursor at record to read with constant fields
+     * @return new DriverConstantFields object with fields set
+     */
+    private DriverConstantFields readStoredConstants(Cursor cursor) {
+        DriverConstantFields constantFields = new DriverConstantFields();
+
+        // get field offsets
+        int occurredFromColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_OCCURRED_FROM);
+        int longitudeColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_LONGITUDE);
+        int latitudeColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_LATITUDE);
+        int weatherColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_WEATHER);
+        int lightColumn = cursor.getColumnIndex(DriverRecordContract.RecordEntry.COLUMN_LIGHT);
+
+        String occurredFromString = cursor.getString(occurredFromColumn);
+        try {
+            constantFields.occurredFrom = storeDateFormat.parse(occurredFromString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        constantFields.location = new Location("");
+        constantFields.location.setLatitude(cursor.getDouble(latitudeColumn));
+        constantFields.location.setLongitude(cursor.getDouble(longitudeColumn));
+
+        String weatherString = cursor.getString(weatherColumn);
+        String lightString = cursor.getString(lightColumn);
+
+        constantFields.Weather = DriverConstantFields.WeatherEnum.fromValue(weatherString);
+        constantFields.Light = DriverConstantFields.LightEnum.fromValue(lightString);
+
+        return constantFields;
     }
 }

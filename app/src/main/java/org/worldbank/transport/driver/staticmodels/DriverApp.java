@@ -159,7 +159,7 @@ public class DriverApp extends Application {
      * @return true on success; will clear edit object on failure
      */
     public boolean setCurrentlyEditingRecord(long databaseId) {
-        record = Record.getSavedRecord(databaseId);
+        record = databaseManager.getRecordById(databaseId);
 
         if (record != null) {
             return true;

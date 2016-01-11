@@ -8,7 +8,6 @@ import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
-import org.jsonschema2pojo.annotations.IsHidden;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 
@@ -69,15 +68,15 @@ public class DriverConstantFields {
     @Expose
     @NotNull
     @FieldType(FieldTypes.selectlist)
-    public DriverConstantFields.Weather Weather;
+    public WeatherEnum Weather;
 
     @SerializedName("Light")
     @Expose
     @NotNull
     @FieldType(FieldTypes.selectlist)
-    public DriverConstantFields.Light Light;
+    public LightEnum Light;
 
-    public enum Weather {
+    public enum WeatherEnum {
 
         @SerializedName("Clear day")
         CLEAR_DAY("clear-day"),
@@ -107,15 +106,15 @@ public class DriverConstantFields {
         WIND("wind");
 
         private final String value;
-        private final static Map<String, DriverConstantFields.Weather> CONSTANTS = new HashMap<>();
+        private final static Map<String, DriverConstantFields.WeatherEnum> CONSTANTS = new HashMap<>();
 
         static {
-            for (DriverConstantFields.Weather c: values()) {
+            for (DriverConstantFields.WeatherEnum c: values()) {
                 CONSTANTS.put(c.value, c);
             }
         }
 
-        Weather(String value) {
+        WeatherEnum(String value) {
             this.value = value;
         }
 
@@ -124,8 +123,8 @@ public class DriverConstantFields {
             return this.value;
         }
 
-        public static DriverConstantFields.Weather fromValue(String value) {
-            DriverConstantFields.Weather constant = CONSTANTS.get(value);
+        public static DriverConstantFields.WeatherEnum fromValue(String value) {
+            DriverConstantFields.WeatherEnum constant = CONSTANTS.get(value);
             if (constant == null) {
                 throw new IllegalArgumentException(value);
             } else {
@@ -134,7 +133,7 @@ public class DriverConstantFields {
         }
     }
 
-    public enum Light {
+    public enum LightEnum {
 
         @SerializedName("Dawn")
         DAWN("dawn"),
@@ -146,15 +145,15 @@ public class DriverConstantFields {
         NIGHT("night");
 
         private final String value;
-        private final static Map<String, DriverConstantFields.Light> CONSTANTS = new HashMap<>();
+        private final static Map<String, LightEnum> CONSTANTS = new HashMap<>();
 
         static {
-            for (DriverConstantFields.Light c: values()) {
+            for (LightEnum c: values()) {
                 CONSTANTS.put(c.value, c);
             }
         }
 
-        Light(String value) {
+        LightEnum(String value) {
             this.value = value;
         }
 
@@ -163,8 +162,8 @@ public class DriverConstantFields {
             return this.value;
         }
 
-        public static DriverConstantFields.Light fromValue(String value) {
-            DriverConstantFields.Light constant = CONSTANTS.get(value);
+        public static LightEnum fromValue(String value) {
+            LightEnum constant = CONSTANTS.get(value);
             if (constant == null) {
                 throw new IllegalArgumentException(value);
             } else {
