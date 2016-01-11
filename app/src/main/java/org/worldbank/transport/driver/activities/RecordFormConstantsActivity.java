@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
+import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
@@ -53,13 +54,8 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
             public void onClick(View view) {
                 // launch DriverSchema first form here
                 goPrevious = false;
-                int goToSectionId = 0;
-                Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
-                Intent intent = new Intent(thisActivity,
-                        RecordFormSectionManager.getActivityClassForSection(goToSectionId));
-
-                intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
-                startActivity(intent);
+                Log.d(LOG_LABEL, "Going to validate constant fields");
+                new ValidationTask(thisActivity).execute();
             }
         });
 
@@ -70,7 +66,13 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
 
     @Override
     public void proceed() {
-        Log.w(LOG_LABEL, "Should never get to 'proceed' function in constants activity!");
+        int goToSectionId = 0;
+        Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
+        Intent intent = new Intent(this,
+                RecordFormSectionManager.getActivityClassForSection(goToSectionId));
+
+        intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
+        startActivity(intent);
     }
 
     @Override

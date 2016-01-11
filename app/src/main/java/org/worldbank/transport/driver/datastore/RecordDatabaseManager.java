@@ -134,8 +134,13 @@ public class RecordDatabaseManager {
             values.put(DriverRecordContract.RecordEntry.COLUMN_LONGITUDE, constantFields.location.getLongitude());
         }
 
-        values.put(DriverRecordContract.RecordEntry.COLUMN_WEATHER, constantFields.Weather.toString());
-        values.put(DriverRecordContract.RecordEntry.COLUMN_LIGHT, constantFields.Light.toString());
+        if (constantFields.Weather != null) {
+            values.put(DriverRecordContract.RecordEntry.COLUMN_WEATHER, constantFields.Weather.toString());
+        }
+
+        if (constantFields.Light != null) {
+            values.put(DriverRecordContract.RecordEntry.COLUMN_LIGHT, constantFields.Light.toString());
+        }
 
         return values;
     }
@@ -297,8 +302,13 @@ public class RecordDatabaseManager {
         String weatherString = cursor.getString(weatherColumn);
         String lightString = cursor.getString(lightColumn);
 
-        constantFields.Weather = DriverConstantFields.WeatherEnum.fromValue(weatherString);
-        constantFields.Light = DriverConstantFields.LightEnum.fromValue(lightString);
+        if (weatherString != null) {
+            constantFields.Weather = DriverConstantFields.WeatherEnum.fromValue(weatherString);
+        }
+
+        if (lightString != null) {
+            constantFields.Light = DriverConstantFields.LightEnum.fromValue(lightString);
+        }
 
         return constantFields;
     }

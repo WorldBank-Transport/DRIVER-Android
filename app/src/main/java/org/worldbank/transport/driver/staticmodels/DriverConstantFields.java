@@ -66,13 +66,11 @@ public class DriverConstantFields {
     // select fields with enumerations
     @SerializedName("Weather")
     @Expose
-    @NotNull
     @FieldType(FieldTypes.selectlist)
     public WeatherEnum Weather;
 
     @SerializedName("Light")
     @Expose
-    @NotNull
     @FieldType(FieldTypes.selectlist)
     public LightEnum Light;
 
