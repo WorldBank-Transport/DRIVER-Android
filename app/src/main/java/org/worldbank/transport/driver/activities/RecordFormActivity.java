@@ -33,6 +33,7 @@ import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +51,11 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     public static final String SECTION_ID = "driver_section_id";
     private static final String LOG_LABEL = "RecordFormActivity";
+
+    // TODO: modify DatePickerController in form generator library:
+    // take the DateFormat super class (to avoid cast) and add constructor to make date format optional
+    // (use system date format as default, as here)
+    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = (SimpleDateFormat) SimpleDateFormat.getDateTimeInstance();
 
     protected DriverAppContext mAppContext;
     protected DriverApp app;
@@ -335,11 +341,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     switch (constantFieldType) {
                         case date:
                             Log.d(LOG_LABEL, "Going to add date control to constant field");
-
-                            control = new DatePickerController(this, fieldName, fieldLabel);
-
-                            // TODO: format date and set if required
-                            //control = new DatePickerController(this, fieldName, fieldLabel, isRequired, dateDisplayFormat);
+                            control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT);
                             break;
                         case location:
                             // TODO: implement

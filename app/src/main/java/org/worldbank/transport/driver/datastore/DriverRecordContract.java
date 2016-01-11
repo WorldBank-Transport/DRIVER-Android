@@ -19,16 +19,37 @@ public final class DriverRecordContract {
     public static abstract class RecordEntry implements BaseColumns {
         public static final String TABLE_NAME = "driver_records";
 
+
+        // fields
         public static final String COLUMN_ENTERED_AT = "entered_at";
+        public static final String COLUMN_UPDATED_AT = "last_updated";
         public static final String COLUMN_SCHEMA_VERSION = "schema_version";
         public static final String COLUMN_DATA = "data";
+
+        // fields for record constants
+        public static final String COLUMN_OCCURRED_FROM = "occurred_from";
+        public static final String COLUMN_OCCURRED_TO = "occurred_to";
+        public static final String COLUMN_LATITUDE = "latitude";
+        public static final String COLUMN_LONGITUDE = "longitude";
+        public static final String COLUMN_WEATHER = "weather";
+        public static final String COLUMN_LIGHT = "light";
     }
 
     public static final String RECORD_TABLE_CREATE = "CREATE TABLE " + RecordEntry.TABLE_NAME + " (" +
-            RecordEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-            RecordEntry.COLUMN_ENTERED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-            RecordEntry.COLUMN_SCHEMA_VERSION + " TEXT, " +
-            RecordEntry.COLUMN_DATA + " TEXT" +
+            RecordEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+            RecordEntry.COLUMN_ENTERED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+            RecordEntry.COLUMN_UPDATED_AT + " TIMESTAMP, " +
+            RecordEntry.COLUMN_SCHEMA_VERSION + " TEXT NOT NULL, " +
+            RecordEntry.COLUMN_DATA + " TEXT NOT NULL, " +
+            RecordEntry.COLUMN_OCCURRED_FROM + " TIMESTAMP NOT NULL, " +
+            RecordEntry.COLUMN_OCCURRED_TO + " TIMESTAMP NOT NULL, " +
+
+            // TODO: require these to be non-null when UI figured out?
+            RecordEntry.COLUMN_LATITUDE + " DOUBLE, " +
+            RecordEntry.COLUMN_LONGITUDE + " DOUBLE, " +
+
+            RecordEntry.COLUMN_WEATHER + " TEXT, " +
+            RecordEntry.COLUMN_LIGHT + " TEXT" +
             ");";
 
     public static final String RECORD_TABLE_DROP = "DROP TABLE IF EXISTS " + RecordEntry.TABLE_NAME;

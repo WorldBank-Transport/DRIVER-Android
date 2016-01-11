@@ -81,7 +81,7 @@ public class Record {
 
         if (editObjectDatabaseId > -1) {
             // update an existing record
-            int affected = databaseManager.updateRecord(serializedEditObject, editObjectDatabaseId);
+            int affected = databaseManager.updateRecord(serializedEditObject, editConstants, editObjectDatabaseId);
             if (affected == 1) {
                 return true;
             } else {
@@ -89,7 +89,7 @@ public class Record {
             }
         } else {
             // add new record
-            long newId = databaseManager.addRecord(DriverApp.getCurrentSchema(), serializedEditObject);
+            long newId = databaseManager.addRecord(DriverApp.getCurrentSchema(), serializedEditObject, editConstants);
             if (newId > -1) {
                 return true;
             } else {

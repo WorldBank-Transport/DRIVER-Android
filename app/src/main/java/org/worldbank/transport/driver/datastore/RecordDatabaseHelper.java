@@ -15,7 +15,7 @@ public class RecordDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String LOG_LABEL = "DatabaseHelper";
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     /**
      * Set up database. If databaseName is null, will use in-memory DB. Only do so when testing!

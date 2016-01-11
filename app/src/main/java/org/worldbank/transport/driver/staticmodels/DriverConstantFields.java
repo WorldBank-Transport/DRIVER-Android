@@ -34,21 +34,9 @@ import javax.validation.constraints.NotNull;
 })
 public class DriverConstantFields {
 
-    @IsHidden(true)
-    public String schemaVersion;
-
-    // TODO: are these settable at creation? Make them so if not?  Fields on base AshlarModel class
-    // TODO: store directly as fields on DB for use/modification? createdAt already there.
-    // public String createdAt;
-    // public String lastModified;
-
     // present these in user form
     // constant fields on Record model in DRF
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
-
-    // TODO: present these fields as dates, but store/serialize as properly formatted strings?
-    // DatePickerController is available in form builder library
-    // set to 'hidden' so can be presented on their own
 
     // TODO: is it occurredFrom or occurredTo that is the field set in the web form?
 
@@ -61,10 +49,13 @@ public class DriverConstantFields {
     @NotNull
     public Date occurredFrom;
 
-    // TODO: set to match value of occurredFrom before upload
+    // occurredTo is set to match value of occurredFrom before upload
+    // TODO: make separately editable?
+    /*
     @IsHidden(true)
     //@ConstantFieldType(ConstantFieldTypes.date)
     public String occurredTo;
+    */
 
     // TODO: how to set/control?
     // Can do GPS with only satellite (and no Internet). Could do offline maps too, maybe with OSMDroid.
@@ -76,11 +67,13 @@ public class DriverConstantFields {
     // select fields with enumerations
     @SerializedName("Weather")
     @Expose
+    @NotNull
     @FieldType(FieldTypes.selectlist)
     public DriverConstantFields.Weather Weather;
 
     @SerializedName("Light")
     @Expose
+    @NotNull
     @FieldType(FieldTypes.selectlist)
     public DriverConstantFields.Light Light;
 
