@@ -8,6 +8,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
+import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
+
+import java.util.Date;
 
 /**
  * Test the database manager in isolation.
@@ -17,11 +20,14 @@ import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 public class RecordDatabaseManagerTests extends AndroidTestCase {
 
     RecordDatabaseManager manager;
+    DriverConstantFields someConstants;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         manager = new RecordDatabaseManager((new MockContext()), true);
+        someConstants = new DriverConstantFields();
+        someConstants.occurredFrom = new Date();
     }
 
     @SmallTest
@@ -32,14 +38,14 @@ public class RecordDatabaseManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testAddRecord() {
-        long id = manager.addRecord("someschema", "somedata");
+        long id = manager.addRecord("someschema", "somedata", someConstants);
         assertEquals("Unexpected ID for added record", 1, id);
     }
 
     @SmallTest
     public void testGetRecords() {
-        long idThingOne = manager.addRecord("someschema", "someone");
-        long idThingTwo = manager.addRecord("someschema", "sometwo");
+        long idThingOne = manager.addRecord("someschema", "someone", someConstants);
+        long idThingTwo = manager.addRecord("someschema", "sometwo", someConstants);
 
         String result = manager.getSerializedRecordWithId(idThingOne);
         assertEquals("Did not get expected data for record", "someone", result);
@@ -50,8 +56,8 @@ public class RecordDatabaseManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testUpdateRecord() {
-        long id = manager.addRecord("someschema", "somedata");
-        manager.updateRecord("something completely different", id);
+        long id = manager.addRecord("someschema", "somedata", someConstants);
+        manager.updateRecord("something completely different", someConstants, id);
 
         String result = manager.getSerializedRecordWithId(id);
         assertEquals("Unexpected result for updated record", "something completely different", result);
@@ -59,7 +65,7 @@ public class RecordDatabaseManagerTests extends AndroidTestCase {
 
     @MediumTest
     public void testGetAllRecords() {
-        manager.addRecord("schema", "I have data");
+        manager.addRecord("schema", "I have data", someConstants);
 
         // wait before adding second record, so their timestamps will differ
         try {
@@ -68,7 +74,7 @@ public class RecordDatabaseManagerTests extends AndroidTestCase {
             e.printStackTrace();
         }
 
-        manager.addRecord("schema", "me too");
+        manager.addRecord("schema", "me too", someConstants);
 
         Cursor cursor = manager.readAllRecords();
 

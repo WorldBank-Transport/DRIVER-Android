@@ -38,6 +38,10 @@ public class Record {
         Log.d(LOG_LABEL, "Created new object to edit");
     }
 
+    public long getRecordId() {
+        return editObjectDatabaseId;
+    }
+
     public DriverSchema getEditObject() {
         return editObject;
     }
@@ -46,7 +50,7 @@ public class Record {
         return editConstants;
     }
 
-    public boolean saveRecord() {
+    public boolean save() {
         if (editObject == null) {
             Log.e(LOG_LABEL, "No currently editing DRIVER data to save!");
             return false;
@@ -73,6 +77,7 @@ public class Record {
             // add new record
             long newId = databaseManager.addRecord(DriverApp.getCurrentSchema(), serializedEditObject, editConstants);
             if (newId > -1) {
+                editObjectDatabaseId = newId;
                 return true;
             } else {
                 Log.e(LOG_LABEL, "Error inserting record");

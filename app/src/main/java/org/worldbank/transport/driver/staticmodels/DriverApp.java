@@ -49,6 +49,7 @@ public class DriverApp extends Application {
     public DriverApp(boolean amTesting) {
         super();
         this.amTesting = amTesting;
+        Log.i(LOG_LABEL, "Setting up app with in-memory database for testing");
     }
 
     public DriverApp() {
@@ -141,7 +142,7 @@ public class DriverApp extends Application {
             return false;
         }
 
-        return record.saveRecord();
+        return record.save();
     }
 
     public Cursor getAllRecords() {

@@ -24,8 +24,8 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
 
     private static final String LOG_LABEL = "RecordConstants";
 
-    // TODO: what should the section label be? Make consistemt with web app.
-    public static final String CONSTANTS_SECTION_NAME = "Record Constants";
+    // section label (web app has none for this section)
+    public static final String CONSTANTS_SECTION_NAME = "Record Basic Information";
 
     @Override
     public RelativeLayout buildButtonBar() {

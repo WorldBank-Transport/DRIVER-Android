@@ -16,6 +16,8 @@
       "type": "object",
       "properties": {
         "License number": {
+          "minLength": 6,
+          "maxLength": 8,
           "isSearchable": false,
           "propertyOrder": 2,
           "type": "string",
@@ -61,7 +63,7 @@
             {
               "source": "target",
               "value": "{{item._localId}}",
-              "title": ""
+              "title": "{{item.Vehicle type}} {{item.Make}} {{item.Model}}"
             }
           ],
           "type": "string",

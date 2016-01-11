@@ -4,8 +4,6 @@ import android.app.Instrumentation;
 import android.content.Intent;
 import android.support.v7.widget.AppCompatTextView;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
-import android.test.UiThreadTest;
 import android.test.ViewAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -125,7 +123,6 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     public void testValidationErrorDisplay() {
         Instrumentation instrumentation = getInstrumentation();
         final Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
-        final View loaderView = activity.findViewById(R.id.form_progress);
 
         FormController formController = activity.getFormController();
         FormElementController licenseNoCtl =  formController.getElement("LicenseNumber");

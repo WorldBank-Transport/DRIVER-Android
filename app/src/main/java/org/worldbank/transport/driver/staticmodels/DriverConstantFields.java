@@ -37,27 +37,18 @@ public class DriverConstantFields {
     // constant fields on Record model in DRF
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
 
-    // TODO: is it occurredFrom or occurredTo that is the field set in the web form?
-
     // TODO: modify DatePickerController in forms library to optionally also set the time by
     // launching a TimePickerDialog on dismissal of the DatePickerDialog
 
-    // TODO: different label?
-    @SerializedName("When occurred")
+    @SerializedName("Occurred")
     @ConstantFieldType(ConstantFieldTypes.date)
     @NotNull
     public Date occurredFrom;
 
     // occurredTo is set to match value of occurredFrom before upload
-    // TODO: make separately editable?
-    /*
-    @IsHidden(true)
-    //@ConstantFieldType(ConstantFieldTypes.date)
-    public String occurredTo;
-    */
 
-    // TODO: how to set/control?
-    // Can do GPS with only satellite (and no Internet). Could do offline maps too, maybe with OSMDroid.
+    // TODO: set
+    // Can do GPS with only satellite (and no Internet). Could do offline maps too, with OSMDroid or the like.
     @SerializedName("Location")
     @ConstantFieldType(ConstantFieldTypes.location)
     public Location location;
@@ -169,29 +160,4 @@ public class DriverConstantFields {
             }
         }
     }
-
-
-    /*
-    // geocoder fields. do not show to user. TODO: will those ever be useful in android client?
-    // could check for Internet, and reverse-geocode if available,
-    // attempt reverse geocode right before upload (when there is Internet),
-    // or set up server to do that async after upload, if missing.
-    @IsHidden(true)
-    public String locationText;
-
-    @IsHidden(true)
-    public String city;
-
-    @IsHidden(true)
-    public String cityDistrict;
-
-    @IsHidden(true)
-    public String neighborhood;
-
-    @IsHidden(true)
-    public String road;
-
-    @IsHidden(true)
-    public String state;
-    */
 }
