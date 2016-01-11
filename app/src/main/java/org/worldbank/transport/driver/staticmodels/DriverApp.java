@@ -9,11 +9,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.models.DriverSchema;
-
-import java.sql.Driver;
 
 
 /**
@@ -36,9 +33,7 @@ public class DriverApp extends Application {
     /**
      * Object currently being edited (if any).
      */
-    private DriverSchema editObject;
-    private long editObjectDatabaseId;
-    private DriverConstantFields editConstants;
+    private Record record;
 
     private static Context mContext;
     private static ConnectivityManager connMgr;
@@ -66,14 +61,20 @@ public class DriverApp extends Application {
         super.onCreate();
         mContext = this;
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        editObject = null;
-        editObjectDatabaseId = -1;
-        editConstants = null;
+        record = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
     }
 
     public static Context getContext() {
         return mContext;
+    }
+
+    public static String getCurrentSchema() {
+        return CURRENT_SCHEMA;
+    }
+
+    public static RecordDatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     /**
@@ -106,22 +107,15 @@ public class DriverApp extends Application {
     }
 
     public DriverSchema getEditObject() {
-        if (editObject == null) {
-            editObject = new DriverSchema();
-            editObjectDatabaseId = -1;
-            Log.d(LOG_LABEL, "Created new object to edit");
+        if (record == null) {
+            record = new Record();
         }
 
-        return editObject;
+        return record.getEditObject();
     }
 
     public DriverConstantFields getEditConstants() {
-        if (editConstants == null) {
-            editConstants = new DriverConstantFields();
-            Log.d(LOG_LABEL, "Created new constant fields set");
-        }
-
-        return editConstants;
+        return record.getEditConstants();
     }
 
     /**
@@ -142,37 +136,12 @@ public class DriverApp extends Application {
      * @return True on success
      */
     private boolean saveRecord() {
-        if (editObject == null) {
+        if (record == null) {
             Log.e(LOG_LABEL, "No currently editing record to save!");
             return false;
         }
 
-        String serializedEditObject = DriverSchemaSerializer.serializeRecord(editObject);
-
-        if (serializedEditObject == null) {
-            Log.e(LOG_LABEL, "Failed to serialize record to JSON");
-            return false;
-        }
-
-        if (editObjectDatabaseId > -1) {
-            // update an existing record
-            int affected = databaseManager.updateRecord(serializedEditObject, editObjectDatabaseId);
-            if (affected == 1) {
-                return true;
-            } else {
-                Log.e(LOG_LABEL, "Failed to update record. Number of affected rows: " + affected);
-            }
-        } else {
-            // add new record
-            long newId = databaseManager.addRecord(CURRENT_SCHEMA, serializedEditObject);
-            if (newId > -1) {
-                return true;
-            } else {
-                Log.e(LOG_LABEL, "Error inserting record");
-            }
-        }
-
-        return false;
+        return record.saveRecord();
     }
 
     public Cursor getAllRecords() {
@@ -180,8 +149,7 @@ public class DriverApp extends Application {
     }
 
     public void clearCurrentlyEditingRecord() {
-        editObjectDatabaseId = -1;
-        editObject = null;
+        record = null;
     }
 
     /**
@@ -191,24 +159,13 @@ public class DriverApp extends Application {
      * @return true on success; will clear edit object on failure
      */
     public boolean setCurrentlyEditingRecord(long databaseId) {
-        editObjectDatabaseId = databaseId;
-        String serializedRecordData = databaseManager.getSerializedRecordWithId(databaseId);
+        record = Record.getSavedRecord(databaseId);
 
-        if (serializedRecordData == null) {
-            Log.e(LOG_LABEL, "Failed to get record with ID: " + databaseId);
-            clearCurrentlyEditingRecord();
+        if (record != null) {
+            return true;
+        } else {
             return false;
         }
-
-        editObject = DriverSchemaSerializer.readRecord(serializedRecordData);
-
-        if (editObject == null) {
-            clearCurrentlyEditingRecord();
-            return false;
-        }
-
-        editObjectDatabaseId = databaseId;
-        return true;
     }
 
     public static boolean getIsNetworkAvailable() {

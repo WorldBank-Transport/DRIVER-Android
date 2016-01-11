@@ -2,6 +2,7 @@ package org.worldbank.transport.driver.staticmodels;
 
 import android.location.Location;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -25,8 +26,15 @@ import javax.validation.constraints.NotNull;
  *
  * Created by kathrynkillebrew on 1/8/16.
  */
+@JsonPropertyOrder({
+        "When occurred",
+        "Weather",
+        "Light",
+        "Location"
+})
 public class DriverConstantFields {
 
+    @IsHidden(true)
     public String schemaVersion;
 
     // TODO: are these settable at creation? Make them so if not?  Fields on base AshlarModel class
@@ -38,14 +46,17 @@ public class DriverConstantFields {
     // constant fields on Record model in DRF
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
 
-    // TODO: present these fields as dates, but store as properly formatted strings?
+    // TODO: present these fields as dates, but store/serialize as properly formatted strings?
     // DatePickerController is available in form builder library
     // set to 'hidden' so can be presented on their own
 
     // TODO: is it occurredFrom or occurredTo that is the field set in the web form?
 
-    // TODO: how to get/track time component?
+    // TODO: modify DatePickerController in forms library to optionally also set the time by
+    // launching a TimePickerDialog on dismissal of the DatePickerDialog
 
+    // TODO: different label?
+    @SerializedName("When occurred")
     @ConstantFieldType(ConstantFieldTypes.date)
     @NotNull
     public Date occurredFrom;
@@ -57,6 +68,7 @@ public class DriverConstantFields {
 
     // TODO: how to set/control?
     // Can do GPS with only satellite (and no Internet). Could do offline maps too, maybe with OSMDroid.
+    @SerializedName("Location")
     @ConstantFieldType(ConstantFieldTypes.location)
     public Location location;
 
@@ -65,12 +77,12 @@ public class DriverConstantFields {
     @SerializedName("Weather")
     @Expose
     @FieldType(FieldTypes.selectlist)
-    public Weather weather;
+    public DriverConstantFields.Weather Weather;
 
     @SerializedName("Light")
     @Expose
     @FieldType(FieldTypes.selectlist)
-    public Light light;
+    public DriverConstantFields.Light Light;
 
     public enum Weather {
 

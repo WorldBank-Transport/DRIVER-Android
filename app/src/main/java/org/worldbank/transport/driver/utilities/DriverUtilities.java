@@ -37,9 +37,13 @@ public class DriverUtilities {
             // map the fields' pretty names (SerializedName) to the POJO field name
             HashMap<String, String> nameMap = new HashMap<>(fields.length);
             for (Field field: fields) {
+                String fieldName = field.getName();
+                String fieldLabel = fieldName;
                 SerializedName serializedNameAnnotation = field.getAnnotation(SerializedName.class);
-                String serializedName = serializedNameAnnotation.value();
-                nameMap.put(serializedName, field.getName());
+                if (serializedNameAnnotation != null) {
+                    fieldLabel = serializedNameAnnotation.value();
+                }
+                nameMap.put(fieldLabel, fieldName);
             }
 
             for (String nextName: serializedNameOrder) {
@@ -47,6 +51,7 @@ public class DriverUtilities {
                 if (nextField != null) {
                     fieldOrder.add(nextField);
                 } else {
+                    // JsonPropertyOrder annotation should list fields by their serialized names
                     Log.e(LOG_LABEL, "Found no field with serialized name " + nextName);
                 }
             }
