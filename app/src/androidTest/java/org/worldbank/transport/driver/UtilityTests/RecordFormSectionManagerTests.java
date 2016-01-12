@@ -52,10 +52,10 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetSectionName() {
         String sectionName = RecordFormSectionManager.getSectionName(0);
-        Log.d(LOG_LABEL, sectionName + " sectionName for 0");
+        assertEquals("AccidentDetails", sectionName);
 
         sectionName = RecordFormSectionManager.getSectionName(2);
-        Log.d(LOG_LABEL, sectionName + " sectionName for 2");
+        assertEquals("Person", sectionName);
 
         // no fourth section
         sectionName = RecordFormSectionManager.getSectionName(3);

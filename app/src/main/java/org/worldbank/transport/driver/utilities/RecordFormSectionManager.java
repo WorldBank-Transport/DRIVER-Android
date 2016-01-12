@@ -5,6 +5,7 @@ import android.util.Log;
 import org.jsonschema2pojo.annotations.Multiple;
 import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Title;
+import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
 import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 import org.worldbank.transport.driver.activities.RecordItemListActivity;
 import org.worldbank.transport.driver.models.DriverSchema;
@@ -38,6 +39,10 @@ public class RecordFormSectionManager {
      */
     public static Class getActivityClassForSection(int sectionId) {
         Log.d(LOG_LABEL, "Going to section #" + sectionId);
+
+        if (sectionId < 0) {
+            return RecordFormConstantsActivity.class;
+        }
 
         if (sectionHasMultiple(sectionId)) {
             return RecordItemListActivity.class;

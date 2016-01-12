@@ -37,9 +37,13 @@ public class DriverUtilities {
             // map the fields' pretty names (SerializedName) to the POJO field name
             HashMap<String, String> nameMap = new HashMap<>(fields.length);
             for (Field field: fields) {
+                String fieldName = field.getName();
+                String fieldLabel = fieldName;
                 SerializedName serializedNameAnnotation = field.getAnnotation(SerializedName.class);
-                String serializedName = serializedNameAnnotation.value();
-                nameMap.put(serializedName, field.getName());
+                if (serializedNameAnnotation != null) {
+                    fieldLabel = serializedNameAnnotation.value();
+                }
+                nameMap.put(fieldLabel, fieldName);
             }
 
             for (String nextName: serializedNameOrder) {
@@ -47,6 +51,7 @@ public class DriverUtilities {
                 if (nextField != null) {
                     fieldOrder.add(nextField);
                 } else {
+                    // JsonPropertyOrder annotation should list fields by their serialized names
                     Log.e(LOG_LABEL, "Found no field with serialized name " + nextName);
                 }
             }
@@ -65,7 +70,7 @@ public class DriverUtilities {
             Log.e(LOG_LABEL, "Class " + model.getSimpleName() + " has no JsonPropertyOrder");
 
             // Should always have JsonPropertyOrder declared by jsonschema2pojo,
-            // but just in case, return a list of all fields in order declared if not.
+            // but just in case, return in order found by getDeclaredFields.
 
             for (Field field: fields) {
                 fieldOrder.add(field.getName());
