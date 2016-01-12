@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
  * Created by kathrynkillebrew on 1/8/16.
  */
 @JsonPropertyOrder({
-        "When occurred",
+        "Occurred",
         "Weather",
         "Light",
         "Location"
