@@ -1,9 +1,11 @@
 package org.worldbank.transport.driver.ActivityTests;
 
+import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.support.v7.widget.AppCompatTextView;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.TouchUtils;
 import android.test.ViewAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -17,40 +19,42 @@ import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormElementController;
+import com.robotium.solo.Solo;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;
-import org.worldbank.transport.driver.activities.RecordFormItemActivity;
+import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
+import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-
 /**
- * Functional tests for dynamically created form.
+ * Test RecordFormConstantsActivity.
  *
- * Created by kathrynkillebrew on 12/21/15.
+ * Created by kathrynkillebrew on 1/12/16.
  */
-public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormItemActivity>
-    implements RecordFormActivity.FormReadyListener {
+public class ConstantsActivityFunctionalTests extends ActivityInstrumentationTestCase2<RecordFormConstantsActivity>
+        implements RecordFormActivity.FormReadyListener{
 
-    private RecordFormItemActivity activity;
+    private RecordFormConstantsActivity activity;
     private CountDownLatch displayLock;
+    private Instrumentation instrumentation;
+    private Solo solo;
 
-    public RecordFormActivityFunctionalTests() {
-        super(RecordFormItemActivity.class);
+    public ConstantsActivityFunctionalTests() {
+        super(RecordFormConstantsActivity.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormItemActivity.class);
-        // go to Persons section
-        intent.putExtra(RecordFormActivity.SECTION_ID, 2);
-        intent.putExtra(RecordFormItemActivity.ITEM_INDEX, 0);
+        instrumentation = getInstrumentation();
+        Intent intent = new Intent(instrumentation.getTargetContext(), RecordFormConstantsActivity.class);
+        intent.putExtra(RecordFormActivity.SECTION_ID, -1);
         setActivityIntent(intent);
 
         activity = getActivity();
@@ -63,7 +67,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         }
 
         // make sure form is done rendering
-        FormActivityTestHelpers.waitForLoaderToDisappear(getInstrumentation(), activity);
+        FormActivityTestHelpers.waitForLoaderToDisappear(instrumentation, activity);
     }
 
     @Override
@@ -75,7 +79,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
 
     @SmallTest
     public void testActivityExists() {
-        assertNotNull("Record form activity is null", activity);
+        assertNotNull("Record constants form activity is null", activity);
     }
 
     @SmallTest
@@ -95,23 +99,22 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
 
     @MediumTest
     public void testValidationErrorDisplay() {
-        final Instrumentation instrumentation = getInstrumentation();
-        final Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
+        Button goButton = (Button) activity.findViewById(R.id.record_save_button_id);
 
         FormController formController = activity.getFormController();
-        FormElementController licenseNoCtl =  formController.getElement("LicenseNumber");
+        FormElementController whenCtl =  formController.getElement("occurredFrom");
 
-        assertNotNull(licenseNoCtl);
+        assertNotNull(whenCtl);
 
-        LinearLayout ctlView = (LinearLayout) licenseNoCtl.getView();
-        List<View> licenseNoViews = FormActivityTestHelpers.getAllChildViews(ctlView);
+        LinearLayout ctlView = (LinearLayout) whenCtl.getView();
+        List<View> whenViews = FormActivityTestHelpers.getAllChildViews(ctlView);
 
         // the first text view is the field label, and the second is for field error messages
         boolean foundLabel = false;
         AppCompatTextView errorMsgView = null;
 
-        EditText foundLicenseNoField = null;
-        for (View view : licenseNoViews) {
+        EditText foundWhenField = null;
+        for (View view : whenViews) {
             if (view instanceof AppCompatTextView) {
                 if (foundLabel) {
                     errorMsgView = (AppCompatTextView) view;
@@ -120,58 +123,43 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
                 }
             } else if (view instanceof EditText) {
                 // the actual text entry field
-                foundLicenseNoField = (EditText) view;
+                foundWhenField = (EditText) view;
             }
         }
 
-        final EditText licenseNoField = foundLicenseNoField;
+        final EditText whenField = foundWhenField;
 
-        assertNotNull("Did not find error message view for license number field", errorMsgView);
-        assertNotNull("Did not find text entry field for license number field", licenseNoField);
+        assertNotNull("Did not find error message view for when occurred field", errorMsgView);
+        assertNotNull("Did not find text entry field for when occurred field", whenField);
 
-
-        // test validation on license view
-        instrumentation.waitForIdleSync();
-
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                licenseNoField.setText("123");
-                goButton.performClick();
-            }
-        });
+        // test validation on occurred from view
+        solo = new Solo(instrumentation, activity);
+        solo.clickOnView(goButton);
 
         // wait for validation to finish
-        FormActivityTestHelpers.waitForLoaderToDisappear(instrumentation, activity);
+        solo.waitForView(activity.findViewById(R.id.form_progress));
 
-        assertEquals("Did not get expected license # field error", "size must be between 6 and 8", errorMsgView.getText());
-        assertEquals("License # error view is not visible", View.VISIBLE, errorMsgView.getVisibility());
+        assertEquals("Did not get expected when occurred field error", "Occurred is a required field", errorMsgView.getText());
+        assertEquals("When occurred error view is not visible", View.VISIBLE, errorMsgView.getVisibility());
 
-        // now test that error clears from display once it has been fixed
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                licenseNoField.setText("123456");
-            }
-        });
+        // now test that it progresses to next form section when validation error has been fixed
+        solo.clickOnView(whenField);
+        solo.clickOnButton("Done"); // date dialog confirm button
 
-        instrumentation.waitForIdleSync();
+        // go!
+        solo.clickOnView(goButton);
 
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                goButton.performClick();
-            }
-        });
-
-        // wait for validation to finish
-        FormActivityTestHelpers.waitForLoaderToDisappear(instrumentation, activity);
-
-        assertNotSame("License # error not cleared", View.VISIBLE, errorMsgView.getVisibility());
+        assertTrue("Details form did not get launched after constants form", solo.waitForActivity(RecordFormSectionActivity.class));
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+
+        if (solo != null) {
+            solo.finishOpenedActivities();
+        }
+
+        solo = null; // instantiate per test, as needed
     }
 }

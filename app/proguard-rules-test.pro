@@ -1,6 +1,13 @@
 
 ### Test dependencies
 # These will only be included when running tests, so keep them all
+
+-keep class com.robotium.solo.** { *; }
+-keep interface com.robotium.solo.** { *; }
+-keepclassmembers class com.robotium.solo.** { *; }
+-keepnames class com.robotium.solo.** { *; }
+-keepnames interface com.robotium.solo.** { *; }
+
 -keep class com.squareup.okhttp.** { *; }
 -keep interface com.squareup.okhttp.** { *; }
 -keepclassmembers class com.squareup.okhttp.** { *; }

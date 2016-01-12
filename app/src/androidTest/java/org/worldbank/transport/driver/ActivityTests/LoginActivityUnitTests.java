@@ -1,7 +1,5 @@
 package org.worldbank.transport.driver.ActivityTests;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.test.ActivityUnitTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
