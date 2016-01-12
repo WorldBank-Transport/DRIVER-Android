@@ -42,7 +42,6 @@ public class ConstantsActivityFunctionalTests extends ActivityInstrumentationTes
     private RecordFormConstantsActivity activity;
     private CountDownLatch displayLock;
     private Instrumentation instrumentation;
-    private Solo solo;
 
     public ConstantsActivityFunctionalTests() {
         super(RecordFormConstantsActivity.class);
@@ -133,7 +132,7 @@ public class ConstantsActivityFunctionalTests extends ActivityInstrumentationTes
         assertNotNull("Did not find text entry field for when occurred field", whenField);
 
         // test validation on occurred from view
-        solo = new Solo(instrumentation, activity);
+        Solo solo = new Solo(instrumentation, activity);
         solo.clickOnView(goButton);
 
         // wait for validation to finish
@@ -150,16 +149,18 @@ public class ConstantsActivityFunctionalTests extends ActivityInstrumentationTes
         solo.clickOnView(goButton);
 
         assertTrue("Details form did not get launched after constants form", solo.waitForActivity(RecordFormSectionActivity.class));
+
+        solo.finishOpenedActivities();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-
-        if (solo != null) {
-            solo.finishOpenedActivities();
-        }
-
-        solo = null; // instantiate per test, as needed
     }
 }
