@@ -22,6 +22,8 @@ import org.jsonschema2pojo.annotations.IsHidden;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
+import org.jsonschema2pojo.annotations.ReferenceTitlePattern;
+import org.jsonschema2pojo.annotations.WatchTarget;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
@@ -242,6 +244,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             FieldTypes fieldType = null;
             boolean isRequired = false;
             ConstantFieldTypes constantFieldType = null;
+            String watchTarget = null;
+            String referenceTitlePattern = null;
 
             Annotation[] annotations = field.getDeclaredAnnotations();
 
@@ -271,6 +275,12 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     Log.d(LOG_LABEL, "Found a constant field type annotation");
                     ConstantFieldType constantFieldTypeAnnotation = (ConstantFieldType) annotation;
                     constantFieldType = constantFieldTypeAnnotation.value();
+                } else if (annotationType.equals(WatchTarget.class)) {
+                    WatchTarget watchTargetAnnotation = (WatchTarget) annotation;
+                    watchTarget = watchTargetAnnotation.value();
+                } else if (annotationType.equals(ReferenceTitlePattern.class)) {
+                    ReferenceTitlePattern pattern = (ReferenceTitlePattern) annotation;
+                    referenceTitlePattern = pattern.value();
                 }
             }
 
@@ -328,6 +338,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     case reference:
                         // TODO: implement
                         Log.w(LOG_LABEL, "TODO: implement reference field type");
+
                         break;
                     default:
                         Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
