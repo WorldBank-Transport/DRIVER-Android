@@ -343,7 +343,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     switch (constantFieldType) {
                         case date:
                             Log.d(LOG_LABEL, "Going to add date control to constant field");
-                            control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT);
+                            control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
                             break;
                         case location:
                             // TODO: implement
