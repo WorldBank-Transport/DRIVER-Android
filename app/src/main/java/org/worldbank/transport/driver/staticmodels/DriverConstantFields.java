@@ -37,9 +37,6 @@ public class DriverConstantFields {
     // constant fields on Record model in DRF
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
 
-    // TODO: modify DatePickerController in forms library to optionally also set the time by
-    // launching a TimePickerDialog on dismissal of the DatePickerDialog
-
     @SerializedName("Occurred")
     @ConstantFieldType(ConstantFieldTypes.date)
     @NotNull
