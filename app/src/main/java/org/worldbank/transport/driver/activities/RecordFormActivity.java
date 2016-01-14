@@ -23,7 +23,6 @@ import org.jsonschema2pojo.annotations.IsHidden;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
-import org.jsonschema2pojo.annotations.ReferenceTitlePattern;
 import org.jsonschema2pojo.annotations.WatchTarget;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
@@ -246,7 +245,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             boolean isRequired = false;
             ConstantFieldTypes constantFieldType = null;
             String watchTarget = null;
-            String referenceTitlePattern = null;
 
             Annotation[] annotations = field.getDeclaredAnnotations();
 
@@ -279,9 +277,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 } else if (annotationType.equals(WatchTarget.class)) {
                     WatchTarget watchTargetAnnotation = (WatchTarget) annotation;
                     watchTarget = watchTargetAnnotation.value();
-                } else if (annotationType.equals(ReferenceTitlePattern.class)) {
-                    ReferenceTitlePattern pattern = (ReferenceTitlePattern) annotation;
-                    referenceTitlePattern = pattern.value();
                 }
             }
 
