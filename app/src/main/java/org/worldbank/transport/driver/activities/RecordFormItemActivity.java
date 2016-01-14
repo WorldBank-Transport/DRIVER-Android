@@ -11,6 +11,8 @@ import android.widget.Toast;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
@@ -25,6 +27,22 @@ public class RecordFormItemActivity extends RecordFormActivity {
     public static final String ITEM_INDEX = "driver_form_item_index";
 
     private int itemIndex;
+
+    /**
+     * Non-default constructor for testing, to set the application context.
+     * @param context Mock context
+     */
+    public RecordFormItemActivity(DriverAppContext context) {
+        super();
+        mAppContext = context;
+    }
+
+    /**
+     * Default constructor, for testing.
+     */
+    public RecordFormItemActivity() {
+        super();
+    }
 
     @Override
     protected Object getModelObject() {

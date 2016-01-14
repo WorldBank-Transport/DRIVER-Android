@@ -158,14 +158,12 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public void validationComplete(boolean isValid) {
-        Log.d(LOG_LABEL, "Valid? " + String.valueOf(isValid));
-
+        // only allow user to proceed if form validates
         if (isValid) {
             proceed();
         } else {
-            Log.w(LOG_LABEL, "TODO: handle validation errors");
-            // validation errors found in section
-            // TODO: show warning dialog with options to proceed or stay to fix errors?
+            Toast toast = Toast.makeText(this, getString(R.string.record_validation_errors), Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 
@@ -175,8 +173,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public FormController createFormController() {
-
-        Log.d(LOG_LABEL, "createFormController called");
+        formReady = false;
 
         String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
@@ -188,7 +185,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             return null;
         }
 
-        Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
         sectionClass = RecordFormSectionManager.getSectionClass(sectionName);
 
         if (sectionClass == null) {
@@ -228,7 +224,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         Class[] classes = sectionClass.getDeclaredClasses();
         for (Class clazz : classes) {
             if (clazz.isEnum()) {
-                Log.d(LOG_LABEL, "Found enum named " + clazz.getSimpleName());
                 enums.put(clazz.getSimpleName(), clazz);
             }
         }
@@ -251,18 +246,15 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             for (Annotation annotation: annotations) {
 
                 Class annotationType = annotation.annotationType();
-                Log.d(LOG_LABEL, fieldName + " has annotation " + annotationType.getName());
 
                 if (annotationType.equals(IsHidden.class)) {
                     IsHidden isHidden = (IsHidden) annotation;
                     if (isHidden.value()) {
-                        Log.d(LOG_LABEL, "Skipping hidden field " + fieldName);
                         continue field_loop;
                     } else {
                         Log.w(LOG_LABEL, "Have false isHidden annotation, which is inefficient. Better just leave it off.");
                     }
                 } else if (annotationType.equals(FieldType.class)) {
-                    Log.d(LOG_LABEL, "Found a field type annotation");
                     FieldType fieldTypeAnnotation = (FieldType) annotation;
                     fieldType = fieldTypeAnnotation.value();
                 } else if (annotationType.equals(SerializedName.class)) {
@@ -271,7 +263,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 } else if (annotationType.equals(NotNull.class)) {
                     isRequired = true;
                 } else if (annotationType.equals(ConstantFieldType.class)) {
-                    Log.d(LOG_LABEL, "Found a constant field type annotation");
                     ConstantFieldType constantFieldTypeAnnotation = (ConstantFieldType) annotation;
                     constantFieldType = constantFieldTypeAnnotation.value();
                 } else if (annotationType.equals(WatchTarget.class)) {
@@ -287,10 +278,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         Log.w(LOG_LABEL, "TODO: implement image field type");
                         break;
                     case selectlist:
-                        Log.d(LOG_LABEL, "Going to add select field");
                         // find enum with the options in it
                         String enumFieldName = field.getType().getSimpleName();
-                        Log.d(LOG_LABEL, "Using enum field name " + enumFieldName);
                         Class enumClass = enums.get(enumFieldName);
 
                         if (enumClass == null) {
@@ -313,7 +302,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             Log.e(LOG_LABEL, "Found a reference field without a watch target! Cannot use field " + fieldName);
                             continue;
                         }
-                        Log.d(LOG_LABEL, "Found reference field type pointing to " + watchTarget);
                         SelectListInfo refSelectInfo = buildReferencedFieldInfo(watchTarget);
                         control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
                                 refSelectInfo.labels, refSelectInfo.items);
@@ -332,7 +320,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     // have a constant field type
                     switch (constantFieldType) {
                         case date:
-                            Log.d(LOG_LABEL, "Going to add date control to constant field");
                             control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
                             break;
                         case location:
@@ -395,7 +382,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             String prettyLabel = enumConstant.toString();
 
             Enum myEnum = (Enum) enumConstant;
-            Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
 
             // Find the field of the same name as the enum constant, to get its label from
             // the SerializedName annotation.

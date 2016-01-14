@@ -30,6 +30,7 @@
     <string name="record_save_failure">Failed to save record!</string>
     <string name="record_item_delete_success">Item deleted</string>
     <string name="record_item_delete_failure">Failed to delete item!</string>
+    <string name="record_validation_errors">Please correct input before proceeding</string>
 
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
