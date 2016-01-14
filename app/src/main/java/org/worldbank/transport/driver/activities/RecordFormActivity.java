@@ -298,35 +298,12 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             continue;
                         }
 
-                        ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
-                        ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+                        SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
 
-                        for (Object enumConstant : enumValueObjectList) {
-                            String prettyLabel = enumConstant.toString();
-
-                            Enum myEnum = (Enum) enumConstant;
-                            Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
-
-                            // Find the field of the same name as the enum constant, to get its label from
-                            // the SerializedName annotation.
-                            try {
-                                Field enumField = enumClass.getField(myEnum.name());
-                                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
-                                if (serializedName != null) {
-                                    prettyLabel = serializedName.value();
-                                }
-                            } catch (NoSuchFieldException e) {
-                                Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
-                                e.printStackTrace();
-                            }
-                            enumLabels.add(prettyLabel);
-                        }
-
-                        Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
-                        Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
-
-                        // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
-                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
+                        // TODO: fix or remove prompt arg in form builder library
+                        // no matter what gets passed for the prompt argument, it seems to always display "Select"
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                                enumListInfo.labels, enumListInfo.items);
                         break;
                     case text:
                         control = new EditTextController(this, fieldName, fieldLabel);
@@ -405,13 +382,47 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     }
 
     /**
+     * Helper to build the labels and items to go in a select control for a field of enums.
+     *
+     * @param enumClass Enum class containing options to put in the control
+     * @return SelectListInfo structure with labels and items to use in select field
+     */
+    private SelectListInfo buildSelectEnumInfo(Class enumClass) {
+        ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
+        ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+
+        for (Object enumConstant : enumValueObjectList) {
+            String prettyLabel = enumConstant.toString();
+
+            Enum myEnum = (Enum) enumConstant;
+            Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
+
+            // Find the field of the same name as the enum constant, to get its label from
+            // the SerializedName annotation.
+            try {
+                Field enumField = enumClass.getField(myEnum.name());
+                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
+                if (serializedName != null) {
+                    prettyLabel = serializedName.value();
+                }
+            } catch (NoSuchFieldException e) {
+                Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
+                e.printStackTrace();
+            }
+            enumLabels.add(prettyLabel);
+        }
+
+        return new SelectListInfo(enumLabels, enumValueObjectList);
+    }
+
+    /**
      * Helper to build the labels and items to go in a select control for a referenced field.
      *
      * @param watchTarget Name of the referenced field on DriverSchema that holds a collection
-     * @return SelectListInfo structure with labels and items to use in select field0
+     * @return SelectListInfo structure with labels and items to use in select field
      */
     @Nullable
-    public SelectListInfo buildReferencedFieldInfo(String watchTarget) {
+    private SelectListInfo buildReferencedFieldInfo(String watchTarget) {
 
         Field refField = RecordFormSectionManager.getFieldForSectionName(watchTarget);
 
