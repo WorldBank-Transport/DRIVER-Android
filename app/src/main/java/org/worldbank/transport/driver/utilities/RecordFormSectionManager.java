@@ -1,5 +1,6 @@
 package org.worldbank.transport.driver.utilities;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.jsonschema2pojo.annotations.Multiple;
@@ -12,6 +13,9 @@ import org.worldbank.transport.driver.models.DriverSchema;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 /**
  * Static methods to support moving around in paginated form sections.
@@ -72,6 +76,7 @@ public class RecordFormSectionManager {
      * @param sectionId Offset of a section within the ordered list of DriverSchema fields
      * @return Name of the section's field name on the DriverSchema class.
      */
+    @Nullable
     public static String getSectionName(int sectionId) {
         try {
             return getSchemaSectionOrder()[sectionId];
@@ -88,6 +93,7 @@ public class RecordFormSectionManager {
      * @param sectionName Field name of the section on the DriverSchema class
      * @return The class of the section, if found
      */
+    @Nullable
     public static Class getSectionClass(String sectionName) {
         try {
             return Class.forName(MODEL_PACKAGE + sectionName);
@@ -137,6 +143,7 @@ public class RecordFormSectionManager {
      * @param sectionName Field name of section on DriverSchema class
      * @return Field from DriverSchema class
      */
+    @Nullable
     public static Field getFieldForSectionName(String sectionName) {
         try {
             return DriverSchema.class.getField(sectionName);
@@ -208,6 +215,7 @@ public class RecordFormSectionManager {
      * @param currentlyEditing DriverSchema object currently editing, as managed by the app singleton
      * @return Section object, ready for use by form
      */
+    @Nullable
     public static Object getOrCreateSectionObject(Field sectionField, Class sectionClass, Object currentlyEditing) {
         // attempt to get the section from the currently editing model object;
         // it will not exist if creating a new record
@@ -255,6 +263,7 @@ public class RecordFormSectionManager {
      * @return Item of type sectionClass from collection on sectionField if found or added
      */
     @SuppressWarnings("unchecked")
+    @Nullable
     public static Object getOrCreateListItem(Field sectionField, Class sectionClass, Object currentlyEditing, int index) {
         Object section = RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
         ArrayList items = getSectionList(section);

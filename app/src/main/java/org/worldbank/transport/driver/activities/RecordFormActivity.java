@@ -1,6 +1,7 @@
 package org.worldbank.transport.driver.activities;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -336,8 +337,14 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         control = new EditTextController(this, fieldName, fieldLabel);
                         break;
                     case reference:
-                        // TODO: implement
-                        Log.w(LOG_LABEL, "TODO: implement reference field type");
+                        if (watchTarget == null) {
+                            Log.e(LOG_LABEL, "Found a reference field without a watch target! Cannot use field " + fieldName);
+                            continue;
+                        }
+                        Log.d(LOG_LABEL, "Found reference field type pointing to " + watchTarget);
+                        SelectListInfo refSelectInfo = buildReferencedFieldInfo(watchTarget);
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                                refSelectInfo.labels, refSelectInfo.items);
 
                         break;
                     default:
@@ -386,6 +393,84 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         return section;
+    }
+
+    /**
+     * Structure to hold labels and items for a select controller.
+     * Order of items in both collections should match.
+     */
+    private class SelectListInfo {
+        public final ArrayList<String> labels;
+        public final ArrayList<Object> items;
+
+        public SelectListInfo(ArrayList<String> labels, ArrayList<Object> items) {
+            this.labels = labels;
+            this.items = items;
+        }
+    }
+
+    /**
+     * Helper to build the labels and items to go in a select control for a referenced field.
+     *
+     * @param watchTarget Name of the referenced field on DriverSchema that holds a collection
+     * @return SelectListInfo structure with labels and items to use in select field0
+     */
+    @Nullable
+    public SelectListInfo buildReferencedFieldInfo(String watchTarget) {
+
+        Field refField = RecordFormSectionManager.getFieldForSectionName(watchTarget);
+
+        if (refField == null) {
+            Log.e(LOG_LABEL, "No field found for ref target " + watchTarget);
+            return null;
+        }
+
+        Class refClass = RecordFormSectionManager.getSectionClass(watchTarget);
+
+        if (refClass == null) {
+            Log.e(LOG_LABEL, "No class found for ref target " + watchTarget);
+            return null;
+        }
+
+        Object refObj = RecordFormSectionManager.getOrCreateSectionObject(refField, refClass, currentlyEditing);
+
+        if (refObj == null) {
+            Log.e(LOG_LABEL, "Referenced watch target object not found/created: " + watchTarget);
+            return null;
+        }
+
+        String prettyRefLabel = RecordFormSectionManager.getSingleTitle(refField, refField.getName());
+        ArrayList refList = RecordFormSectionManager.getSectionList(refObj);
+        ArrayList<String> refLabels = DriverUtilities.getListItemLabels(refList, refClass, prettyRefLabel);
+
+        Field refIdField;
+        try {
+            refIdField = refClass.getField("LocalId");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to find LocalId field on referenced field " + watchTarget);
+            return null;
+        }
+
+        // String representation of _localId UUIDs is the actual value stored for the reference
+        ArrayList<Object> refIDs = new ArrayList<>(refList.size());
+        for (Object refItem : refList) {
+            try {
+                refIDs.add(refIdField.get(refItem));
+            } catch (IllegalAccessException e) {
+                Log.e(LOG_LABEL, "Failed to get LocalId for item on referenced field " + watchTarget);
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        // sanity check that everything is there and labelled
+        if (refIDs.size() != refLabels.size() || refIDs.size() != refList.size()) {
+            Log.e(LOG_LABEL, "Unexpected counts creating ref type field " + watchTarget);
+            return null;
+        }
+
+        return new SelectListInfo(refLabels, refIDs);
     }
 }
 
