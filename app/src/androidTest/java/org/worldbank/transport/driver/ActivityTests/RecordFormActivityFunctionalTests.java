@@ -17,10 +17,15 @@ import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormElementController;
+import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;
 import org.worldbank.transport.driver.activities.RecordFormItemActivity;
+import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.models.Person;
+import org.worldbank.transport.driver.models.Vehicle;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +53,11 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         super.setUp();
 
         Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormItemActivity.class);
+
         // go to Persons section
         intent.putExtra(RecordFormActivity.SECTION_ID, 2);
         intent.putExtra(RecordFormItemActivity.ITEM_INDEX, 0);
+
         setActivityIntent(intent);
 
         activity = getActivity();
@@ -64,6 +71,8 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
 
         // make sure form is done rendering
         FormActivityTestHelpers.waitForLoaderToDisappear(getInstrumentation(), activity);
+
+        setDummyData();
     }
 
     @Override
@@ -91,6 +100,20 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         ViewAsserts.assertGroupContains(buttonBar, goButton);
         View root = containerView.getRootView();
         ViewAsserts.assertOnScreen(root, containerView);
+    }
+
+    @MediumTest
+    public void testReferenceTypeField() {
+        FormController formController = activity.getFormController();
+
+        SelectionController vehicleCtl = (SelectionController)formController.getElement("Vehicle");
+        assertNotNull(vehicleCtl);
+
+        Object vehicleObj = vehicleCtl.getModel().getValue(vehicleCtl.getName());
+
+        // should have a UUID set
+        assertEquals(String.class, vehicleObj.getClass());
+        assertEquals(36, ((String) vehicleObj).length());
     }
 
     @MediumTest
@@ -173,5 +196,52 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+
+        if (activity != null) {
+            activity.finish();
+        }
+    }
+
+    private void setDummyData() {
+        DriverApp app = (DriverApp) activity.getApplication();
+        DriverSchema editObj = app.getEditObject();
+
+        Vehicle testVehicleOne = new Vehicle();
+        Vehicle testVehicleTwo = new Vehicle();
+        testVehicleOne.VehicleType = Vehicle.VehicleTypeEnum.BICYCLE;
+        testVehicleTwo.VehicleType = Vehicle.VehicleTypeEnum.ANIMAL;
+
+        editObj.Vehicle = new ArrayList<>(2);
+        editObj.Vehicle.add(testVehicleOne);
+        editObj.Vehicle.add(testVehicleTwo);
+
+        Person testPerson = new Person();
+        testPerson.Name = "Evel Knievel";
+        testPerson.Vehicle = testVehicleOne.LocalId;
+        editObj.Person = new ArrayList<>(1);
+        editObj.Person.add(testPerson);
+
+        // reload with the new data
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.showProgress(true);
+                activity.recreate();
+            }
+        });
+
+        // wait for the form to display
+        if (!activity.isFormReady()) {
+            activity.setFormReadyListener(this);
+            displayLock = new CountDownLatch(1);
+            try {
+                displayLock.await(3000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // make sure form is done rendering
+        FormActivityTestHelpers.waitForLoaderToDisappear(getInstrumentation(), activity);
     }
 }

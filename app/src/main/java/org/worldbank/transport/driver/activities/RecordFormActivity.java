@@ -1,6 +1,7 @@
 package org.worldbank.transport.driver.activities;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import org.jsonschema2pojo.annotations.IsHidden;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
+import org.jsonschema2pojo.annotations.WatchTarget;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
@@ -156,14 +158,12 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public void validationComplete(boolean isValid) {
-        Log.d(LOG_LABEL, "Valid? " + String.valueOf(isValid));
-
+        // only allow user to proceed if form validates
         if (isValid) {
             proceed();
         } else {
-            Log.w(LOG_LABEL, "TODO: handle validation errors");
-            // validation errors found in section
-            // TODO: show warning dialog with options to proceed or stay to fix errors?
+            Toast toast = Toast.makeText(this, getString(R.string.record_validation_errors), Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 
@@ -173,8 +173,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public FormController createFormController() {
-
-        Log.d(LOG_LABEL, "createFormController called");
+        formReady = false;
 
         String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
@@ -186,7 +185,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             return null;
         }
 
-        Log.d(LOG_LABEL, "Found sectionField " + sectionField.getName());
         sectionClass = RecordFormSectionManager.getSectionClass(sectionName);
 
         if (sectionClass == null) {
@@ -226,7 +224,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         Class[] classes = sectionClass.getDeclaredClasses();
         for (Class clazz : classes) {
             if (clazz.isEnum()) {
-                Log.d(LOG_LABEL, "Found enum named " + clazz.getSimpleName());
                 enums.put(clazz.getSimpleName(), clazz);
             }
         }
@@ -242,24 +239,22 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             FieldTypes fieldType = null;
             boolean isRequired = false;
             ConstantFieldTypes constantFieldType = null;
+            String watchTarget = null;
 
             Annotation[] annotations = field.getDeclaredAnnotations();
 
             for (Annotation annotation: annotations) {
 
                 Class annotationType = annotation.annotationType();
-                Log.d(LOG_LABEL, fieldName + " has annotation " + annotationType.getName());
 
                 if (annotationType.equals(IsHidden.class)) {
                     IsHidden isHidden = (IsHidden) annotation;
                     if (isHidden.value()) {
-                        Log.d(LOG_LABEL, "Skipping hidden field " + fieldName);
                         continue field_loop;
                     } else {
                         Log.w(LOG_LABEL, "Have false isHidden annotation, which is inefficient. Better just leave it off.");
                     }
                 } else if (annotationType.equals(FieldType.class)) {
-                    Log.d(LOG_LABEL, "Found a field type annotation");
                     FieldType fieldTypeAnnotation = (FieldType) annotation;
                     fieldType = fieldTypeAnnotation.value();
                 } else if (annotationType.equals(SerializedName.class)) {
@@ -268,9 +263,11 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 } else if (annotationType.equals(NotNull.class)) {
                     isRequired = true;
                 } else if (annotationType.equals(ConstantFieldType.class)) {
-                    Log.d(LOG_LABEL, "Found a constant field type annotation");
                     ConstantFieldType constantFieldTypeAnnotation = (ConstantFieldType) annotation;
                     constantFieldType = constantFieldTypeAnnotation.value();
+                } else if (annotationType.equals(WatchTarget.class)) {
+                    WatchTarget watchTargetAnnotation = (WatchTarget) annotation;
+                    watchTarget = watchTargetAnnotation.value();
                 }
             }
 
@@ -281,10 +278,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         Log.w(LOG_LABEL, "TODO: implement image field type");
                         break;
                     case selectlist:
-                        Log.d(LOG_LABEL, "Going to add select field");
                         // find enum with the options in it
                         String enumFieldName = field.getType().getSimpleName();
-                        Log.d(LOG_LABEL, "Using enum field name " + enumFieldName);
                         Class enumClass = enums.get(enumFieldName);
 
                         if (enumClass == null) {
@@ -292,42 +287,25 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             continue;
                         }
 
-                        ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
-                        ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+                        SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
 
-                        for (Object enumConstant : enumValueObjectList) {
-                            String prettyLabel = enumConstant.toString();
-
-                            Enum myEnum = (Enum) enumConstant;
-                            Log.d(LOG_LABEL, "found enum #" + myEnum.ordinal() + ": " + myEnum.name());
-
-                            // Find the field of the same name as the enum constant, to get its label from
-                            // the SerializedName annotation.
-                            try {
-                                Field enumField = enumClass.getField(myEnum.name());
-                                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
-                                if (serializedName != null) {
-                                    prettyLabel = serializedName.value();
-                                }
-                            } catch (NoSuchFieldException e) {
-                                Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
-                                e.printStackTrace();
-                            }
-                            enumLabels.add(prettyLabel);
-                        }
-
-                        Log.d(LOG_LABEL, "enumLabels: " + enumLabels.toString());
-                        Log.d(LOG_LABEL, "enumValues: " + enumValueObjectList.toString());
-
-                        // TODO: no matter what gets passed for the prompt argument, it seems to always display "Select"
-                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select", enumLabels, enumValueObjectList);
+                        // TODO: fix or remove prompt arg in form builder library
+                        // no matter what gets passed for the prompt argument, it seems to always display "Select"
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                                enumListInfo.labels, enumListInfo.items);
                         break;
                     case text:
                         control = new EditTextController(this, fieldName, fieldLabel);
                         break;
                     case reference:
-                        // TODO: implement
-                        Log.w(LOG_LABEL, "TODO: implement reference field type");
+                        if (watchTarget == null) {
+                            Log.e(LOG_LABEL, "Found a reference field without a watch target! Cannot use field " + fieldName);
+                            continue;
+                        }
+                        SelectListInfo refSelectInfo = buildReferencedFieldInfo(watchTarget);
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                                refSelectInfo.labels, refSelectInfo.items);
+
                         break;
                     default:
                         Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
@@ -342,7 +320,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     // have a constant field type
                     switch (constantFieldType) {
                         case date:
-                            Log.d(LOG_LABEL, "Going to add date control to constant field");
                             control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
                             break;
                         case location:
@@ -375,6 +352,117 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         return section;
+    }
+
+    /**
+     * Structure to hold labels and items for a select controller.
+     * Order of items in both collections should match.
+     */
+    private class SelectListInfo {
+        public final ArrayList<String> labels;
+        public final ArrayList<Object> items;
+
+        public SelectListInfo(ArrayList<String> labels, ArrayList<Object> items) {
+            this.labels = labels;
+            this.items = items;
+        }
+    }
+
+    /**
+     * Helper to build the labels and items to go in a select control for a field of enums.
+     *
+     * @param enumClass Enum class containing options to put in the control
+     * @return SelectListInfo structure with labels and items to use in select field
+     */
+    private SelectListInfo buildSelectEnumInfo(Class enumClass) {
+        ArrayList<Object> enumValueObjectList = new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
+        ArrayList<String> enumLabels = new ArrayList<>(enumValueObjectList.size());
+
+        for (Object enumConstant : enumValueObjectList) {
+            String prettyLabel = enumConstant.toString();
+
+            Enum myEnum = (Enum) enumConstant;
+
+            // Find the field of the same name as the enum constant, to get its label from
+            // the SerializedName annotation.
+            try {
+                Field enumField = enumClass.getField(myEnum.name());
+                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
+                if (serializedName != null) {
+                    prettyLabel = serializedName.value();
+                }
+            } catch (NoSuchFieldException e) {
+                Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);
+                e.printStackTrace();
+            }
+            enumLabels.add(prettyLabel);
+        }
+
+        return new SelectListInfo(enumLabels, enumValueObjectList);
+    }
+
+    /**
+     * Helper to build the labels and items to go in a select control for a referenced field.
+     *
+     * @param watchTarget Name of the referenced field on DriverSchema that holds a collection
+     * @return SelectListInfo structure with labels and items to use in select field
+     */
+    @Nullable
+    private SelectListInfo buildReferencedFieldInfo(String watchTarget) {
+
+        Field refField = RecordFormSectionManager.getFieldForSectionName(watchTarget);
+
+        if (refField == null) {
+            Log.e(LOG_LABEL, "No field found for ref target " + watchTarget);
+            return null;
+        }
+
+        Class refClass = RecordFormSectionManager.getSectionClass(watchTarget);
+
+        if (refClass == null) {
+            Log.e(LOG_LABEL, "No class found for ref target " + watchTarget);
+            return null;
+        }
+
+        Object refObj = RecordFormSectionManager.getOrCreateSectionObject(refField, refClass, currentlyEditing);
+
+        if (refObj == null) {
+            Log.e(LOG_LABEL, "Referenced watch target object not found/created: " + watchTarget);
+            return null;
+        }
+
+        String prettyRefLabel = RecordFormSectionManager.getSingleTitle(refField, refField.getName());
+        ArrayList refList = RecordFormSectionManager.getSectionList(refObj);
+        ArrayList<String> refLabels = DriverUtilities.getListItemLabels(refList, refClass, prettyRefLabel);
+
+        Field refIdField;
+        try {
+            refIdField = refClass.getField("LocalId");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to find LocalId field on referenced field " + watchTarget);
+            return null;
+        }
+
+        // String representation of _localId UUIDs is the actual value stored for the reference
+        ArrayList<Object> refIDs = new ArrayList<>(refList.size());
+        for (Object refItem : refList) {
+            try {
+                refIDs.add(refIdField.get(refItem));
+            } catch (IllegalAccessException e) {
+                Log.e(LOG_LABEL, "Failed to get LocalId for item on referenced field " + watchTarget);
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        // sanity check that everything is there and labelled
+        if (refIDs.size() != refLabels.size() || refIDs.size() != refList.size()) {
+            Log.e(LOG_LABEL, "Unexpected counts creating ref type field " + watchTarget);
+            return null;
+        }
+
+        return new SelectListInfo(refLabels, refIDs);
     }
 }
 
