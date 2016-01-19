@@ -2,6 +2,7 @@ package org.worldbank.transport.driver.activities;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +12,7 @@ import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.services.DriverLocationService;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -100,5 +102,22 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         }
 
         return null;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == DriverLocationService.PERMISSION_REQUEST_ID) {
+            // DriverLocationService asked for location access, and now response has come back
+            if (grantResults.length > 0) {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // TODO: restart location service
+                    //////////////////////////////////
+                } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    // let user know we needed that, and bail
+                    DriverLocationService.displayPermissionRequestRationale(getApplicationContext());
+                    finish();
+                }
+            }
+        }
     }
 }

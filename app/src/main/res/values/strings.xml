@@ -41,4 +41,8 @@
     <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
     <string name="title_activity_record_item_list">RecordItemListActivity</string>
 
+    <!-- device location -->
+    <string name="location_fine_permission_rationale">Device location permission required. Records cannot be entered without a location.</string>
+    <string name="location_gps_needed_rationale">GPS must be enabled to get an accurate location for the record.</string>
+
 </resources>
