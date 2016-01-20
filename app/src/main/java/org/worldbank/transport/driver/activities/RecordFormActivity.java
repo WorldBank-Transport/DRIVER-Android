@@ -47,10 +47,6 @@ import java.util.HashMap;
  */
 public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
-    public interface FormReadyListener {
-        void formReadyCallback();
-    }
-
     public static final String SECTION_ID = "driver_section_id";
     private static final String LOG_LABEL = "RecordFormActivity";
 
@@ -61,10 +57,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     protected DriverAppContext mAppContext;
     protected DriverApp app;
-
-    // flag that is true once form has been displayed
-    private boolean formReady = false;
-    private FormReadyListener formReadyListener;
 
     protected DriverSchema currentlyEditing;
 
@@ -133,12 +125,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
         RelativeLayout buttonBar = buildButtonBar();
         containerView.addView(buttonBar);
-
-        // alert that form is ready to go
-        formReady = true;
-        if (formReadyListener != null) {
-            formReadyListener.formReadyCallback();
-        }
     }
 
     /**
@@ -147,14 +133,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
      * @return View with buttons with handlers added to it
      */
     public abstract RelativeLayout buildButtonBar();
-
-    public boolean isFormReady() {
-        return formReady;
-    }
-
-    public void setFormReadyListener(FormReadyListener listener) {
-        formReadyListener = listener;
-    }
 
     @Override
     public void validationComplete(boolean isValid) {
@@ -173,8 +151,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public FormController createFormController() {
-        formReady = false;
-
         String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
         // section offset was passed to activity in intent; find section to use here

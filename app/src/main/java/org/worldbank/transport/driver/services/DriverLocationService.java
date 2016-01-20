@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
@@ -31,7 +33,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 
-public class DriverLocationService extends Service implements GpsStatus.Listener {
+public class DriverLocationService extends Service implements GpsStatus.Listener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String LOG_LABEL = "LocationService";
 
@@ -40,8 +43,8 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     public static final int API_AVAILABILITY_REQUEST_ID = Integer.MAX_VALUE / 16;
 
     /**
-     * Location accuracy is a radius in meters of 68% confidence, so updates may come through
-     * with high accuracy that actually fall outside the stated radius.
+     * Location accuracy is a radius in meters of 68% confidence, so some updates may come through
+     * with seemingly high accuracy that actually fall far outside the stated radius.
      */
 
     // minimum location accuracy to accept for a location update (GPS should always be within this)
@@ -55,7 +58,6 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     public interface DriverLocationUpdateListener {
         void bestLocationFound(Location estimatedLocation);
         void gotGpsFix();
-        void foundFirstLocation();
     }
 
     public class LocationServiceBinder extends Binder {
@@ -74,6 +76,31 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     private Location acceptableLocation;
     private long startedWaitingForBetterLocation;
     private ArrayList<Location> preferredAccuracyLocations;
+    private boolean doneWaitingForLocations;
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        // Android Studio will complain mightily if requestLocationUpdates is not called
+        // after a permissions check that is in the same method
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(LOG_LABEL, "Actually starting location updates now.");
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        } else {
+            Log.w(LOG_LABEL, "Got onConnected callback, but do not have location services permissions now");
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.w(LOG_LABEL, "Location services API connection suspended!");
+        // TODO: anything?
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.w(LOG_LABEL, "Location services API connection failed!");
+        // TODO: anything?
+    }
 
     /**
      * Return best location estimate found for received updates.
@@ -91,6 +118,8 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 // if only got one, just use it
                 return new Location(preferredAccuracyLocations.get(0));
             }
+
+            Log.d(LOG_LABEL, "Finding weighted average of " + preferredAccuracyLocations.size() + " location readings");
 
             double sumLat = 0;
             double sumLon = 0;
@@ -134,10 +163,12 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
      * Listener should stop this service after result received.
      */
     private void finishWithBestLocation() {
+        doneWaitingForLocations = true;
         if (driverLocationUpdateListener != null) {
             driverLocationUpdateListener.bestLocationFound(getBestLocationFound());
         } else {
             Log.w(LOG_LABEL, "Best location estimate found, but there's nobody listening!");
+            // best to stop service by unbinding, but if listener somehow disappears fist, clean up
             stopSelf();
         }
     }
@@ -154,6 +185,11 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
 
     @Override
     public void onGpsStatusChanged(int event) {
+
+        // ignore any events that come through during finish-up activities
+        if (doneWaitingForLocations) {
+            return;
+        }
 
         // check if time for improved location updates has elapsed while waiting
         // (might get here if updates stopped coming through)
@@ -219,10 +255,11 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Log.d(LOG_LABEL, "Location changed: " + location.toString());
+                Log.d(LOG_LABEL, "Location changed: (" + location.getLatitude() + "," +
+                        location.getLongitude() + ") accuracy: " + location.getAccuracy());
 
-                if (doneWaitingForUpdates()) {
-                    finishWithBestLocation();
+                // ignore any events that come through during finish-up activities
+                if (doneWaitingForLocations) {
                     return;
                 }
 
@@ -241,9 +278,6 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 if (acceptableLocation == null) {
                     // got first good update; continue to wait for a better location
                     acceptableLocation = location;
-                    if (driverLocationUpdateListener != null) {
-                        driverLocationUpdateListener.foundFirstLocation();
-                    }
                     startedWaitingForBetterLocation = System.currentTimeMillis();
                 } else if (accuracy < PREFERRED_LOCATION_ACCURACY) {
                     // found a location with good accuracy; keep it
@@ -252,11 +286,17 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                     // got an update with a non-preferred accuracy, but better than previous
                     acceptableLocation = location;
                 }
+
+                if (doneWaitingForUpdates()) {
+                    finishWithBestLocation();
+                    return;
+                }
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 // TODO: what info comes through here?
+                Log.d(LOG_LABEL, "Location listener got status change");
             }
 
             @Override
@@ -270,9 +310,8 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             public void onProviderDisabled(String provider) {
                 // GPS got disabled after location updates already started; prompt to re-enable
                 if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                    Log.d(LOG_LABEL, "GPS disabled!");
-                    promptToEnableGps();
-                    stopSelf();
+                    Log.w(LOG_LABEL, "GPS disabled!");
+                    promptToEnableGps(null);
                 }
             }
         };
@@ -283,6 +322,7 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
         this.preferredAccuracyLocations = new ArrayList<>(50);
         this.acceptableLocation = null;
         this.startedWaitingForBetterLocation = 0;
+        this.doneWaitingForLocations = false;
     }
 
     public void addDriverLocationUpdateListener(DriverLocationUpdateListener listener) {
@@ -331,29 +371,36 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 return false; // up to the activity to start this service again when permissions granted
             }
 
-            ActivityCompat.requestPermissions(callingActivity, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_ID);
+            ActivityCompat.requestPermissions(callingActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_ID);
             return false;
         } else {
             // check if device has GPS
             if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
                 // let user know they must use a device with GPS for this app to work
-                Toast toast = new Toast(context);
-                toast.setText(R.string.location_requires_gps);
-                toast.setDuration(Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(context, context.getString(R.string.location_requires_gps), Toast.LENGTH_LONG);
                 toast.show();
                 return false;
             }
 
             // prompt user to turn on GPS, if needed
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                promptToEnableGps();
+                promptToEnableGps(caller);
                 return false;
             }
             // have permission and access to GPS location, and GPS is enabled; request updates
 
-            // Android Studio will complain mightily if requestLocationUpdates is not called
-            // after a permissions check that is in the same method
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            GoogleApiClient client = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+
+            client.connect();
+
+            // cannot actually start requesting location updates until API client sends
+            // onConnect callback
+            // http://developer.android.com/training/location/receive-location-updates.html
+
             locationManager.addGpsStatusListener(this);
 
             return true;
@@ -366,14 +413,26 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
      * if this service needs to be (re-)started in its onResume, which would happen after GPS
      * system dialog gets dismissed.
      */
-    private void promptToEnableGps() {
-        Intent enableGpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        startActivity(enableGpsIntent);
-
-        Toast toast = new Toast(context);
-        toast.setText(R.string.location_gps_needed_rationale);
-        toast.setDuration(Toast.LENGTH_LONG);
+    private void promptToEnableGps(WeakReference<RecordFormConstantsActivity> caller) {
+        Toast toast = Toast.makeText(context, context.getString(R.string.location_gps_needed_rationale), Toast.LENGTH_LONG);
         toast.show();
+
+        Intent enableGpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+
+        if (caller != null) {
+            RecordFormConstantsActivity callingActivity = caller.get();
+            if (callingActivity != null) {
+                callingActivity.startActivity(enableGpsIntent);
+            } else {
+                // activity went away; open prompt in new context
+                enableGpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(enableGpsIntent);
+            }
+        } else {
+            // GPS got disabled after location updates already started
+            enableGpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(enableGpsIntent);
+        }
     }
 
     private void showApiErrorDialog(WeakReference<Activity> caller, GoogleApiAvailability gapiAvailability, int errorCode) {
@@ -388,9 +447,7 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     }
 
     public static void displayPermissionRequestRationale(Context context) {
-        Toast toast = new Toast(context);
-        toast.setText(R.string.location_fine_permission_rationale);
-        toast.setDuration(Toast.LENGTH_LONG);
+        Toast toast = Toast.makeText(context, context.getString(R.string.location_fine_permission_rationale), Toast.LENGTH_LONG);
         toast.show();
     }
 }

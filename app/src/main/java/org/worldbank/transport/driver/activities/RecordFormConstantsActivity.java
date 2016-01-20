@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.azavea.androidvalidatedforms.FormActivityBase;
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
@@ -27,7 +28,7 @@ import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
  *
  * Created by kathrynkillebrew on 1/8/16.
  */
-public class RecordFormConstantsActivity extends RecordFormActivity {
+public class RecordFormConstantsActivity extends RecordFormActivity implements FormActivityBase.FormReadyListener {
 
     private static final String LOG_LABEL = "RecordConstants";
 
@@ -36,20 +37,26 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
 
     private TextView locationStatusView;
     private TextView locationView;
-
+    private String initialLocationText;
+    RelativeLayout locationBar;
+    RelativeLayout buttonBar;
 
     @Override
     public RelativeLayout buildButtonBar() {
 
-        // TODO: put location controls in here
-        ////////////////////////////////////////
+        // add location label and status
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
-        RelativeLayout locationBar = (RelativeLayout)getLayoutInflater().inflate(R.layout.location_constant_field, containerView);
-        locationView = (TextView)locationBar.findViewById(R.id.location_constant);
-        locationStatusView = (TextView)locationBar.findViewById(R.id.location_constant_status);
+        locationBar = (RelativeLayout)getLayoutInflater().inflate(R.layout.location_constant_field, null);
+
+        containerView.addView(locationBar);
+
+        // set location text views once form layout done
+        setFormReadyListener(this);
+
+        // add button bar
 
         // put buttons in a relative layout for positioning on right or left
-        RelativeLayout buttonBar = new RelativeLayout(this);
+        buttonBar = new RelativeLayout(this);
         buttonBar.setId(R.id.record_button_bar_id);
         buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
@@ -120,31 +127,81 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         return null;
     }
 
+    /**
+     * Set location text views once form layout done, in order to capture any status changes
+     * that happened during form layout.
+     */
+    @Override
+    public void formReadyCallback() {
+        Log.d(LOG_LABEL, "In form ready callback");
+
+        locationView = (TextView) locationBar.findViewById(R.id.location_constant);
+        locationStatusView = (TextView) locationBar.findViewById(R.id.location_constant_status);
+
+        Log.d(LOG_LABEL, "Initial setup of location views");
+
+        if (LocationServiceManager.isRunning()) {
+            int status = LocationServiceManager.getCurrentStatus();
+            locationStatusView.setText(getString(status));
+            locationStatusView.setVisibility(View.VISIBLE);
+        } else {
+            locationStatusView.setVisibility(View.GONE);
+        }
+
+        if (initialLocationText != null) {
+            locationView.setText(initialLocationText);
+            locationView.setVisibility(View.VISIBLE);
+        } else {
+            locationView.setVisibility(View.GONE);
+        }
+    }
+
+    private void setLocationStatusText(String status) {
+        if (locationStatusView != null) {
+            if (status != null) {
+                Log.d(LOG_LABEL, "Set location status text to: " + status);
+                locationStatusView.setText(status);
+                locationStatusView.setVisibility(View.VISIBLE);
+            } else {
+                Log.d(LOG_LABEL, "Hiding location status text");
+                locationStatusView.setVisibility(View.GONE);
+            }
+
+            locationStatusView.requestLayout();
+        }
+    }
+
     private void setLocationText() {
         Location location = getLocation();
         if (location != null) {
-            locationView.setText(getString(R.string.location_display, location.getLatitude(), location.getLongitude()));
-            locationView.setVisibility(View.VISIBLE);
+            Log.d(LOG_LABEL, "Going to display location");
+            String locationText = getString(R.string.location_display, location.getLatitude(), location.getLongitude());
+            if (locationView != null) {
+                locationView.setText(locationText);
+                locationView.setVisibility(View.VISIBLE);
+                locationView.requestLayout();
+            } else {
+                initialLocationText = locationText;
+            }
         } else {
-            Log.e(LOG_LABEL, "No location set to display!");
-            locationView.setVisibility(View.INVISIBLE);
+            Log.d(LOG_LABEL, "No location set to display");
+            if (locationView != null) {
+                locationView.setVisibility(View.GONE);
+                locationView.requestLayout();
+            } else {
+                initialLocationText = null;
+            }
         }
     }
 
     public void onBestLocationFound() {
         // show location view and update status message
-        locationStatusView.setText(getString(R.string.location_best_found));
+        setLocationStatusText(getString(R.string.location_best_found));
         setLocationText();
     }
 
     public void onGotGpxFix() {
-        locationStatusView.setText(getString(R.string.location_gps_fix_found));
-        locationView.setVisibility(View.INVISIBLE);
-    }
-
-    public void onFoundFirstLocation() {
-        locationStatusView.setText(getString(R.string.location_first_update));
-        locationView.setVisibility(View.INVISIBLE);
+        setLocationStatusText(getString(R.string.location_gps_fix_found));
     }
 
     private Location getLocation() {
@@ -162,12 +219,13 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
 
     private void startLocationService() {
         if (LocationServiceManager.isRunning()) {
-            Log.w(LOG_LABEL, "Location service is already running");
+            Log.w(LOG_LABEL, "Location service is already running; listen to it");
+            LocationServiceManager.setListeningActivity(this);
             return;
         }
 
-        locationStatusView.setText(getString(R.string.location_awaiting_gps_fix));
-        locationView.setVisibility(View.INVISIBLE);
+        setLocationStatusText(getString(R.string.location_awaiting_gps_fix));
+        setLocationText(); // will hide view
 
         LocationServiceManager locationServiceManager = LocationServiceManager.getInstance();
         locationServiceManager.startService(this);
@@ -187,7 +245,7 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
             startLocationService();
         } else {
             Log.d(LOG_LABEL, "Already have location set; not starting location service");
-            locationStatusView.setVisibility(View.GONE);
+            setLocationStatusText(null); // will hide view
             setLocationText();
         }
     }

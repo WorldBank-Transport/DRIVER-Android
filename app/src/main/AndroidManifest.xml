@@ -50,7 +50,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
-            android:name=".services.DriverLocationService"
+            android:name="org.worldbank.transport.driver.services.DriverLocationService"
             android:enabled="true"
             android:exported="false" />
     </application>
