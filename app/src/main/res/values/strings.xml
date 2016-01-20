@@ -45,5 +45,10 @@
     <string name="location_fine_permission_rationale">Device location permission required. Records cannot be entered without a location.</string>
     <string name="location_gps_needed_rationale">GPS must be enabled to get an accurate location for the record.</string>
     <string name="location_requires_gps">Device does not have GPS, which is needed to get location. Please use a different device.</string>
+    <string name="location_gps_fix_found">GPS fix found. Getting location&#8230;</string>
+    <string name="location_first_update">Got a location. Refining&#8230;</string>
+    <string name="location_best_found">Best location found.</string>
+    <string name="location_awaiting_gps_fix">Waiting for GPS fix&#8230;</string>
+    <string name="location_display">%d, %d</string>
 
 </resources>

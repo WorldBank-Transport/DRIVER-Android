@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/location_constant_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:padding="5dp" />
+
+    <TextView
+        android:id="@+id/location_constant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:textColor="@android:color/black"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:padding="5dp" />
+
+</RelativeLayout>

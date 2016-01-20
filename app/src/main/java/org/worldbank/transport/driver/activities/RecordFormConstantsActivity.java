@@ -3,11 +3,14 @@ package org.worldbank.transport.driver.activities;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
@@ -31,14 +34,19 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
     // section label (web app has none for this section)
     public static final String CONSTANTS_SECTION_NAME = "Record Basic Information";
 
-    private LocationServiceManager locationServiceManager;
+    private TextView locationStatusView;
+    private TextView locationView;
+
 
     @Override
     public RelativeLayout buildButtonBar() {
 
         // TODO: put location controls in here
-        // RelativeLayout locationBar = new RelativeLayout(this);
-
+        ////////////////////////////////////////
+        ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
+        RelativeLayout locationBar = (RelativeLayout)getLayoutInflater().inflate(R.layout.location_constant_field, containerView);
+        locationView = (TextView)locationBar.findViewById(R.id.location_constant);
+        locationStatusView = (TextView)locationBar.findViewById(R.id.location_constant_status);
 
         // put buttons in a relative layout for positioning on right or left
         RelativeLayout buttonBar = new RelativeLayout(this);
@@ -71,7 +79,6 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         });
 
         buttonBar.addView(goBtn);
-
         return buttonBar;
     }
 
@@ -113,21 +120,44 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         return null;
     }
 
+    private void setLocationText() {
+        Location location = getLocation();
+        if (location != null) {
+            locationView.setText(getString(R.string.location_display, location.getLatitude(), location.getLongitude()));
+            locationView.setVisibility(View.VISIBLE);
+        } else {
+            Log.e(LOG_LABEL, "No location set to display!");
+            locationView.setVisibility(View.INVISIBLE);
+        }
+    }
+
     public void onBestLocationFound() {
-        // TODO: refresh location view and update status message
+        // show location view and update status message
+        locationStatusView.setText(getString(R.string.location_best_found));
+        setLocationText();
     }
 
     public void onGotGpxFix() {
-        // TODO: update status message
+        locationStatusView.setText(getString(R.string.location_gps_fix_found));
+        locationView.setVisibility(View.INVISIBLE);
     }
 
     public void onFoundFirstLocation() {
-        // TODO: update status message
+        locationStatusView.setText(getString(R.string.location_first_update));
+        locationView.setVisibility(View.INVISIBLE);
+    }
+
+    private Location getLocation() {
+        DriverConstantFields constants = app.getEditConstants();
+        if (constants != null) {
+            return constants.location;
+        }
+
+        return null;
     }
 
     private boolean haveLocationSet() {
-        DriverConstantFields constants = app.getEditConstants();
-        return constants != null && constants.location != null;
+        return getLocation() != null;
     }
 
     private void startLocationService() {
@@ -136,7 +166,10 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
             return;
         }
 
-        locationServiceManager = LocationServiceManager.getInstance();
+        locationStatusView.setText(getString(R.string.location_awaiting_gps_fix));
+        locationView.setVisibility(View.INVISIBLE);
+
+        LocationServiceManager locationServiceManager = LocationServiceManager.getInstance();
         locationServiceManager.startService(this);
     }
 
@@ -154,6 +187,8 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
             startLocationService();
         } else {
             Log.d(LOG_LABEL, "Already have location set; not starting location service");
+            locationStatusView.setVisibility(View.GONE);
+            setLocationText();
         }
     }
 
