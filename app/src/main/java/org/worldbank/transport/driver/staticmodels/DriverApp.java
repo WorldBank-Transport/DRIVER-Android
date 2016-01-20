@@ -161,12 +161,7 @@ public class DriverApp extends Application {
      */
     public boolean setCurrentlyEditingRecord(long databaseId) {
         record = databaseManager.getRecordById(databaseId);
-
-        if (record != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return record != null;
     }
 
     public static boolean getIsNetworkAvailable() {
