@@ -24,6 +24,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 
 import java.lang.ref.WeakReference;
@@ -52,7 +53,7 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     private static final int PREFERRED_LOCATION_TIMEOUT_MS = 20000; // milliseconds
 
     public interface DriverLocationUpdateListener {
-        void bestLocationFound(EstimatedLocation estimatedLocation);
+        void bestLocationFound(Location estimatedLocation);
         void gotGpsFix();
         void foundFirstLocation();
     }
@@ -75,47 +76,25 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     private ArrayList<Location> preferredAccuracyLocations;
 
     /**
-     * Holds representation of coordinates and accuracy of the best location estimate found.
-     * May be a weighted average location from multiple readings.
-     */
-    public class EstimatedLocation {
-        public double latitude;
-        public double longitude;
-        public double accuracy;
-
-        public EstimatedLocation(double latitude, double longitude, double accuracy) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.accuracy = accuracy;
-        }
-
-        public EstimatedLocation(Location location) {
-            this.latitude = location.getLatitude();
-            this.longitude = location.getLongitude();
-            this.accuracy = location.getAccuracy();
-        }
-    }
-
-    /**
      * Return best location estimate found for received updates.
      * Should stop this service after receiving this result (can be accomplished by unbinding)
      *
      * @return best estimate of current location during service run
      */
     @Nullable
-    public EstimatedLocation getBestLocationFound() {
+    public Location getBestLocationFound() {
 
         if (preferredAccuracyLocations.size() > 0) {
             // calculate weighted average location from those found
 
             if (preferredAccuracyLocations.size() == 1) {
                 // if only got one, just use it
-                return new EstimatedLocation(preferredAccuracyLocations.get(0));
+                return new Location(preferredAccuracyLocations.get(0));
             }
 
             double sumLat = 0;
             double sumLon = 0;
-            double sumAccuracy = 0;
+            float sumAccuracy = 0;
             double sumInvertedAccuracy = 0;
 
             for (Location location : preferredAccuracyLocations) {
@@ -136,11 +115,15 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             double bestLon = sumLon / sumInvertedAccuracy;
 
             // store simple average for accuracy
-            double bestAccuracy = sumAccuracy / preferredAccuracyLocations.size();
-            return new EstimatedLocation(bestLat, bestLon, bestAccuracy);
+            float bestAccuracy = sumAccuracy / preferredAccuracyLocations.size();
+            Location estimatedLocation = new Location("");
+            estimatedLocation.setLatitude(bestLat);
+            estimatedLocation.setLongitude(bestLon);
+            estimatedLocation.setAccuracy(bestAccuracy);
+            return estimatedLocation;
 
         } else if (acceptableLocation != null) {
-            return new EstimatedLocation(acceptableLocation);
+            return acceptableLocation;
         }
 
         return null;
@@ -222,6 +205,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             locationManager.removeUpdates(locationListener);
             locationManager.removeGpsStatusListener(this);
         }
+
+        locationListener = null;
+        driverLocationUpdateListener = null;
         super.onDestroy();
     }
 
@@ -255,7 +241,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 if (acceptableLocation == null) {
                     // got first good update; continue to wait for a better location
                     acceptableLocation = location;
-                    driverLocationUpdateListener.foundFirstLocation();
+                    if (driverLocationUpdateListener != null) {
+                        driverLocationUpdateListener.foundFirstLocation();
+                    }
                     startedWaitingForBetterLocation = System.currentTimeMillis();
                 } else if (accuracy < PREFERRED_LOCATION_ACCURACY) {
                     // found a location with good accuracy; keep it
@@ -307,7 +295,7 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
      *
      * @return True if location updates have been started
      */
-    public boolean requestUpdatesOrPermissions(WeakReference<Activity> caller) {
+    public boolean requestUpdatesOrPermissions(WeakReference<RecordFormConstantsActivity> caller) {
         // check for location service availability and status
 
         GoogleApiAvailability gapiAvailability = GoogleApiAvailability.getInstance();
@@ -317,8 +305,14 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             // possibilities for play service access failure are:
             // SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
 
-            // show system dialog to explain; also finish calling activity, since user cannot enter a record
-            showApiErrorDialog(caller, gapiAvailability, availability);
+            // have to make a new weak reference to upcast type for error dialog
+            Activity callingActivity = caller.get();
+            if (callingActivity != null) {
+                WeakReference<Activity> activityWeakReference = new WeakReference<>(callingActivity);
+                // show system dialog to explain; also finish calling activity, since user cannot enter a record
+                showApiErrorDialog(activityWeakReference, gapiAvailability, availability);
+            }
+
             return false;
         }
 

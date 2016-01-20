@@ -15,6 +15,7 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.services.DriverLocationService;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
+import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
@@ -30,10 +31,14 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
     // section label (web app has none for this section)
     public static final String CONSTANTS_SECTION_NAME = "Record Basic Information";
 
+    private LocationServiceManager locationServiceManager;
+
     @Override
     public RelativeLayout buildButtonBar() {
 
         // TODO: put location controls in here
+        // RelativeLayout locationBar = new RelativeLayout(this);
+
 
         // put buttons in a relative layout for positioning on right or left
         RelativeLayout buttonBar = new RelativeLayout(this);
@@ -108,6 +113,50 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         return null;
     }
 
+    public void onBestLocationFound() {
+        // TODO: refresh location view and update status message
+    }
+
+    public void onGotGpxFix() {
+        // TODO: update status message
+    }
+
+    public void onFoundFirstLocation() {
+        // TODO: update status message
+    }
+
+    private boolean haveLocationSet() {
+        DriverConstantFields constants = app.getEditConstants();
+        return constants != null && constants.location != null;
+    }
+
+    private void startLocationService() {
+        if (LocationServiceManager.isRunning()) {
+            Log.w(LOG_LABEL, "Location service is already running");
+            return;
+        }
+
+        locationServiceManager = LocationServiceManager.getInstance();
+        locationServiceManager.startService(this);
+    }
+
+    /**
+     * Start location service when form appears, if needed. This gets called on creation, or
+     * when activity comes back to the foreground.
+     */
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        // start location service, if needed
+        if (!haveLocationSet()) {
+            Log.d(LOG_LABEL, "Do not have location set on model yet; starting location service");
+            startLocationService();
+        } else {
+            Log.d(LOG_LABEL, "Already have location set; not starting location service");
+        }
+    }
+
     /**
      * Callback from permissions request result.
      *
@@ -124,9 +173,8 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
             // DriverLocationService asked for location access, and now response has come back
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    /////////////////////////////////
-                    // TODO: restart location service
-                    //////////////////////////////////
+                    // restart location service (it quit)
+                    startLocationService();
                 } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                     // let user know we needed that, and bail
                     DriverLocationService.displayPermissionRequestRationale(getApplicationContext());
