@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.activities;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,9 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
 
     @Override
     public RelativeLayout buildButtonBar() {
+
+        // TODO: put location controls in here
+
         // put buttons in a relative layout for positioning on right or left
         RelativeLayout buttonBar = new RelativeLayout(this);
         buttonBar.setId(R.id.record_button_bar_id);
@@ -104,12 +108,23 @@ public class RecordFormConstantsActivity extends RecordFormActivity {
         return null;
     }
 
+    /**
+     * Callback from permissions request result.
+     *
+     * If user granted app permission to use location services as result of a prompt initiated by
+     * DriverLocationService, then DriverLocationService needs to be restarted now.
+     *
+     * @param requestCode identifier for request; should match value set by DriverLocationService
+     * @param permissions what permissions were requested
+     * @param grantResults response is either PERMISSION_GRANTED or PERMISSION_DENIED
+     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == DriverLocationService.PERMISSION_REQUEST_ID) {
             // DriverLocationService asked for location access, and now response has come back
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    /////////////////////////////////
                     // TODO: restart location service
                     //////////////////////////////////
                 } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {

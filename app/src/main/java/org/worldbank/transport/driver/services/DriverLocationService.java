@@ -118,9 +118,10 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     }
 
     /**
-     * Check if app has access and permission to get location updates, and if so, start them.
+     * Check if app has permission and access to device location, and that GPS is present and enabled.
+     * If so, start receiving location updates.
      *
-     * @return True if location updates have been started right now
+     * @return True if location updates have been started
      */
     private boolean requestUpdatesOrPermissions() {
         // check for location service availability and status
@@ -145,15 +146,27 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 // calling activity is already gone, so don't bother attempting to prompt for permissions now
                 return false;
             }
+
             // in case user has denied location permissions to app previously, tell them why it's needed
             if (ActivityCompat.shouldShowRequestPermissionRationale(callingActivity, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 displayPermissionRequestRationale(context);
-                return false; // up to the app to start up this service again when permissions granted
+                return false; // up to the activity to start this service again when permissions granted
             }
 
             ActivityCompat.requestPermissions(callingActivity, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_ID);
             return false;
         } else {
+            // check if device has GPS
+            if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
+
+                // let user know they must use a device with GPS for this app to work
+                Toast toast = new Toast(context);
+                toast.setText(R.string.location_requires_gps);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.show();
+
+                return false;
+            }
 
             // prompt user to turn on GPS, if needed
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -165,13 +178,25 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 toast.setDuration(Toast.LENGTH_LONG);
                 toast.show();
 
+                // TODO: instead of killing constants activity, set its onResume to check if it
+                // needs to start this service (location is missing and this service isn't running).
+                // Note that onResume is called on first creation, too.
+
+                // do not allow user to attempt to enter record
+                Activity callingActivity = caller.get();
+                if (callingActivity != null) {
+                    callingActivity.finish();
+                }
+
+                //////////////////////////////////////////////////////////////////////
+
                 return false;
             }
 
-            // have permission and access to GPS location; request updates
+            // have permission and access to GPS location, and GPS is enabled; request updates
 
             // Android Studio will complain mightily if requestLocationUpdates is not called
-            // after a permissions check in the same method
+            // after a permissions check that is in the same method
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
             locationManager.addGpsStatusListener(this);
 
