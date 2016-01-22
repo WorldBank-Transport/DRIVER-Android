@@ -5,10 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -39,7 +42,6 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
     private TextView locationView;
     private String initialLocationText;
     RelativeLayout locationBar;
-    RelativeLayout buttonBar;
 
     @Override
     public RelativeLayout buildButtonBar() {
@@ -56,7 +58,7 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
         // add button bar
 
         // put buttons in a relative layout for positioning on right or left
-        buttonBar = new RelativeLayout(this);
+        RelativeLayout buttonBar = new RelativeLayout(this);
         buttonBar.setId(R.id.record_button_bar_id);
         buttonBar.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT));
