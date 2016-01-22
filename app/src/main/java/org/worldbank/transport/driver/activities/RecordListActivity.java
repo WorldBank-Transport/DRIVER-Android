@@ -37,8 +37,8 @@ public class RecordListActivity extends AppCompatActivity {
     private static final DateFormat sourceDateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
-    private static final DateFormat displayDateFormatter =
-            new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.getDefault());
+    SimpleCursorAdapter adapter;
+    DriverApp app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class RecordListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
-        final DriverApp app = appContext.getDriverApp();
+        app = appContext.getDriverApp();
 
         // add record button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
@@ -67,13 +67,21 @@ public class RecordListActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.record_list_view);
         String[] useColumns = { DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT };
         int[] toViews = { R.id.record_list_item_entered_at };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+        adapter = new SimpleCursorAdapter(
                 getApplicationContext(),
                 R.layout.record_list_item,
                 app.getAllRecords(),
                 useColumns,
                 toViews,
                 0);
+
+        // use 24-hour date format if system does so
+        final DateFormat displayDateFormatter;
+        if (android.text.format.DateFormat.is24HourFormat(this)) {
+            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy HH:mm:ss z", Locale.getDefault());
+        } else {
+            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy hh:mm:ss z", Locale.getDefault());
+        }
 
         sourceDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         displayDateFormatter.setTimeZone(TimeZone.getDefault());
@@ -110,6 +118,17 @@ public class RecordListActivity extends AppCompatActivity {
                 loadRecordForm();
             }
         });
+    }
+
+    @Override
+    protected void onPostResume() {
+        Log.d(LOG_LABEL, "in onPostResume for record list; refresh list");
+        super.onPostResume();
+        if (adapter != null) {
+            Log.d(LOG_LABEL, "Updating cursor");
+            adapter.changeCursor(app.getAllRecords());
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override

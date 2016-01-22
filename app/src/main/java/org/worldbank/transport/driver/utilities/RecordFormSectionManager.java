@@ -353,8 +353,7 @@ public class RecordFormSectionManager {
     }
 
     public static void checkUnsavedChangesBeforeExit(DriverApp app, AppCompatActivity activity) {
-        Log.d(LOG_LABEL, "Going to check for unsaved changes before exiting");
-        Log.w(LOG_LABEL, "Prompt user to save any changesbefore exiting");
+        Log.w(LOG_LABEL, "Prompt user to save any changes before exiting");
         WarnUnsavedChangesDialog dialog = new WarnUnsavedChangesDialog();
         dialog.show(activity.getSupportFragmentManager(), "unsavedchangeswarning");
     }
