@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.GpsStatus;
@@ -39,8 +40,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     private static final String LOG_LABEL = "LocationService";
 
     // identifier for device location access request, if runtime prompt necessary
-    public static final int PERMISSION_REQUEST_ID = Integer.MAX_VALUE / 8;
-    public static final int API_AVAILABILITY_REQUEST_ID = Integer.MAX_VALUE / 16;
+    // request code must be in lower 16 bits
+    public static final int PERMISSION_REQUEST_ID = 8181;
+    public static final int API_AVAILABILITY_REQUEST_ID = 1818;
 
     /**
      * Location accuracy is a radius in meters of 68% confidence, so some updates may come through
@@ -349,7 +351,6 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             // possibilities for play service access failure are:
             // SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
 
-            // have to make a new weak reference to upcast type for error dialog
             Activity callingActivity = caller.get();
             if (callingActivity != null) {
                 WeakReference<Activity> activityWeakReference = new WeakReference<>(callingActivity);
@@ -440,14 +441,21 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     }
 
     private void showApiErrorDialog(WeakReference<Activity> caller, GoogleApiAvailability gapiAvailability, int errorCode) {
-        Activity callingActivity = caller.get();
+        final Activity callingActivity = caller.get();
         if (callingActivity == null) {
             return;
         }
 
         Dialog errorDialog = gapiAvailability.getErrorDialog(callingActivity, errorCode, API_AVAILABILITY_REQUEST_ID);
         errorDialog.show();
-        callingActivity.finish();
+        errorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                // wait until user has finished reading dialog to close out the form
+                // (otherwise dialog will get dismissed immediately)
+                callingActivity.finish();
+            }
+        });
     }
 
     public static void displayPermissionRequestRationale(Context context) {
