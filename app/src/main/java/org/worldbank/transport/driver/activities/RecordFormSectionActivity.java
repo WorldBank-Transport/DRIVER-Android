@@ -124,6 +124,10 @@ public class RecordFormSectionActivity extends RecordFormActivity {
 
             intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
             startActivity(intent);
+
+            if (goPrevious) {
+                finish();
+            }
         }
     }
 }

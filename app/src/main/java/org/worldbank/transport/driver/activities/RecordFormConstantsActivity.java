@@ -205,16 +205,11 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
     }
 
     private Location getLocation() {
-        DriverConstantFields constants = app.getEditConstants();
-        if (constants != null) {
-            return constants.location;
+        if (app.isLocationMissing()) {
+            return null;
+        } else {
+            return app.getEditConstants().location;
         }
-
-        return null;
-    }
-
-    private boolean haveLocationSet() {
-        return getLocation() != null;
     }
 
     private void startLocationService() {
@@ -240,7 +235,7 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
         super.onPostResume();
 
         // start location service, if needed
-        if (!haveLocationSet()) {
+        if (app.isLocationMissing()) {
             Log.d(LOG_LABEL, "Do not have location set on model yet; starting location service");
             startLocationService();
         } else {

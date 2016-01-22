@@ -108,11 +108,12 @@ public class LocationServiceManager implements DriverLocationService.DriverLocat
      * finishes attempting to find the best location estimate. Will set location of currently
      * editing record to the best found so far before stopping service.
      */
-    public void stopService() {
-        if (isBound && driverLocationService != null) {
+    public static void stopService() {
+        LocationServiceManager mgr = getInstance();
+        if (mgr.isBound && mgr.driverLocationService != null) {
             Log.d(LOG_LABEL, "Getting best location found before stopping service");
-            setLocation(driverLocationService.getBestLocationFound());
-            unbindService();
+            mgr.setLocation(mgr.driverLocationService.getBestLocationFound());
+            mgr.unbindService();
         } else {
             Log.w(LOG_LABEL, "Location service not available to get result");
         }
@@ -145,6 +146,11 @@ public class LocationServiceManager implements DriverLocationService.DriverLocat
      * @param estimatedLocation location to set (may be average of multiple readings)
      */
     private void setLocation(Location estimatedLocation) {
+        if (app == null) {
+            Log.e(LOG_LABEL, "Location service manager has no app. How did that happen?");
+            return;
+        }
+
         DriverConstantFields constants = app.getEditConstants();
         if (constants != null) {
             constants.location = estimatedLocation;

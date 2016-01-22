@@ -3,7 +3,6 @@ package org.worldbank.transport.driver.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,7 +12,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.adapters.FormItemListAdapter;
@@ -190,14 +188,7 @@ public class RecordItemListActivity extends AppCompatActivity {
 
             case R.id.action_save:
                 Log.d(LOG_LABEL, "Save button clicked");
-                if (app.saveRecordAndClearCurrentlyEditing()) {
-                    Toast toast = Toast.makeText(this, getString(R.string.record_save_success), Toast.LENGTH_SHORT);
-                    toast.show();
-                    NavUtils.navigateUpFromSameTask(this);
-                } else {
-                    Toast toast = Toast.makeText(this, getString(R.string.record_save_failure), Toast.LENGTH_LONG);
-                    toast.show();
-                }
+                RecordFormSectionManager.saveAndExit(app, this);
                 return true;
         }
 

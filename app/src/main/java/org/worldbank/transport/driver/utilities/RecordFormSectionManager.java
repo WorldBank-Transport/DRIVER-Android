@@ -1,15 +1,28 @@
 package org.worldbank.transport.driver.utilities;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.jsonschema2pojo.annotations.Multiple;
 import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Title;
+import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.activities.RecordFormActivity;
 import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
 import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 import org.worldbank.transport.driver.activities.RecordItemListActivity;
 import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -337,6 +350,70 @@ public class RecordFormSectionManager {
         }
 
         return new ArrayList();
+    }
+
+    public static void saveAndExit(DriverApp app, AppCompatActivity activity) {
+        Log.d(LOG_LABEL, "Going to save and exit");
+        // check if location has been set first
+        if (app.isLocationMissing()) {
+            Log.w(LOG_LABEL, "Location is missing! Warn user.");
+            // show warning dialog to ask user to continue to wait for a location reading
+            WarnLocationNotSetDialog dialog = new WarnLocationNotSetDialog();
+            dialog.show(activity.getSupportFragmentManager(), "locationwarning");
+        } else {
+            // location is set; go ahead and save
+            Log.d(LOG_LABEL, "Have location; save and exit");
+            Log.d(LOG_LABEL, "location is: " + app.getEditConstants().location.toString());
+            saveAndExitWithoutWarnings(app, activity);
+        }
+    }
+
+    /**
+     * Internal helper to save record. Should only be called via {@link #saveAndExit(DriverApp, AppCompatActivity)},
+     * which performs checks first.
+     */
+    private static void saveAndExitWithoutWarnings(DriverApp app, AppCompatActivity activity) {
+        if (app.saveRecordAndClearCurrentlyEditing()) {
+            Toast toast = Toast.makeText(activity, activity.getString(R.string.record_save_success), Toast.LENGTH_SHORT);
+            toast.show();
+            NavUtils.navigateUpFromSameTask(activity);
+        } else {
+            Toast toast = Toast.makeText(activity, activity.getString(R.string.record_save_failure), Toast.LENGTH_LONG);
+            toast.show();
+        }
+    }
+
+    public static class WarnLocationNotSetDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.location_not_set_dialog_title)
+                    .setMessage(R.string.location_not_set_dialog_warning)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // user willing to wait for GPS reading; show toast message
+                            // with current location reading status
+                            int status = LocationServiceManager.getCurrentStatus();
+                            Toast toast = Toast.makeText(getContext(), getString(status), Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User does not want to wait for a GPS reading; exit.
+                            // It may be that a location has been found, but the service had not yet
+                            // finished attempting to refine it; in that case, the most recent reading
+                            // with the highest accuracy will be stored on the record.
+                            LocationServiceManager.stopService();
+                            AppCompatActivity activity = (AppCompatActivity)getActivity();
+                            DriverApp app = (DriverApp)activity.getApplication();
+                            saveAndExitWithoutWarnings(app, activity);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
     }
 
 }

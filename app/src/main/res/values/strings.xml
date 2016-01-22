@@ -51,4 +51,10 @@
     <string name="location_service_off">Location check is not running.</string>
     <string name="location_display" translatable="false">%1$.6f, %2$.6f</string>
 
+    <!-- location not set warning dialog -->
+    <string name="location_not_set_dialog_title">Location not set!</string>
+    <string name="location_not_set_dialog_warning">Record cannot be uploaded without a location. Continue to wait for GPS reading?</string>
+    <string name="confirm_action">Yes</string>
+    <string name="stop_action">No</string>
+
 </resources>

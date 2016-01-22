@@ -279,12 +279,16 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                     // got first good update; continue to wait for a better location
                     acceptableLocation = location;
                     startedWaitingForBetterLocation = System.currentTimeMillis();
-                } else if (accuracy < PREFERRED_LOCATION_ACCURACY) {
-                    // found a location with good accuracy; keep it
-                    preferredAccuracyLocations.add(location);
-                } else if (accuracy < acceptableLocation.getAccuracy()) {
-                    // got an update with a non-preferred accuracy, but better than previous
-                    acceptableLocation = location;
+                } else {
+                    if (accuracy < PREFERRED_LOCATION_ACCURACY) {
+                        // found a location with good accuracy; track it for weighted average
+                        preferredAccuracyLocations.add(location);
+                    }
+
+                    if (accuracy <= acceptableLocation.getAccuracy()) {
+                        // got single reading better or more recent than last best; use it instead
+                        acceptableLocation = location;
+                    }
                 }
 
                 if (doneWaitingForUpdates()) {

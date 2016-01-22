@@ -19,6 +19,7 @@ import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.text.DateFormat;
@@ -138,6 +139,16 @@ public class RecordListActivity extends AppCompatActivity {
      * (or cleared, if adding a new record).
      */
     private void loadRecordForm() {
+
+        // TODO: handle with form navigation management
+        // Should handle stopping location service before allowing user to bail from form,
+        // by listening to both 'back' and 'up' actions and warning user if they're about to exit
+        // an unsaved record.
+        if (LocationServiceManager.isRunning()) {
+            Log.w(LOG_LABEL, "Location service manager still running outside of form. Stopping it.");
+            LocationServiceManager.stopService();
+        }
+
         Log.d(LOG_LABEL, "Going to load form...");
         Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(-1));
         intent.putExtra(RecordFormActivity.SECTION_ID, -1);
