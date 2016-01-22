@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.activities;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -99,8 +100,14 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(SECTION_ID);
 
+        // wrap form in layout with app bar
+        this.formLayout = R.layout.form_with_appbar;
+
         // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     protected void saveAndExit() {
