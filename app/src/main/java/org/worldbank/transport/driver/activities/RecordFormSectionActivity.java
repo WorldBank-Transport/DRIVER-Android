@@ -61,9 +61,9 @@ public class RecordFormSectionActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Back button clicked");
-
                 // set this to let callback know next action to take
                 goPrevious = true;
+                goExit = false;
                 new ValidationTask(thisActivity).execute();
             }
         });
@@ -95,6 +95,7 @@ public class RecordFormSectionActivity extends RecordFormActivity {
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Next/save button clicked");
                 goPrevious = false;
+                goExit = false;
                 new ValidationTask(thisActivity).execute();
             }
         });
@@ -108,35 +109,39 @@ public class RecordFormSectionActivity extends RecordFormActivity {
     @Override
     public void onBackPressed() {
         goPrevious = true;
+        goExit = false;
         new ValidationTask(this).execute();
     }
 
     @Override
     public void proceed() {
-        {
-            int goToSectionId = sectionId;
+        if (goExit) {
+            RecordFormSectionManager.saveAndExit(app, this);
+            return;
+        }
 
-            if (goPrevious) {
-                goToSectionId--;
-            } else if (haveNext) {
-                Log.d(LOG_LABEL, "Proceed to next section now");
-                goToSectionId++;
-            } else {
-                Log.d(LOG_LABEL, "Saving completed form");
-                saveAndExit();
-                return;
-            }
+        int goToSectionId = sectionId;
 
-            Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
-            Intent intent = new Intent(this,
-                    RecordFormSectionManager.getActivityClassForSection(goToSectionId));
+        if (goPrevious) {
+            goToSectionId--;
+        } else if (haveNext) {
+            Log.d(LOG_LABEL, "Proceed to next section now");
+            goToSectionId++;
+        } else {
+            Log.d(LOG_LABEL, "Saving completed form");
+            saveAndExit();
+            return;
+        }
 
-            intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
-            startActivity(intent);
+        Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
+        Intent intent = new Intent(this,
+                RecordFormSectionManager.getActivityClassForSection(goToSectionId));
 
-            if (goPrevious) {
-                finish();
-            }
+        intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
+        startActivity(intent);
+
+        if (goPrevious) {
+            finish();
         }
     }
 }

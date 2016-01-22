@@ -82,6 +82,7 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
             public void onClick(View view) {
                 // launch DriverSchema first form here
                 goPrevious = false;
+                goExit = false;
                 new ValidationTask(thisActivity).execute();
             }
         });
@@ -100,6 +101,13 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
             return;
         }
 
+        if (goExit) {
+            // do not prompt to save first (user selected to save and exit)
+            RecordFormSectionManager.saveAndExit(app, this);
+            return;
+        }
+
+        // go next
         int goToSectionId = 0;
         Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
         Intent intent = new Intent(this,
@@ -287,6 +295,7 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
     @Override
     public void onBackPressed() {
         goPrevious = true;
+        goExit = false;
         new ValidationTask(this).execute();
     }
 }

@@ -1,10 +1,13 @@
 package org.worldbank.transport.driver.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -21,6 +24,7 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 
+import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
@@ -73,6 +77,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     // if selected action is to go to previous (if false, go to next or save)
     protected boolean goPrevious = false;
+    protected boolean goExit = false;
 
     /**
      * Non-default constructor for testing, to set the application context.
@@ -439,6 +444,65 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         return new SelectListInfo(refLabels, refIDs);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+
+        if (RecordFormSectionManager.sectionHasNext(sectionId)) {
+            Log.d(LOG_LABEL, "Form has at least one more section; use menu with next button");
+            getMenuInflater().inflate(R.menu.menu_form_item_list_next, menu);
+        } else {
+            Log.d(LOG_LABEL, "This is the last section; use menu with save button");
+            getMenuInflater().inflate(R.menu.menu_form_item_list_save, menu);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            // up/home button
+            case android.R.id.home:
+                // TODO: remove and warn instead?
+                // This isn't Android-y; back button is for going back, but don't want to pull
+                // user suddenly from a partially completed form.
+
+                // go back instead of returning to main screen
+                finish();
+                return true;
+
+            case R.id.action_next:
+                Log.d(LOG_LABEL, "Next button clicked");
+
+                int goToSectionId = sectionId + 1;
+                Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
+                Intent intent = new Intent(this,
+                        RecordFormSectionManager.getActivityClassForSection(goToSectionId));
+
+                intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
+                startActivity(intent);
+                return true;
+
+            case R.id.action_save:
+                Log.d(LOG_LABEL, "Save button clicked");
+                RecordFormSectionManager.saveAndExit(app, this);
+                return true;
+
+            case R.id.action_save_and_exit:
+                Log.d(LOG_LABEL, "Save and exit button clicked");
+                // set this to let callback know next action to take
+                goPrevious = false;
+                goExit = true;
+                new ValidationTask(this).execute();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
 

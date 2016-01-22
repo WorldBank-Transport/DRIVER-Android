@@ -193,8 +193,6 @@ public class RecordItemListActivity extends AppCompatActivity {
 
             case R.id.action_save_and_exit:
                 Log.d(LOG_LABEL, "Save and exit button clicked");
-                // for non-list form activities, validation would also need to happen here
-                // TODO: (non-list form activities do not yet have this navbar)
                 RecordFormSectionManager.saveAndExit(app, this);
                 return true;
         }

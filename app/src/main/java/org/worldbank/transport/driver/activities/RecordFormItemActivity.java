@@ -90,6 +90,8 @@ public class RecordFormItemActivity extends RecordFormActivity {
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Delete button clicked");
 
+                // TODO: confirmation prompt
+
                 if (RecordFormSectionManager.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex)) {
                     Toast toast = Toast.makeText(thisActivity, getString(R.string.record_item_delete_success), Toast.LENGTH_SHORT);
                     toast.show();
@@ -118,6 +120,7 @@ public class RecordFormItemActivity extends RecordFormActivity {
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Save button clicked");
                 goPrevious = false;
+                goExit = false;
                 new ValidationTask(thisActivity).execute();
             }
         });
@@ -127,6 +130,11 @@ public class RecordFormItemActivity extends RecordFormActivity {
 
     @Override
     public void proceed() {
+        if (goExit) {
+            RecordFormSectionManager.saveAndExit(app, this);
+            return;
+        }
+
         // item is saved on model already; simply close this view
         finish();
     }
