@@ -3,9 +3,14 @@
 xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools"
 tools:context=".activities.RecordItemListActivity">
-<item
-    android:id="@+id/action_next"
-    android:orderInCategory="100"
-    android:title="@string/record_next_button"
-    app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_next"
+        android:orderInCategory="200"
+        android:title="@string/record_next_button"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_save_and_exit"
+        android:orderInCategory="300"
+        android:title="@string/record_save_and_exit"
+        app:showAsAction="never" />
 </menu>

@@ -352,6 +352,13 @@ public class RecordFormSectionManager {
         return new ArrayList();
     }
 
+    public static void checkUnsavedChangesBeforeExit(DriverApp app, AppCompatActivity activity) {
+        Log.d(LOG_LABEL, "Going to check for unsaved changes before exiting");
+        Log.w(LOG_LABEL, "Prompt user to save any changesbefore exiting");
+        WarnUnsavedChangesDialog dialog = new WarnUnsavedChangesDialog();
+        dialog.show(activity.getSupportFragmentManager(), "unsavedchangeswarning");
+    }
+
     public static void saveAndExit(DriverApp app, AppCompatActivity activity) {
         Log.d(LOG_LABEL, "Going to save and exit");
         // check if location has been set first
@@ -409,6 +416,35 @@ public class RecordFormSectionManager {
                             AppCompatActivity activity = (AppCompatActivity)getActivity();
                             DriverApp app = (DriverApp)activity.getApplication();
                             saveAndExitWithoutWarnings(app, activity);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    /**
+     * Prompt user to save or lose unsaved changes to currently editing record before exiting.
+     * Validation should be run before opening this dialog.
+     */
+    public static class WarnUnsavedChangesDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.record_unsaved_changes_dialog_title)
+                    .setMessage(R.string.record_unsaved_changes_dialog_message)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            AppCompatActivity activity = (AppCompatActivity)getActivity();
+                            DriverApp app = (DriverApp)activity.getApplication();
+                            saveAndExit(app, activity);
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // exit without saving changes
+                            NavUtils.navigateUpFromSameTask(getActivity());
                         }
                     });
             // Create the AlertDialog object and return it

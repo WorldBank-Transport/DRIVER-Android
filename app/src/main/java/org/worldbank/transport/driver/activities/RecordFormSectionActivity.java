@@ -102,6 +102,15 @@ public class RecordFormSectionActivity extends RecordFormActivity {
         return buttonBar;
     }
 
+    /**
+     * Hardware back button pressed. Validate section before proceeding.
+     */
+    @Override
+    public void onBackPressed() {
+        goPrevious = true;
+        new ValidationTask(this).execute();
+    }
+
     @Override
     public void proceed() {
         {

@@ -80,7 +80,6 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
             public void onClick(View view) {
                 // launch DriverSchema first form here
                 goPrevious = false;
-                Log.d(LOG_LABEL, "Going to validate constant fields");
                 new ValidationTask(thisActivity).execute();
             }
         });
@@ -91,6 +90,14 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
 
     @Override
     public void proceed() {
+
+        // check if user pressed hardware back button to go back to record list
+        if (goPrevious) {
+            // prompt to save before exiting
+            RecordFormSectionManager.checkUnsavedChangesBeforeExit(app, this);
+            return;
+        }
+
         int goToSectionId = 0;
         Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
         Intent intent = new Intent(this,
@@ -270,5 +277,14 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
                 }
             }
         }
+    }
+
+    /**
+     * Hardware back button pressed. Validate section first.
+     */
+    @Override
+    public void onBackPressed() {
+        goPrevious = true;
+        new ValidationTask(this).execute();
     }
 }

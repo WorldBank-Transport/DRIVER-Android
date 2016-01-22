@@ -1,13 +1,8 @@
 package org.worldbank.transport.driver.activities;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AlertDialog;
+
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -35,9 +30,7 @@ import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
-import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
-import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.annotation.Annotation;

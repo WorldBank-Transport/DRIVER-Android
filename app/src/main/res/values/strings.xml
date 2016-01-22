@@ -24,6 +24,7 @@
     <string name="record_next_button">Next</string>
     <string name="record_previous_button">Back</string>
     <string name="record_delete_button">Delete</string>
+    <string name="record_save_and_exit">Save &amp; Exit</string>
 
     <!-- record status messages -->
     <string name="record_save_success">Record saved</string>
@@ -31,6 +32,10 @@
     <string name="record_item_delete_success">Item deleted</string>
     <string name="record_item_delete_failure">Failed to delete item!</string>
     <string name="record_validation_errors">Please correct input before proceeding</string>
+
+    <!-- record unsaved changes dialog -->
+    <string name="record_unsaved_changes_dialog_title">Save record?</string>
+    <string name="record_unsaved_changes_dialog_message">Save changes to record before exiting?</string>
 
     <!-- Shared preferences -->
     <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
