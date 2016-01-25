@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".staticmodels.DriverApp"
@@ -18,24 +19,32 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activities.RecordListActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".activities.RecordFormSectionActivity"
+            android:parentActivityName=".activities.RecordListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.RecordListActivity" />
         </activity>
         <activity
             android:name=".activities.RecordFormItemActivity"
+            android:parentActivityName=".activities.RecordListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.RecordListActivity" />
         </activity>
         <activity
             android:name=".activities.RecordItemListActivity"
@@ -49,8 +58,16 @@
         <activity
             android:name=".activities.RecordFormConstantsActivity"
             android:label="@string/app_name"
+            android:parentActivityName=".activities.RecordListActivity"
             android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.RecordListActivity" />
         </activity>
+        <service
+            android:name="org.worldbank.transport.driver.services.DriverLocationService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -116,7 +116,30 @@ public class DriverApp extends Application {
     }
 
     public DriverConstantFields getEditConstants() {
-        return record.getEditConstants();
+        if (record != null) {
+            return record.getEditConstants();
+        }
+
+        Log.w(LOG_LABEL, "No record currently being edited to get constants for!");
+        return null;
+    }
+
+    /**
+     * Check if currently editing record is missing a location reading.
+     *
+     * @return false if a location is set and it's not on Null Island
+     */
+    public boolean isLocationMissing() {
+        DriverConstantFields constantFields = record.getEditConstants();
+        if (constantFields != null) {
+            if (constantFields.location != null) {
+                if (constantFields.location.getLongitude() != 0 || constantFields.location.getLatitude() != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -161,12 +184,7 @@ public class DriverApp extends Application {
      */
     public boolean setCurrentlyEditingRecord(long databaseId) {
         record = databaseManager.getRecordById(databaseId);
-
-        if (record != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return record != null;
     }
 
     public static boolean getIsNetworkAvailable() {

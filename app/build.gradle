@@ -111,13 +111,10 @@ dependencies {
     compile 'com.google.code.findbugs:jsr305:3.0.1'
 
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.0.7'
+    compile 'com.github.azavea:AndroidValidatedForms:1.0.9'
 
     // test dependencies
     testCompile 'junit:junit:4.12'
-
-    // robotium apparently does not play well with travis
-    // androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.5.3'
 
     // mock web server and friends
     androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
@@ -136,6 +133,9 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     //compile 'com.android.support:multidex:1.0.1'
+
+    // for device location API access
+    compile 'com.google.android.gms:play-services-location:8.4.0'
 }
 
 jsonSchema2Pojo {

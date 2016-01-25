@@ -19,6 +19,7 @@ import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.text.DateFormat;
@@ -36,8 +37,8 @@ public class RecordListActivity extends AppCompatActivity {
     private static final DateFormat sourceDateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
-    private static final DateFormat displayDateFormatter =
-            new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.getDefault());
+    SimpleCursorAdapter adapter;
+    DriverApp app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class RecordListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
-        final DriverApp app = appContext.getDriverApp();
+        app = appContext.getDriverApp();
 
         // add record button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
@@ -66,13 +67,21 @@ public class RecordListActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.record_list_view);
         String[] useColumns = { DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT };
         int[] toViews = { R.id.record_list_item_entered_at };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+        adapter = new SimpleCursorAdapter(
                 getApplicationContext(),
                 R.layout.record_list_item,
                 app.getAllRecords(),
                 useColumns,
                 toViews,
                 0);
+
+        // use 24-hour date format if system does so
+        final DateFormat displayDateFormatter;
+        if (android.text.format.DateFormat.is24HourFormat(this)) {
+            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy HH:mm:ss z", Locale.getDefault());
+        } else {
+            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy hh:mm:ss z", Locale.getDefault());
+        }
 
         sourceDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         displayDateFormatter.setTimeZone(TimeZone.getDefault());
@@ -112,6 +121,17 @@ public class RecordListActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPostResume() {
+        Log.d(LOG_LABEL, "in onPostResume for record list; refresh list");
+        super.onPostResume();
+        if (adapter != null) {
+            Log.d(LOG_LABEL, "Updating cursor");
+            adapter.changeCursor(app.getAllRecords());
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -138,6 +158,16 @@ public class RecordListActivity extends AppCompatActivity {
      * (or cleared, if adding a new record).
      */
     private void loadRecordForm() {
+
+        // TODO: handle with form navigation management
+        // Should handle stopping location service before allowing user to bail from form,
+        // by listening to both 'back' and 'up' actions and warning user if they're about to exit
+        // an unsaved record.
+        if (LocationServiceManager.isRunning()) {
+            Log.w(LOG_LABEL, "Location service manager still running outside of form. Stopping it.");
+            LocationServiceManager.stopService();
+        }
+
         Log.d(LOG_LABEL, "Going to load form...");
         Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(-1));
         intent.putExtra(RecordFormActivity.SECTION_ID, -1);

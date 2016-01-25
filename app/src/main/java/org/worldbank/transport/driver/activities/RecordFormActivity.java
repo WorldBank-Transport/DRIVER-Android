@@ -1,9 +1,13 @@
 package org.worldbank.transport.driver.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
+
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -20,6 +24,7 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
 
+import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
@@ -47,10 +52,6 @@ import java.util.HashMap;
  */
 public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
-    public interface FormReadyListener {
-        void formReadyCallback();
-    }
-
     public static final String SECTION_ID = "driver_section_id";
     private static final String LOG_LABEL = "RecordFormActivity";
 
@@ -61,10 +62,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     protected DriverAppContext mAppContext;
     protected DriverApp app;
-
-    // flag that is true once form has been displayed
-    private boolean formReady = false;
-    private FormReadyListener formReadyListener;
 
     protected DriverSchema currentlyEditing;
 
@@ -80,6 +77,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     // if selected action is to go to previous (if false, go to next or save)
     protected boolean goPrevious = false;
+    protected boolean goExit = false;
 
     /**
      * Non-default constructor for testing, to set the application context.
@@ -107,19 +105,18 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(SECTION_ID);
 
+        // wrap form in layout with app bar
+        this.formLayout = R.layout.form_with_appbar;
+
         // calling super will call createFormController in turn
         super.onCreate(savedInstanceState);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     protected void saveAndExit() {
-        if (app.saveRecordAndClearCurrentlyEditing()) {
-            Toast toast = Toast.makeText(this, getString(R.string.record_save_success), Toast.LENGTH_SHORT);
-            toast.show();
-            NavUtils.navigateUpFromSameTask(this);
-        } else {
-            Toast toast = Toast.makeText(this, getString(R.string.record_save_failure), Toast.LENGTH_LONG);
-            toast.show();
-        }
+        RecordFormSectionManager.saveAndExit(app, this);
     }
 
     /**
@@ -133,12 +130,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         ViewGroup containerView = (ViewGroup) findViewById(R.id.form_elements_container);
         RelativeLayout buttonBar = buildButtonBar();
         containerView.addView(buttonBar);
-
-        // alert that form is ready to go
-        formReady = true;
-        if (formReadyListener != null) {
-            formReadyListener.formReadyCallback();
-        }
     }
 
     /**
@@ -147,14 +138,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
      * @return View with buttons with handlers added to it
      */
     public abstract RelativeLayout buildButtonBar();
-
-    public boolean isFormReady() {
-        return formReady;
-    }
-
-    public void setFormReadyListener(FormReadyListener listener) {
-        formReadyListener = listener;
-    }
 
     @Override
     public void validationComplete(boolean isValid) {
@@ -173,8 +156,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
     @Override
     public FormController createFormController() {
-        formReady = false;
-
         String sectionName = RecordFormSectionManager.getSectionName(sectionId);
 
         // section offset was passed to activity in intent; find section to use here
@@ -463,6 +444,59 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         }
 
         return new SelectListInfo(refLabels, refIDs);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+
+        if (RecordFormSectionManager.sectionHasNext(sectionId)) {
+            Log.d(LOG_LABEL, "Form has at least one more section; use menu with next button");
+            getMenuInflater().inflate(R.menu.menu_form_item_list_next, menu);
+        } else {
+            Log.d(LOG_LABEL, "This is the last section; use menu with save button");
+            getMenuInflater().inflate(R.menu.menu_form_item_list_save, menu);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            // up/home button
+            case android.R.id.home:
+                goExit = true;
+                goPrevious = false;
+                new ValidationTask(this).execute();
+                return true;
+
+            case R.id.action_next:
+                Log.d(LOG_LABEL, "Next button clicked");
+                goPrevious = false;
+                goExit = false;
+                new ValidationTask(this).execute();
+                return true;
+
+            case R.id.action_save:
+                Log.d(LOG_LABEL, "Save button clicked");
+                goExit = true;
+                goPrevious= false;
+                new ValidationTask(this).execute();
+                return true;
+
+            case R.id.action_save_and_exit:
+                Log.d(LOG_LABEL, "Save and exit button clicked");
+                // set this to let callback know next action to take
+                goPrevious = false;
+                goExit = true;
+                new ValidationTask(this).execute();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
 
