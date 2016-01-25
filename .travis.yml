@@ -24,12 +24,13 @@ android:
 before_install:
   - free -m # show available memory on VM
   - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
-  - echo yes | android update sdk --no-ui -a --filter android-23,tool,platform-tools,addon-google_apis-google-23,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
+  - echo yes | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
   - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
 
 before_script:
   - ulimit -c unlimited -S # increase stack size
-  - echo no | android create avd --force -n test -t android-17 --abi armeabi-v7a --skin HVGA
+  - android list targets # to debug
+  - echo no | android create avd --force -n test -t "Google Inc.:Google APIs:17" --abi armeabi-v7a --skin HVGA
   - sleep 5
   - emulator -avd test -no-skin -no-audio -no-window -no-boot-anim -dpi-device 480 &
   - sleep 10
