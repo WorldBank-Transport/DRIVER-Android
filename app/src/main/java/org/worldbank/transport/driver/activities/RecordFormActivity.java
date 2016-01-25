@@ -468,29 +468,23 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         switch (id) {
             // up/home button
             case android.R.id.home:
-                // TODO: remove and warn instead?
-                // This isn't Android-y; back button is for going back, but don't want to pull
-                // user suddenly from a partially completed form.
-
-                // go back instead of returning to main screen
-                finish();
+                goExit = true;
+                goPrevious = false;
+                new ValidationTask(this).execute();
                 return true;
 
             case R.id.action_next:
                 Log.d(LOG_LABEL, "Next button clicked");
-
-                int goToSectionId = sectionId + 1;
-                Log.d(LOG_LABEL, "Going to section #" + String.valueOf(goToSectionId));
-                Intent intent = new Intent(this,
-                        RecordFormSectionManager.getActivityClassForSection(goToSectionId));
-
-                intent.putExtra(RecordFormActivity.SECTION_ID, goToSectionId);
-                startActivity(intent);
+                goPrevious = false;
+                goExit = false;
+                new ValidationTask(this).execute();
                 return true;
 
             case R.id.action_save:
                 Log.d(LOG_LABEL, "Save button clicked");
-                RecordFormSectionManager.saveAndExit(app, this);
+                goExit = true;
+                goPrevious= false;
+                new ValidationTask(this).execute();
                 return true;
 
             case R.id.action_save_and_exit:
