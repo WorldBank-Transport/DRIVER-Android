@@ -116,9 +116,6 @@ dependencies {
     // test dependencies
     testCompile 'junit:junit:4.12'
 
-    // robotium apparently does not play well with travis
-    // androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.5.3'
-
     // mock web server and friends
     androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp:2.7.0'
