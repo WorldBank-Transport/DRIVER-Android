@@ -40,9 +40,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     private static final String LOG_LABEL = "LocationService";
 
     // identifier for device location access request, if runtime prompt necessary
-    // request code must be in lower 16 bits
-    public static final int PERMISSION_REQUEST_ID = 8181;
-    public static final int API_AVAILABILITY_REQUEST_ID = 1818;
+    // request code must be in lower 8 bits
+    public static final int PERMISSION_REQUEST_ID = 11;
+    public static final int API_AVAILABILITY_REQUEST_ID = 22;
 
     /**
      * Location accuracy is a radius in meters of 68% confidence, so some updates may come through
@@ -370,14 +370,16 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
                 return false;
             }
 
-            // in case user has denied location permissions to app previously, tell them why it's needed
+            // in case user has denied location permissions to app previously, tell them why it's needed, then prompt again
             if (ActivityCompat.shouldShowRequestPermissionRationale(callingActivity, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 displayPermissionRequestRationale(context);
-                return false; // up to the activity to start this service again when permissions granted
+                // On subsequent prompts, user will get a "never ask again" option in the dialog.
+                // If that option gets checked, attempting to create a record will simply close
+                // the record form back out again and display a toast message with the reason.
             }
 
             ActivityCompat.requestPermissions(callingActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_ID);
-            return false;
+            return false; // up to the activity to start this service again when permissions granted
         } else {
             // check if device has GPS
             if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
