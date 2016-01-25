@@ -56,9 +56,12 @@
     <string name="location_service_off">Location check is not running.</string>
     <string name="location_display" translatable="false">%1$.6f, %2$.6f</string>
 
-    <!-- location not set warning dialog -->
+    <!-- location warning dialogs -->
     <string name="location_not_set_dialog_title">Location not set!</string>
     <string name="location_not_set_dialog_warning">Record cannot be uploaded without a location. Continue to wait for GPS reading?</string>
+    <string name="location_settling_dialog_title">Location still updating</string>
+    <string name="location_settling_dialog_warning">Currently improving location reading. This will take less than 20 seconds. Continue to wait?</string>
+
     <string name="confirm_action">Yes</string>
     <string name="stop_action">No</string>
 

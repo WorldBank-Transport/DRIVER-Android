@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.utilities;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -364,8 +365,16 @@ public class RecordFormSectionManager {
         if (app.isLocationMissing()) {
             Log.w(LOG_LABEL, "Location is missing! Warn user.");
             // show warning dialog to ask user to continue to wait for a location reading
-            WarnLocationNotSetDialog dialog = new WarnLocationNotSetDialog();
-            dialog.show(activity.getSupportFragmentManager(), "locationwarning");
+            if (LocationServiceManager.isRunning() &&
+                    LocationServiceManager.getCurrentStatus() == LocationServiceManager.Status.GETTING_LOCATIONS) {
+                // warn user that location is refining
+                WarnLocationStillUpdatingDialog dialog = new WarnLocationStillUpdatingDialog();
+                dialog.show(activity.getSupportFragmentManager(), "refininglocationwarning");
+            } else {
+                // warn user there has been no location reading at all
+                WarnLocationNotSetDialog dialog = new WarnLocationNotSetDialog();
+                dialog.show(activity.getSupportFragmentManager(), "nolocationwarning");
+            }
         } else {
             // location is set; go ahead and save
             Log.d(LOG_LABEL, "Have location; save and exit");
@@ -408,9 +417,37 @@ public class RecordFormSectionManager {
                     .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User does not want to wait for a GPS reading; exit.
-                            // It may be that a location has been found, but the service had not yet
-                            // finished attempting to refine it; in that case, the most recent reading
-                            // with the highest accuracy will be stored on the record.
+                            LocationServiceManager.stopService();
+                            AppCompatActivity activity = (AppCompatActivity)getActivity();
+                            DriverApp app = (DriverApp)activity.getApplication();
+                            saveAndExitWithoutWarnings(app, activity);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    public static class WarnLocationStillUpdatingDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.location_settling_dialog_title)
+                    .setMessage(R.string.location_settling_dialog_warning)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // user willing to wait for location reading to refine; show toast message
+                            // with current location reading status
+                            int status = LocationServiceManager.getCurrentStatus();
+                            Toast toast = Toast.makeText(getContext(), getString(status), Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User does not want to wait for a GPS reading; exit.
+                            // Use the most recent reading with the highest accuracy.
                             LocationServiceManager.stopService();
                             AppCompatActivity activity = (AppCompatActivity)getActivity();
                             DriverApp app = (DriverApp)activity.getApplication();
