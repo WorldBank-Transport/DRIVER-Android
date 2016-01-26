@@ -61,7 +61,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
     private final String mUsername;
     private final String mPassword;
-    private final LoginCallbackListener mListener;
+    private final LoginCallbackListener mListener; // TODO: should be weak reference
     private final LoginUrls mLoginUrls;
 
     public LoginTask(String username, String password, LoginCallbackListener listener, LoginUrls loginUrls) {

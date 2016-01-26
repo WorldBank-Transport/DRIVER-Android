@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_login">Sign in</string>
 
-    <!-- Strings related to login -->
+    <!-- login -->
     <string name="prompt_email">User name</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
@@ -17,7 +17,12 @@
     <string name="error_user_cannot_write_records">User account does not have access to add records. Please contact a system administrator to gain write access.</string>
     <string name="error_login_unknown">Unknown error logging in.</string>
     <string name="error_login_network">Network error logging in.</string>
+
+    <!-- network -->
     <string name="error_no_network">Network is not available.</string>
+
+    <!-- schema check -->
+    <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
 
     <!-- record form -->
     <string name="record_save_button">Save</string>
