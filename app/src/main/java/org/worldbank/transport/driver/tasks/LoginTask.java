@@ -1,6 +1,8 @@
 package org.worldbank.transport.driver.tasks;
 
 /**
+ * Handle user login in background. Gets user information and stores it to shared preferences.
+ *
  * Created by kathrynkillebrew on 12/8/15.
  */
 
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -39,6 +42,8 @@ import java.net.URL;
  * http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html
  */
 public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
+    
+    private static final String LOG_LABEL = "LoginTask";
 
     public interface LoginCallbackListener {
         void loginCompleted(DriverUserInfo userInfo);
@@ -61,13 +66,13 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
     private final String mUsername;
     private final String mPassword;
-    private final LoginCallbackListener mListener; // TODO: should be weak reference
+    private final WeakReference<LoginCallbackListener> mListener;
     private final LoginUrls mLoginUrls;
 
     public LoginTask(String username, String password, LoginCallbackListener listener, LoginUrls loginUrls) {
         mUsername = username;
         mPassword = password;
-        mListener = listener;
+        mListener = new WeakReference<>(listener);
         mLoginUrls = loginUrls;
 
         serverUrl = context.getString(R.string.api_server_url);
@@ -78,7 +83,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
         if(!DriverApp.getIsNetworkAvailable()) {
             // no network available. don't bother logging in
             publishProgress(context.getString(R.string.error_no_network));
-            Log.d("LoginTask", "No network");
+            Log.d(LOG_LABEL, "No network");
             cancel(true);
             return null;
         }
@@ -90,7 +95,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
         try {
             URL tokenUrl = mLoginUrls.userTokenUrl(serverUrl);
-            Log.d("LoginTask", "Going to attempt login with token endpoint: " + tokenUrl);
+            Log.d(LOG_LABEL, "Going to attempt login with token endpoint: " + tokenUrl);
 
             urlConnection = (HttpURLConnection) tokenUrl.openConnection();
 
@@ -112,7 +117,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             // check response
             int responseCode = urlConnection.getResponseCode();
             if (responseCode != 200) {
-                Log.e("LoginTask", "Failed to login. Got response: " +
+                Log.e(LOG_LABEL, "Failed to login. Got response: " +
                         urlConnection.getResponseCode() + ": " + urlConnection.getResponseMessage());
                 if (responseCode == 400) {
                     // will get a 400 response if username/password invalid
@@ -139,8 +144,8 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             in.close();
             String responseStr = stringBuilder.toString();
 
-            Log.d("LoginTask", "Token request response:");
-            Log.d("LoginTask", responseStr);
+            Log.d(LOG_LABEL, "Token request response:");
+            Log.d(LOG_LABEL, responseStr);
 
             Gson gson = new GsonBuilder().create();
             DriverUserAuth auth = gson.fromJson(responseStr, DriverUserAuth.class);
@@ -150,7 +155,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 urlConnection.disconnect();
 
                 URL userInfoUrl = mLoginUrls.userInfoUrl(serverUrl, auth.user);
-                Log.d("LoginTask", "Going to attempt fetching user info from endpoint: " + userInfoUrl);
+                Log.d(LOG_LABEL, "Going to attempt fetching user info from endpoint: " + userInfoUrl);
 
                 urlConnection = (HttpURLConnection) userInfoUrl.openConnection();
                 urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -168,13 +173,13 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 in.close();
                 responseStr = stringBuilder.toString();
 
-                Log.d("LoginTask", "User info request response:");
-                Log.d("LoginTask", responseStr);
+                Log.d(LOG_LABEL, "User info request response:");
+                Log.d(LOG_LABEL, responseStr);
 
                 userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
 
                 if (!userInfo.hasWritePermission()) {
-                    Log.d("LoginTask", "User does not have privileges to add records!");
+                    Log.d(LOG_LABEL, "User does not have privileges to add records!");
                     publishProgress(context.getString(R.string.error_user_cannot_write_records));
                     userInfo = null;
                 } else {
@@ -190,13 +195,13 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 publishProgress(context.getString(R.string.error_login_unknown));
             }
         } catch (IOException e) {
-            Log.e("LoginTask", "Network error logging in");
+            Log.e(LOG_LABEL, "Network error logging in");
             // TODO: This is the error if there is no Internet connection; handle this specially
             e.printStackTrace();
             publishProgress(context.getString(R.string.error_login_network));
             userInfo = null;
         } catch (JSONException e) {
-            Log.e("LoginTask", "Error parsing JSON for login request");
+            Log.e(LOG_LABEL, "Error parsing JSON for login request");
             e.printStackTrace();
             publishProgress(context.getString(R.string.error_login_unknown));
             userInfo = null;
@@ -216,12 +221,22 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
     @Override
     protected void onPostExecute(final DriverUserInfo userInfo) {
-        mListener.loginCompleted(userInfo);
+        LoginCallbackListener caller = mListener.get();
+        if (caller != null) {
+            caller.loginCompleted(userInfo);
+        } else {
+            Log.w(LOG_LABEL, "Cannot send back user info because listener has gone");
+        }
     }
 
     @Override
     protected void onCancelled() {
-        mListener.loginCancelled();
+        LoginCallbackListener caller = mListener.get();
+        if (caller != null) {
+            caller.loginCancelled();
+        } else {
+            Log.w(LOG_LABEL, "Cannot notify of login cancellation because listener has gone");
+        }
     }
 
     /**
@@ -233,7 +248,12 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
      */
     @Override
     protected void onProgressUpdate(String... errors) {
-        mListener.loginError(errors[0]);
+        LoginCallbackListener caller = mListener.get();
+        if (caller != null) {
+            caller.loginError(errors[0]);
+        } else {
+            Log.w(LOG_LABEL, "Cannot send back user info because listener has gone");
+        }
     }
 
 }

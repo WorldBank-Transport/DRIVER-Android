@@ -99,7 +99,7 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
             cancel(true);
             return null;
         }
-        
+
         try {
             URL url = currentSchemaUrl.currentSchemaUrl(serverUrl, RECORD_TYPE_LABEL);
 
