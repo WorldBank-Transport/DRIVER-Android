@@ -106,8 +106,6 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             urlConnection.setRequestProperty("Authorization", "Token " + token);
 
-            // FIXME: token set to something invalid in tests
-
             // TODO: log out user here if get a 403 back, so they have a chance to log in again
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
                 //////////////////
