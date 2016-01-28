@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
@@ -40,6 +41,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
 
     SimpleCursorAdapter adapter;
     DriverApp app;
+    CheckSchemaTask checkSchemaTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,8 +152,12 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             // TODO: attempt upload of records here
             // for now, just check the schema
 
-            CheckSchemaTask checkSchemaTask = new CheckSchemaTask(this);
-            checkSchemaTask.execute(app.getUserInfo());
+            if (checkSchemaTask == null) {
+                checkSchemaTask = new CheckSchemaTask(this);
+                checkSchemaTask.execute(app.getUserInfo());
+            } else {
+                Log.d(LOG_LABEL, "Already checking schema");
+            }
 
             return true;
         } else {
@@ -184,16 +190,32 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
 
     @Override
     public void foundSchema(String currentSchema) {
-        Log.d(LOG_LABEL, "Found schema " + currentSchema + "!!!!!");
+        Log.d(LOG_LABEL, "Found schema " + currentSchema);
+        checkSchemaTask = null;
     }
 
     @Override
     public void schemaCheckCancelled() {
         Log.d(LOG_LABEL, "Schema check cancelled");
+        checkSchemaTask = null;
     }
 
     @Override
     public void schemaCheckError(String errorMessage) {
         Log.d(LOG_LABEL, "Got schema check error: " + errorMessage);
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
+        toast.show();
+        checkSchemaTask = null;
+    }
+
+    @Override
+    public void haveInvalidCredentials() {
+        Log.e(LOG_LABEL, "Have invalid credentials!");
+        // Somehow have bad auth token. Clear user info and go back to launch login activity.
+        app.setUserInfo(null);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        checkSchemaTask = null;
+        finish();
     }
 }

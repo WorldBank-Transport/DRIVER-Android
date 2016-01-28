@@ -38,6 +38,7 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
         void foundSchema(String currentSchema);
         void schemaCheckCancelled();
         void schemaCheckError(String errorMessage);
+        void haveInvalidCredentials();
     }
 
     public interface CurrentSchemaUrl {
@@ -106,12 +107,18 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             urlConnection.setRequestProperty("Authorization", "Token " + token);
 
-            // TODO: log out user here if get a 403 back, so they have a chance to log in again
+            // if get a 403 back, tell activity to go login again (shouldn't happen)
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
-                //////////////////
-                Log.w(LOG_LABEL, "User token must be invalid. Logging out.");
+                Log.w(LOG_LABEL, "User token must be invalid.");
+                CheckSchemaCallbackListener caller = listener.get();
+                if (caller != null) {
+                    caller.haveInvalidCredentials();
+                } else {
+                    Log.w(LOG_LABEL, "Cannot notify of 403 because listener has gone");
+                }
+                cancel(true);
+                return null;
             }
-
 
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             BufferedReader ir = new BufferedReader(new InputStreamReader(in));
