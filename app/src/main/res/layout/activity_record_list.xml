@@ -9,6 +9,16 @@
 
     <include layout="@layout/app_bar" />
 
+    <!-- Loader -->
+    <ProgressBar
+        android:id="@+id/record_list_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:indeterminate="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
     <include layout="@layout/content_record_list" />
 
     <android.support.design.widget.FloatingActionButton

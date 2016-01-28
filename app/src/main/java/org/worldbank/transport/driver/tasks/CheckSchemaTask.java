@@ -43,7 +43,6 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
 
     public interface CurrentSchemaUrl {
         // Backend endpoints. Note that it is necessary to keep the trailing slash here.
-        // Publicly accessible for testing convenience.
         String RECORDTYPE_ENDPOINT = "api/recordtypes/";
 
         URL currentSchemaUrl(String serverUrl, String recordTypeLabel);
@@ -131,8 +130,6 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
             ir.close();
             in.close();
             String responseStr = stringBuilder.toString();
-
-            Log.d(LOG_LABEL, "Current schema request response: " + responseStr);
 
             // parse the JSON to find the schema UUID
             JSONObject json = new JSONObject(responseStr);
