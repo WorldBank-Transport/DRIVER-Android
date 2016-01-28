@@ -27,7 +27,7 @@ import java.util.UUID;
  *
  * Created by kathrynkillebrew on 1/26/16.
  */
-public class CheckSchemaTask extends AsyncTask<String, String, String> {
+public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
 
     /* The name of the record type in use by the app; should match default in web app */
     private static final String RECORD_TYPE_LABEL = "Accident";
@@ -43,7 +43,7 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
     public interface CurrentSchemaUrl {
         // Backend endpoints. Note that it is necessary to keep the trailing slash here.
         // Publicly accessible for testing convenience.
-        String RECORDTYPE_ENDPOINT = "recordtypes/";
+        String RECORDTYPE_ENDPOINT = "api/recordtypes/";
 
         URL currentSchemaUrl(String serverUrl, String recordTypeLabel);
     }
@@ -52,10 +52,9 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
     private final Context context = DriverAppContext.getContext();
     private final WeakReference<CheckSchemaCallbackListener> listener;
     private final CurrentSchemaUrl currentSchemaUrl;
-    private final DriverUserInfo userInfo;
 
-    public CheckSchemaTask(DriverUserInfo userInfo, CheckSchemaCallbackListener listener) {
-        this(userInfo, listener, new CheckSchemaUrlBuilder());
+    public CheckSchemaTask(CheckSchemaCallbackListener listener) {
+        this(listener, new CheckSchemaUrlBuilder());
     }
 
     /**
@@ -64,8 +63,7 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
      * @param listener callback listener
      * @param currentSchemaUrl URL builder that returns endpoint to query for current schema
      */
-    public CheckSchemaTask(DriverUserInfo userInfo, CheckSchemaCallbackListener listener, CurrentSchemaUrl currentSchemaUrl) {
-        this.userInfo = userInfo;
+    public CheckSchemaTask(CheckSchemaCallbackListener listener, CurrentSchemaUrl currentSchemaUrl) {
         this.listener = new WeakReference<>(listener);
         serverUrl = context.getString(R.string.api_server_url);
         this.currentSchemaUrl = currentSchemaUrl;
@@ -73,7 +71,7 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
-    protected String doInBackground(String... params) {
+    protected String doInBackground(DriverUserInfo... params) {
         if(!DriverApp.getIsNetworkAvailable()) {
             // no network available. don't bother logging in
             publishProgress(context.getString(R.string.error_no_network));
@@ -82,8 +80,9 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
             return null;
         }
 
+        DriverUserInfo userInfo = params[0];
+
        if (userInfo == null) {
-           // shouldn't happen; app won't go past login screen without credentials set
            publishProgress(context.getString(R.string.error_schema_check));
            Log.d(LOG_LABEL, "missing user info!");
            cancel(true);
@@ -105,9 +104,16 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            urlConnection.setDoOutput(false);
-            urlConnection.setDoInput(true);
             urlConnection.setRequestProperty("Authorization", "Token " + token);
+
+            // FIXME: token set to something invalid in tests
+
+            // TODO: log out user here if get a 403 back, so they have a chance to log in again
+            if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+                //////////////////
+                Log.w(LOG_LABEL, "User token must be invalid. Logging out.");
+            }
+
 
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             BufferedReader ir = new BufferedReader(new InputStreamReader(in));
@@ -125,7 +131,7 @@ public class CheckSchemaTask extends AsyncTask<String, String, String> {
 
             // parse the JSON to find the schema UUID
             JSONObject json = new JSONObject(responseStr);
-            JSONObject resultJson = json.getJSONObject("results");
+            JSONObject resultJson = json.getJSONArray("results").getJSONObject(0);
             String foundCurrentSchema = resultJson.getString("current_schema");
 
             // sanity check; make sure that the string found is actually a UUID
