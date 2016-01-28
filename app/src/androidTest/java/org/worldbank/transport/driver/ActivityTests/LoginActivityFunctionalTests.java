@@ -340,5 +340,6 @@ public class LoginActivityFunctionalTests extends ActivityInstrumentationTestCas
     protected void tearDown() throws Exception {
         super.tearDown();
         getActivity().finish();
+        clearSharedPreferences(); // clear out clobbered shared preferences
     }
 }

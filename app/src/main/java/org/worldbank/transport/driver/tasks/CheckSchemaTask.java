@@ -85,7 +85,7 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
 
        if (userInfo == null) {
            publishProgress(context.getString(R.string.error_schema_check));
-           Log.d(LOG_LABEL, "missing user info!");
+           Log.e(LOG_LABEL, "missing user info!");
            cancel(true);
            return null;
        }
@@ -95,7 +95,7 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
         // should not happen, but check anyways
         if (token == null || token.isEmpty()) {
             publishProgress(context.getString(R.string.error_schema_check));
-            Log.d(LOG_LABEL, "missing user token!");
+            Log.e(LOG_LABEL, "missing user token!");
             cancel(true);
             return null;
         }
