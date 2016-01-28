@@ -14,11 +14,13 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.tasks.CheckSchemaTask;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -30,7 +32,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 
-public class RecordListActivity extends AppCompatActivity {
+public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener {
 
     private static final String LOG_LABEL = "RecordListActivity";
 
@@ -39,6 +41,7 @@ public class RecordListActivity extends AppCompatActivity {
 
     SimpleCursorAdapter adapter;
     DriverApp app;
+    CheckSchemaTask checkSchemaTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,9 +148,20 @@ public class RecordListActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_upload) {
+            // TODO: attempt upload of records here
+            // for now, just check the schema
+
+            if (checkSchemaTask == null) {
+                checkSchemaTask = new CheckSchemaTask(this);
+                checkSchemaTask.execute(app.getUserInfo());
+            } else {
+                Log.d(LOG_LABEL, "Already checking schema");
+            }
+
             return true;
+        } else {
+            Log.w(LOG_LABEL, "Unrecognized menu action: " + id);
         }
 
         return super.onOptionsItemSelected(item);
@@ -172,5 +186,36 @@ public class RecordListActivity extends AppCompatActivity {
         Intent intent = new Intent(this, RecordFormSectionManager.getActivityClassForSection(-1));
         intent.putExtra(RecordFormActivity.SECTION_ID, -1);
         startActivity(intent);
+    }
+
+    @Override
+    public void foundSchema(String currentSchema) {
+        Log.d(LOG_LABEL, "Found schema " + currentSchema);
+        checkSchemaTask = null;
+    }
+
+    @Override
+    public void schemaCheckCancelled() {
+        Log.d(LOG_LABEL, "Schema check cancelled");
+        checkSchemaTask = null;
+    }
+
+    @Override
+    public void schemaCheckError(String errorMessage) {
+        Log.d(LOG_LABEL, "Got schema check error: " + errorMessage);
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
+        toast.show();
+        checkSchemaTask = null;
+    }
+
+    @Override
+    public void haveInvalidCredentials() {
+        Log.e(LOG_LABEL, "Have invalid credentials!");
+        // Somehow have bad auth token. Clear user info and go back to launch login activity.
+        app.setUserInfo(null);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        checkSchemaTask = null;
+        finish();
     }
 }

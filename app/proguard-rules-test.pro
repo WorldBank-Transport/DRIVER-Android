@@ -8,6 +8,23 @@
 -keepnames class com.robotium.solo.** { *; }
 -keepnames interface com.robotium.solo.** { *; }
 
+-keep class org.mockito.** { *; }
+-keep interface org.mockito.** { *; }
+-keepclassmembers class org.mockito.** { *; }
+-keepnames class org.mockito.** { *; }
+-keepnames interface org.mockito.** { *; }
+
+# mockito looks for ant things it doesn't need here
+-dontwarn org.mockito.**
+-dontwarn sun.misc.Unsafe
+-dontwarn org.objenesis.instatiator.**
+
+-keep class com.android.dx.** { *; }
+-keep interface com.android.dx.** { *; }
+-keepclassmembers class com.android.dx.** { *; }
+-keepnames class com.android.dx.** { *; }
+-keepnames interface com.android.dx.** { *; }
+
 -keep class com.squareup.okhttp.** { *; }
 -keep interface com.squareup.okhttp.** { *; }
 -keepclassmembers class com.squareup.okhttp.** { *; }
