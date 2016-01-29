@@ -150,6 +150,13 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     String enteredAt = cursor.getString(colEnteredAt);
                     String updatedAt = cursor.getString(colUpdatedAt);
 
+                    // user allowed to save record without a location, in case they cannot get a
+                    // GPS fix somewhere, but it cannot be uploaded until set
+                    if (latitude == 0 && longitude == 0) {
+                        Log.d(LOG_LABEL, "Record without coordinates cannot be uploaded");
+                        continue;
+                    }
+
                     // go build the JSON to POST
                     JSONObject postJson = new JSONObject();
                     postJson.put("schema", schemaVersion);
@@ -168,14 +175,6 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     }
 
                     // build geometry object
-
-                    // user allowed to save record without a location, in case they cannot get a
-                    // GPS fix somewhere, but it cannot be uploaded until set
-                    if (latitude == 0 && longitude == 0) {
-                        Log.d(LOG_LABEL, "Record without coordinates cannot be uploaded");
-                        continue;
-                    }
-
                     JSONObject geomJson = new JSONObject();
                     JSONArray coordArray = new JSONArray();
                     coordArray.put(longitude);
