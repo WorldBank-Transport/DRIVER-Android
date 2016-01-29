@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
+import org.jsonschema2pojo.annotations.IsHidden;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 
@@ -28,8 +29,7 @@ import javax.validation.constraints.NotNull;
 @JsonPropertyOrder({
         "Occurred",
         "Weather",
-        "Light",
-        "Location"
+        "Light"
 })
 public class DriverConstantFields {
 
@@ -44,10 +44,11 @@ public class DriverConstantFields {
 
     // occurredTo is set to match value of occurredFrom before upload
 
-    // TODO: set
-    // Can do GPS with only satellite (and no Internet). Could do offline maps too, with OSMDroid or the like.
+
+    // location form component is added outside of the form builder
     @SerializedName("Location")
     @ConstantFieldType(ConstantFieldTypes.location)
+    @IsHidden(true)
     public Location location;
 
 

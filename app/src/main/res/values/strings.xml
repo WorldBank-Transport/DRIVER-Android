@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">DRIVER</string>
+
+    <!-- main menu -->
     <string name="action_upload">Upload Records</string>
+    <string name="action_update_schema">Update Schema</string>
 
     <!-- login -->
     <string name="title_activity_login">Sign in</string>
@@ -23,6 +26,13 @@
 
     <!-- schema check -->
     <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
+    <string name="schema_current">Current schema is up-to-date.</string>
+
+    <!-- record upload -->
+    <string name ="error_record_upload">Server error uploading record.</string>
+    <string name="records_uploaded_checking_schema">Records uploaded, now checking for schema updates&#8230;</string>
+    <string name="records_uploaded_some_failed">%1$d records failed to upload. Now checking for schema updates&#8230;</string>
+    <string name="records_nothing_to_upload">No records found to upload.</string>
 
     <!-- record form -->
     <string name="record_save_button">Save</string>

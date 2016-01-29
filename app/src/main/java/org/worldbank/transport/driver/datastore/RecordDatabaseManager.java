@@ -180,6 +180,37 @@ public class RecordDatabaseManager {
     }
 
     /**
+     * Delete a single record from the database. To be called after record successfully uploaded.
+     *
+     * @param recordId Database ID for the record to delete
+     * @return true on success
+     */
+    public boolean deleteRecord(long recordId) {
+        String[] whereArgs = { String.valueOf(recordId) };
+
+        writableDb.beginTransaction();
+        int affected = -1;
+        try {
+            affected = writableDb.delete(DriverRecordContract.RecordEntry.TABLE_NAME, WHERE_ID, whereArgs);
+            writableDb.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e(LOG_LABEL, "Database record deletion failed for ID " + recordId);
+            e.printStackTrace();
+            affected = -1;
+        } finally {
+            writableDb.endTransaction();
+        }
+
+        if (affected == 1) {
+            return true;
+        } else {
+            Log.e(LOG_LABEL, "Number or records affected by delete: " + affected);
+        }
+
+        return false;
+    }
+
+    /**
      * Get a cursor to fetch all records.
      *
      * @return Database cursor to retrieve all records

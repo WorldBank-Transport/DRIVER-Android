@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.tasks.CheckSchemaTask;
+import org.worldbank.transport.driver.tasks.PostRecordsTask;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -32,7 +34,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 
-public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener {
+public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
+        PostRecordsTask.PostRecordsListener {
 
     private static final String LOG_LABEL = "RecordListActivity";
 
@@ -42,6 +45,8 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     SimpleCursorAdapter adapter;
     DriverApp app;
     CheckSchemaTask checkSchemaTask;
+    PostRecordsTask postRecordsTask;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,8 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         setContentView(R.layout.activity_record_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        progressBar = (ProgressBar) findViewById(R.id.record_list_progress);
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = appContext.getDriverApp();
@@ -149,16 +156,11 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         int id = item.getItemId();
 
         if (id == R.id.action_upload) {
-            // TODO: attempt upload of records here
-            // for now, just check the schema
-
-            if (checkSchemaTask == null) {
-                checkSchemaTask = new CheckSchemaTask(this);
-                checkSchemaTask.execute(app.getUserInfo());
-            } else {
-                Log.d(LOG_LABEL, "Already checking schema");
-            }
-
+            // attempt record upload, which will then check for a new schema when done
+            startRecordUpload();
+            return true;
+        } else if (id == R.id.action_update_schema) {
+            startSchemaUpdateCheck();
             return true;
         } else {
             Log.w(LOG_LABEL, "Unrecognized menu action: " + id);
@@ -167,16 +169,50 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         return super.onOptionsItemSelected(item);
     }
 
+    private void startRecordUpload() {
+        if (postRecordsTask != null) {
+            Log.d(LOG_LABEL, "Already uploading records");
+            return;
+        }
+
+        // set up progress bar
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setIndeterminate(false);
+                progressBar.requestLayout();
+                progressBar.setMax(adapter.getCount());
+                progressBar.setProgress(0);
+
+                Log.d(LOG_LABEL, "progress bar max set to " + adapter.getCount());
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
+
+        postRecordsTask = new PostRecordsTask(this, app.getUserInfo());
+        postRecordsTask.execute();
+    }
+
+    private void startSchemaUpdateCheck() {
+        if (checkSchemaTask != null) {
+            Log.d(LOG_LABEL, "Already checking schema");
+            return;
+        }
+
+        Log.d(LOG_LABEL, "Going to check schema");
+        checkSchemaTask = new CheckSchemaTask(this);
+        checkSchemaTask.execute(app.getUserInfo());
+        // set up progress bar
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
     /**
      * Helper to launch record editor. Currently editing record should be set first
      * (or cleared, if adding a new record).
      */
     private void loadRecordForm() {
-
-        // TODO: handle with form navigation management
-        // Should handle stopping location service before allowing user to bail from form,
-        // by listening to both 'back' and 'up' actions and warning user if they're about to exit
-        // an unsaved record.
+        // shouldn't happen at this point, but check
         if (LocationServiceManager.isRunning()) {
             Log.w(LOG_LABEL, "Location service manager still running outside of form. Stopping it.");
             LocationServiceManager.stopService();
@@ -192,12 +228,24 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     public void foundSchema(String currentSchema) {
         Log.d(LOG_LABEL, "Found schema " + currentSchema);
         checkSchemaTask = null;
+
+        if (!DriverApp.getCurrentSchema().equals(currentSchema)) {
+            // TODO: update schema and restart app if a new one is available
+            Log.w(LOG_LABEL, "There is a new schema available! Go get it.");
+        } else {
+            Log.d(LOG_LABEL, "This schema version is the latest!");
+            Toast toast = Toast.makeText(this, getString(R.string.schema_current), Toast.LENGTH_SHORT);
+            toast.show();
+        }
+
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void schemaCheckCancelled() {
         Log.d(LOG_LABEL, "Schema check cancelled");
         checkSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -205,9 +253,13 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         Log.d(LOG_LABEL, "Got schema check error: " + errorMessage);
         Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
         toast.show();
+        progressBar.setVisibility(View.GONE);
         checkSchemaTask = null;
     }
 
+    /**
+     * This callback method is shared by the schema check task and record post task.
+     */
     @Override
     public void haveInvalidCredentials() {
         Log.e(LOG_LABEL, "Have invalid credentials!");
@@ -216,6 +268,51 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
         checkSchemaTask = null;
+        postRecordsTask = null;
+        progressBar.setVisibility(View.GONE);
         finish();
+    }
+
+    @Override
+    public void recordUploadFinished(int failed) {
+        postRecordsTask = null;
+
+        if (failed > 0) {
+            Log.e(LOG_LABEL, failed + " records failed to upload");
+            Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_some_failed, failed), Toast.LENGTH_LONG);
+            toast.show();
+        } else {
+            Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_checking_schema), Toast.LENGTH_SHORT);
+            toast.show();
+        }
+
+        // clear now-outdated list view of the uploaded records
+        adapter.changeCursor(app.getAllRecords());
+        adapter.notifyDataSetChanged();
+
+        // start schema update check
+        startSchemaUpdateCheck();
+    }
+
+    @Override
+    public void recordUploadCancelled(String errorMessage) {
+        Log.e(LOG_LABEL, "Record upload failed with error: " + errorMessage);
+        progressBar.setVisibility(View.GONE);
+        progressBar.setIndeterminate(true);
+        postRecordsTask = null;
+
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    @Override
+    public void uploadedOneRecord() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOG_LABEL, "uploaded one record, updating progress...");
+                progressBar.incrementProgressBy(1);
+            }
+        });
     }
 }

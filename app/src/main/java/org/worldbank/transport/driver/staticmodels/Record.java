@@ -50,6 +50,10 @@ public class Record {
         return editConstants;
     }
 
+    public String getRecordSchemaVersion() {
+        return recordSchemaVersion;
+    }
+
     public boolean save() {
         if (editObject == null) {
             Log.e(LOG_LABEL, "No currently editing DRIVER data to save!");
