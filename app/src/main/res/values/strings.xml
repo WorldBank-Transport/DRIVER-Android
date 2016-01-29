@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">DRIVER</string>
+
+    <!-- main menu -->
     <string name="action_upload">Upload Records</string>
+    <string name="action_update_schema">Update Schema</string>
 
     <!-- login -->
     <string name="title_activity_login">Sign in</string>

@@ -159,6 +159,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             // attempt record upload, which will then check for a new schema when done
             startRecordUpload();
             return true;
+        } else if (id == R.id.action_update_schema) {
+            startSchemaUpdateCheck();
+            return true;
         } else {
             Log.w(LOG_LABEL, "Unrecognized menu action: " + id);
         }
