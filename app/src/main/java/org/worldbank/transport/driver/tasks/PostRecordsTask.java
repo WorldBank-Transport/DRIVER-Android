@@ -57,16 +57,17 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
     private String errorMessage;
 
     public PostRecordsTask(PostRecordsListener listener, DriverUserInfo userInfo) {
-        this(listener, userInfo, new UploadRecordUrlBuilder());
+        this(listener, userInfo, new UploadRecordUrlBuilder(), DriverApp.getDatabaseManager());
     }
 
      // Invoke this constructor directly in test.
-    public PostRecordsTask(PostRecordsListener listener, DriverUserInfo userInfo, UploadRecordUrl uploadRecordUrl) {
+    public PostRecordsTask(PostRecordsListener listener, DriverUserInfo userInfo,
+                           UploadRecordUrl uploadRecordUrl, RecordDatabaseManager databaseManager) {
 
         this.listener = new WeakReference<>(listener);
         this.userInfo = userInfo;
         this.uploadRecordUrl = uploadRecordUrl;
-        this.databaseManager = DriverApp.getDatabaseManager();
+        this.databaseManager = databaseManager;
         serverUrl = context.getString(R.string.api_server_url);
     }
 
