@@ -303,10 +303,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         case date:
                             control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
                             break;
-                        case location:
-                            // TODO: implement
-                            Log.w(LOG_LABEL, "Found location field type. TODO: implement");
-                            break;
                         default:
                             Log.e(LOG_LABEL, "Unrecognized constant field type " + constantFieldType);
                             break;
