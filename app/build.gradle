@@ -47,7 +47,7 @@ android {
         versionCode 1
         versionName "1.0"
         // can enable this to allow >50K methods
-        //multiDexEnabled true
+        multiDexEnabled true
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
@@ -111,7 +111,7 @@ dependencies {
     compile 'com.google.code.findbugs:jsr305:3.0.1'
 
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.0.10'
+    compile 'com.github.azavea:AndroidValidatedForms:1.1.1'
 
     // test dependencies
     testCompile 'junit:junit:4.12'

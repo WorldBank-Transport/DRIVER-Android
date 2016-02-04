@@ -29,9 +29,11 @@ import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.NotNull;
 
 import org.jsonschema2pojo.annotations.WatchTarget;
+import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
+import org.worldbank.transport.driver.controls.DriverImageController;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
@@ -256,7 +258,17 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 // have a jsonschema2pojo field type
                 switch (fieldType) {
                     case image:
-                        Log.w(LOG_LABEL, "TODO: implement image field type");
+                        Log.d(LOG_LABEL, "found image field");
+                        String appName = getApplicationInfo().loadLabel(getPackageManager()).toString();
+                        Log.d(LOG_LABEL, "App name is: " + appName);
+                        /////////////////////
+
+                        if (!field.getType().equals(SerializableMedia.class)) {
+                            Log.e(LOG_LABEL, "image field has wrong type: " + field.getType());
+                            continue;
+                        }
+
+                        control = new DriverImageController(this, fieldName, fieldLabel, isRequired);
                         break;
                     case selectlist:
                         // find enum with the options in it
