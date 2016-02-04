@@ -60,7 +60,7 @@ public class Record {
             return false;
         }
 
-        String serializedEditObject = DriverSchemaSerializer.serializeRecord(editObject);
+        String serializedEditObject = DriverSchemaSerializer.serializeRecordForStorage(editObject);
 
         if (serializedEditObject == null) {
             Log.e(LOG_LABEL, "Failed to serialize record to JSON");

@@ -3,8 +3,10 @@ package org.worldbank.transport.driver.datastore;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
+import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.models.DriverSchema;
 
 /**
@@ -17,7 +19,9 @@ public class DriverSchemaSerializer {
     public static final String LOG_LABEL = "SchemaSerializer";
 
     public static DriverSchema readRecord(String jsonData) {
-        Gson gson = new Gson();
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
+        Gson gson = builder.create();
         try {
             return gson.fromJson(jsonData, DriverSchema.class);
         } catch (JsonParseException ex) {
@@ -27,8 +31,22 @@ public class DriverSchemaSerializer {
         }
     }
 
-    public static String serializeRecord(DriverSchema object) {
-        Gson gson = new Gson();
+    public static String serializeRecordForStorage(DriverSchema object) {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
+        Gson gson = builder.create();
+        return serializeRecord(gson, object);
+    }
+
+    public static String serializeRecordForUpload(DriverSchema object) {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
+        Gson gson = builder.create();
+        return serializeRecord(gson, object);
+    }
+
+    // TODO: use streams
+    private static String serializeRecord(Gson gson, DriverSchema object) {
         try {
             return gson.toJson(object, DriverSchema.class);
         } catch (JsonParseException ex) {

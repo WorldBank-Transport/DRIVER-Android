@@ -10,7 +10,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
+import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
+import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
@@ -162,7 +164,9 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     postJson.put("schema", schemaVersion);
 
                     // the non-constant data section
-                    JSONObject dataJson = new JSONObject(data);
+                    DriverSchema driverSchema = DriverSchemaSerializer.readRecord(data);
+                    data = null;
+                    JSONObject dataJson = new JSONObject(DriverSchemaSerializer.serializeRecordForUpload(driverSchema));
                     postJson.put("data", dataJson);
 
                     // constant fields
