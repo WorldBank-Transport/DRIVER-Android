@@ -23,7 +23,7 @@ public class DriverApp extends Application {
     private static final String LOG_LABEL = "DriverApp";
 
     // TODO: track current schema version
-    private static final String CURRENT_SCHEMA = "9f5ee9e1-dadc-4b3b-acd1-0bba4478a467";
+    private static final String CURRENT_SCHEMA = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
 
     /**
      * Current user.

@@ -101,6 +101,7 @@ dependencies {
         exclude group: 'junit', module: 'junit'
         exclude group: 'android', module: 'net'
     }
+
     // used by jsonschema2pojo
     compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'commons-lang:commons-lang:2.6'
