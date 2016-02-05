@@ -1,5 +1,6 @@
 package org.worldbank.transport.driver.datastore;
 
+import android.util.JsonWriter;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -9,6 +10,9 @@ import com.google.gson.JsonParseException;
 import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverSchemaUpload;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 
 /**
  * Handles reading and writing records to and from JSON strings.
@@ -38,20 +42,6 @@ public class DriverSchemaSerializer {
         Gson gson = builder.create();
         try {
             return gson.toJson(object, DriverSchema.class);
-        } catch (JsonParseException ex) {
-            Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    public static String serializeRecordForUpload(DriverSchemaUpload object) {
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
-        Gson gson = builder.create();
-
-        try {
-            return gson.toJson(object, DriverSchemaUpload.class);
         } catch (JsonParseException ex) {
             Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
             ex.printStackTrace();

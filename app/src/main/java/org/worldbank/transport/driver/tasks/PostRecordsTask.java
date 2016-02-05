@@ -3,8 +3,14 @@ package org.worldbank.transport.driver.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.util.JsonWriter;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+
+import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
@@ -77,7 +83,7 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
         Cursor cursor = databaseManager.readAllRecords();
         int failed = cursor.getCount(); // decrement failure count as records are uploaded successfully
 
-        if(!DriverApp.getIsNetworkAvailable()) {
+        if (!DriverApp.getIsNetworkAvailable()) {
             // no network available. don't bother logging in
             errorMessage = context.getString(R.string.error_no_network);
             Log.d(LOG_LABEL, "No network");
@@ -168,13 +174,6 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     driverSchemaUpload.createdAt = enteredAt;
                     driverSchemaUpload.modifiedAt = updatedAt;
 
-                    String postJson = DriverSchemaSerializer.serializeRecordForUpload(driverSchemaUpload);
-
-                    if (postJson == null) {
-                        Log.e(LOG_LABEL, "failed to serialize record: " + recordId);
-                        continue;
-                    }
-
                     // now go upload it
                     URL uploadUrl = uploadRecordUrl.recordUrl(serverUrl);
                     HttpURLConnection urlConnection = (HttpURLConnection) uploadUrl.openConnection();
@@ -186,7 +185,13 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
 
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                    writer.write(postJson);
+
+                    GsonBuilder builder = new GsonBuilder();
+                    builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
+                    Gson gson = builder.create();
+
+                    gson.toJson(driverSchemaUpload, DriverSchemaUpload.class, writer);
+
                     writer.flush();
                     writer.close();
                     out.close();
@@ -230,6 +235,10 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
             Log.e(LOG_LABEL, "Did record post task fail to find a database column?");
             e.printStackTrace();
             errorMessage = context.getString(R.string.error_record_upload);
+            cancel(true);
+        } catch (JsonParseException ex) {
+            Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
+            ex.printStackTrace();
             cancel(true);
         } finally {
             cursor.close();
