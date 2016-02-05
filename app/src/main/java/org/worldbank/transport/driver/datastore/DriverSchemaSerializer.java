@@ -8,6 +8,7 @@ import com.google.gson.JsonParseException;
 
 import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.staticmodels.DriverSchemaUpload;
 
 /**
  * Handles reading and writing records to and from JSON strings.
@@ -35,18 +36,6 @@ public class DriverSchemaSerializer {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
         Gson gson = builder.create();
-        return serializeRecord(gson, object);
-    }
-
-    public static String serializeRecordForUpload(DriverSchema object) {
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
-        Gson gson = builder.create();
-        return serializeRecord(gson, object);
-    }
-
-    // TODO: use streams
-    private static String serializeRecord(Gson gson, DriverSchema object) {
         try {
             return gson.toJson(object, DriverSchema.class);
         } catch (JsonParseException ex) {
@@ -55,4 +44,19 @@ public class DriverSchemaSerializer {
             return null;
         }
     }
+
+    public static String serializeRecordForUpload(DriverSchemaUpload object) {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
+        Gson gson = builder.create();
+
+        try {
+            return gson.toJson(object, DriverSchemaUpload.class);
+        } catch (JsonParseException ex) {
+            Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
 }

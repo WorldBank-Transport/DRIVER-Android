@@ -5,16 +5,14 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.staticmodels.DriverSchemaUpload;
+import org.worldbank.transport.driver.staticmodels.DriverUploadGeom;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.utilities.UploadRecordUrlBuilder;
 
@@ -159,38 +157,23 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                         continue;
                     }
 
-                    // go build the JSON to POST
-                    JSONObject postJson = new JSONObject();
-                    postJson.put("schema", schemaVersion);
+                    DriverSchemaUpload driverSchemaUpload = new DriverSchemaUpload();
+                    driverSchemaUpload.driverData = DriverSchemaSerializer.readRecord(data);
+                    driverSchemaUpload.schemaVersion = schemaVersion;
+                    driverSchemaUpload.driverWeather = weather;
+                    driverSchemaUpload.driverLight = light;
+                    driverSchemaUpload.geom = new DriverUploadGeom(latitude, longitude);
+                    driverSchemaUpload.occurredFrom = occurredFrom;
+                    driverSchemaUpload.occurredTo = occurredTo;
+                    driverSchemaUpload.createdAt = enteredAt;
+                    driverSchemaUpload.modifiedAt = updatedAt;
 
-                    // the non-constant data section
-                    DriverSchema driverSchema = DriverSchemaSerializer.readRecord(data);
-                    data = null;
-                    JSONObject dataJson = new JSONObject(DriverSchemaSerializer.serializeRecordForUpload(driverSchema));
-                    postJson.put("data", dataJson);
+                    String postJson = DriverSchemaSerializer.serializeRecordForUpload(driverSchemaUpload);
 
-                    // constant fields
-                    if (weather != null && !weather.isEmpty()) {
-                        postJson.put("weather", weather);
+                    if (postJson == null) {
+                        Log.e(LOG_LABEL, "failed to serialize record: " + recordId);
+                        continue;
                     }
-
-                    if (light != null && !light.isEmpty()) {
-                        postJson.put("light", light);
-                    }
-
-                    // build geometry object
-                    JSONObject geomJson = new JSONObject();
-                    JSONArray coordArray = new JSONArray();
-                    coordArray.put(longitude);
-                    coordArray.put(latitude);
-                    geomJson.put("type", "Point");
-                    geomJson.put("coordinates", coordArray);
-                    postJson.put("geom", geomJson);
-
-                    postJson.put("occurred_from", occurredFrom);
-                    postJson.put("occurred_to", occurredTo);
-                    postJson.put("created", enteredAt);
-                    postJson.put("modified", updatedAt);
 
                     // now go upload it
                     URL uploadUrl = uploadRecordUrl.recordUrl(serverUrl);
@@ -203,7 +186,7 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
 
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                    writer.write(postJson.toString());
+                    writer.write(postJson);
                     writer.flush();
                     writer.close();
                     out.close();
@@ -233,13 +216,9 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                             Log.e(LOG_LABEL, "Failed to delete record " + recordId);
                         }
                         failed--;
-
                         publishProgress(1);
 
                     }
-                } catch (JSONException e) {
-                    Log.e(LOG_LABEL, "Error building JSON upload output");
-                    e.printStackTrace();
                 } catch (IOException e) {
                     Log.e(LOG_LABEL, "Error communicating with server to upload record");
                     e.printStackTrace();
