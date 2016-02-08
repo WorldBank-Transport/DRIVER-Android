@@ -3,7 +3,6 @@ package org.worldbank.transport.driver.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.util.JsonWriter;
 import android.util.Log;
 
 import com.google.gson.Gson;

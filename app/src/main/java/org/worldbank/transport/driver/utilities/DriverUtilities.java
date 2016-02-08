@@ -5,6 +5,8 @@ import android.util.Log;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.gson.annotations.SerializedName;
 
+import org.jsonschema2pojo.media.SerializableMedia;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,30 +91,46 @@ public class DriverUtilities {
      * @return Collection of labels consisting of the first few fields, separated by hyphens.
      *         Labels returned will be in same order as list of items passed in.
      */
-    public static ArrayList<String> getListItemLabels(ArrayList items, Class sectionClass, String defaultLabel) {
+    public static ListItemLabels getListItemLabels(ArrayList items, Class sectionClass, String defaultLabel) {
 
         final int MAX_NUM_LABEL_FIELDS = 3;
 
         String[] fieldOrders = getFieldOrder(sectionClass);
         ArrayList<String> labels = new ArrayList<>(items.size());
+        ArrayList<String> imagePaths = null;
 
         // If there are less than MAX_NUM_LABEL_FIELDS fields in the section,
         // use as many as are available.
-        ArrayList<Field> labelFields = new ArrayList<>(3);
+        ArrayList<Field> labelFields = new ArrayList<>(MAX_NUM_LABEL_FIELDS);
         int numLabelFields = MAX_NUM_LABEL_FIELDS;
         if (numLabelFields >= fieldOrders.length) {
             numLabelFields = fieldOrders.length - 1;
         }
+
+        Field mediaField = null;
 
         // get fields to use for the labels
         try {
             for (int i = 0; i < numLabelFields; i++) {
                 String labelFieldName = fieldOrders[i];
                 Field labelField = sectionClass.getField(labelFieldName);
+
+                // Do not attempt to use media fields for string label.
+                // Use first media field found for image.
+                if (labelField.getType().equals(SerializableMedia.class)) {
+                    if (mediaField == null) {
+                        mediaField = labelField;
+                    }
+                    continue;
+                }
                 labelFields.add(labelField);
             }
         } catch(NoSuchFieldException e) {
             e.printStackTrace();
+        }
+
+        if (mediaField != null) {
+            imagePaths = new ArrayList<>(items.size());
         }
 
         // build the labels
@@ -122,6 +140,18 @@ public class DriverUtilities {
             for (int i = 0; i < itemsSize; i++) {
                 label = "";
                 Object item = items.get(i);
+
+                // get path to image to use
+                if (mediaField != null) {
+                    String imagePath = "";
+                    Object obj = mediaField.get(item);
+                    if (obj != null) {
+                        SerializableMedia media = (SerializableMedia) obj;
+                        imagePath = media.path;
+                    }
+                    imagePaths.add(imagePath);
+                }
+
                 for (Field labelField : labelFields) {
                     Object obj = labelField.get(item);
                     if (obj == null) {
@@ -153,6 +183,6 @@ public class DriverUtilities {
             e.printStackTrace();
         }
 
-        return labels;
+        return new ListItemLabels(labels, imagePaths);
     }
 }

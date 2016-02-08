@@ -422,7 +422,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
         String prettyRefLabel = RecordFormSectionManager.getSingleTitle(refField, refField.getName());
         ArrayList refList = RecordFormSectionManager.getSectionList(refObj);
-        ArrayList<String> refLabels = DriverUtilities.getListItemLabels(refList, refClass, prettyRefLabel);
+        ArrayList<String> refLabels = DriverUtilities.getListItemLabels(refList, refClass, prettyRefLabel).labels;
 
         Field refIdField;
         try {

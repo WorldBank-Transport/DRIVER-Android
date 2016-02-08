@@ -30,7 +30,6 @@ public class RecordItemListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private FormItemListAdapter recyclerViewAdapter;
 
-    private DriverAppContext mAppContext;
     private DriverApp app;
     protected DriverSchema currentlyEditing;
     protected int sectionId;
@@ -38,20 +37,10 @@ public class RecordItemListActivity extends AppCompatActivity {
     Class sectionClass;
     ArrayList sectionItems;
 
-    // constructors, for testing
-    public RecordItemListActivity(DriverAppContext context) {
-        super();
-        mAppContext = context;
-    }
-
-    public RecordItemListActivity() {
-        super();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
-        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        DriverAppContext mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = mAppContext.getDriverApp();
         currentlyEditing = app.getEditObject();
         Bundle bundle = getIntent().getExtras();
@@ -73,7 +62,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         });
 
         // set up list view
-        recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_View);
+        recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         buildItemList();

@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="wrap_content"
-    style="@style/Base.TextAppearance.AppCompat.Large"
-    android:padding="5dp">
-</TextView>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/record_form_item_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/record_form_list_item_image"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:adjustViewBounds="true"
+        android:layout_centerVertical="true"
+        android:layout_width="80sp"
+        android:layout_height="80sp"
+        android:contentDescription="@string/record_form_list_item_image_description" />
+
+    <TextView
+        android:id="@+id/record_form_list_item_text"
+        android:layout_toRightOf="@id/record_form_list_item_image"
+        android:layout_toEndOf="@id/record_form_list_item_image"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:padding="5dp" />
+
+</RelativeLayout>
