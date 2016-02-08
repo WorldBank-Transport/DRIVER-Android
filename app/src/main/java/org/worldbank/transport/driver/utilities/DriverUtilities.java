@@ -96,6 +96,7 @@ public class DriverUtilities {
         final int MAX_NUM_LABEL_FIELDS = 3;
 
         String[] fieldOrders = getFieldOrder(sectionClass);
+
         ArrayList<String> labels = new ArrayList<>(items.size());
         ArrayList<String> imagePaths = null;
 
@@ -103,8 +104,8 @@ public class DriverUtilities {
         // use as many as are available.
         ArrayList<Field> labelFields = new ArrayList<>(MAX_NUM_LABEL_FIELDS);
         int numLabelFields = MAX_NUM_LABEL_FIELDS;
-        if (numLabelFields >= fieldOrders.length) {
-            numLabelFields = fieldOrders.length - 1;
+        if (numLabelFields > fieldOrders.length) {
+            numLabelFields = fieldOrders.length;
         }
 
         Field mediaField = null;
@@ -121,9 +122,9 @@ public class DriverUtilities {
                     if (mediaField == null) {
                         mediaField = labelField;
                     }
-                    continue;
+                } else {
+                    labelFields.add(labelField);
                 }
-                labelFields.add(labelField);
             }
         } catch(NoSuchFieldException e) {
             e.printStackTrace();
@@ -159,6 +160,7 @@ public class DriverUtilities {
                     }
 
                     String objString = obj.toString();
+
                     if (objString.length() == 0) {
                         continue; // empty string representation for this field
                     }

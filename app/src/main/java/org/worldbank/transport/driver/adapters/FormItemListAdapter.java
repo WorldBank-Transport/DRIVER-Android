@@ -79,8 +79,9 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
         holder.textView.setText(listItemLabels.labels.get(position));
 
         if (listItemLabels.hasImages) {
-            Log.d(LOG_LABEL, "setting image label");
             holder.imageView.setVisibility(View.VISIBLE);
+
+            // TODO: background task and use LRU cache
             ImageController.setDownscaledImageFromFilePath(holder.imageView,
                     listItemLabels.imagePaths.get(position), IMAGE_SIZE, IMAGE_SIZE);
         }
