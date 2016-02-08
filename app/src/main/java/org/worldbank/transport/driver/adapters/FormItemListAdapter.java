@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.azavea.androidvalidatedforms.controllers.ImageController;
+import com.azavea.androidvalidatedforms.tasks.ResizeImageTask;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
@@ -22,7 +22,8 @@ import java.util.ArrayList;
  *
  * Created by kathrynkillebrew on 12/31/15.
  */
-public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapter.ViewHolder> {
+public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapter.ViewHolder>
+    implements ResizeImageTask.ResizeImageCallback {
 
     private static final String LOG_LABEL = "FormItemListAdapter";
 
@@ -56,13 +57,12 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
         }
     }
 
-    public FormItemListAdapter(ArrayList items, Class itemClass, String defaultLabel, FormItemClickListener clickListener) {
+    public FormItemListAdapter(String defaultLabel, FormItemClickListener clickListener) {
         this.defaultLabel = defaultLabel;
         this.clickListener = clickListener;
-        this.listItemLabels = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
     }
 
-    public void rebuildLabelList(ArrayList items, Class itemClass) {
+    public void buildLabelList(ArrayList items, Class itemClass) {
         this.listItemLabels = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
         notifyDataSetChanged();
     }
@@ -81,10 +81,15 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
         if (listItemLabels.hasImages) {
             holder.imageView.setVisibility(View.VISIBLE);
 
-            // TODO: background task and use LRU cache
-            ImageController.setDownscaledImageFromFilePath(holder.imageView,
-                    listItemLabels.imagePaths.get(position), IMAGE_SIZE, IMAGE_SIZE);
+            // set image in background task
+            ResizeImageTask resizeImageTask = new ResizeImageTask(holder.imageView, IMAGE_SIZE, IMAGE_SIZE, this);
+            resizeImageTask.execute(listItemLabels.imagePaths.get(position));
         }
+    }
+
+    @Override
+    public void imageNotSet() {
+        Log.w(LOG_LABEL, "Could not set image on list view");
     }
 
     @Override

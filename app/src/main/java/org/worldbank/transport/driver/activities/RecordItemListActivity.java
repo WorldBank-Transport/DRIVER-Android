@@ -79,9 +79,8 @@ public class RecordItemListActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
         Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
-
-        // refresh item list whenever activity comes back into view
-        recyclerViewAdapter.rebuildLabelList(sectionItems, sectionClass);
+        // set item list whenever activity created or comes back into view
+        recyclerViewAdapter.buildLabelList(sectionItems, sectionClass);
     }
 
     private void buildItemList() {
@@ -129,7 +128,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         };
 
         String defaultItemLabel = RecordFormSectionManager.getSingleTitle(sectionField, sectionLabel);
-        recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, defaultItemLabel, clickListener);
+        recyclerViewAdapter = new FormItemListAdapter(defaultItemLabel, clickListener);
         recyclerView.setAdapter(recyclerViewAdapter);
     }
 
