@@ -106,7 +106,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     public void testReferenceTypeField() {
         FormController formController = activity.getFormController();
 
-        SelectionController vehicleCtl = (SelectionController)formController.getElement("Vehicle");
+        SelectionController vehicleCtl = (SelectionController)formController.getElement("vehicle");
         assertNotNull(vehicleCtl);
 
         Object vehicleObj = vehicleCtl.getModel().getValue(vehicleCtl.getName());
@@ -211,15 +211,15 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         testVehicleOne.VehicleType = Vehicle.VehicleTypeEnum.BICYCLE;
         testVehicleTwo.VehicleType = Vehicle.VehicleTypeEnum.ANIMAL;
 
-        editObj.Vehicle = new ArrayList<>(2);
-        editObj.Vehicle.add(testVehicleOne);
-        editObj.Vehicle.add(testVehicleTwo);
+        editObj.vehicle = new ArrayList<>(2);
+        editObj.vehicle.add(testVehicleOne);
+        editObj.vehicle.add(testVehicleTwo);
 
         Person testPerson = new Person();
         testPerson.Name = "Evel Knievel";
-        testPerson.Vehicle = testVehicleOne.LocalId;
-        editObj.Person = new ArrayList<>(1);
-        editObj.Person.add(testPerson);
+        testPerson.vehicle = testVehicleOne.LocalId;
+        editObj.person = new ArrayList<>(1);
+        editObj.person.add(testPerson);
 
         // reload with the new data
         activity.runOnUiThread(new Runnable() {

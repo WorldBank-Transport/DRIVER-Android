@@ -370,7 +370,9 @@
           "propertyOrder": 2,
           "type": "string",
           "fieldType": "text",
-          "format": "text"
+          "format": "text",
+          "minLength": 6,
+          "maxLength": 8
         },
         "Name": {
           "isSearchable": true,

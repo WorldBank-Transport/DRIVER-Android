@@ -58,7 +58,7 @@ public class DriverUtilitiesTests extends AndroidTestCase {
         ArrayList<TestPerson> people = new ArrayList<>();
         people.add(bigBird);
 
-        ArrayList<String> itemLabels = DriverUtilities.getListItemLabels(people, TestPerson.class, "Test Person");
+        ArrayList<String> itemLabels = DriverUtilities.getListItemLabels(people, TestPerson.class, "Test Person").labels;
 
         assertEquals("Unexpected number of item labels returned", 1, itemLabels.size());
         String bigBirdLabel = itemLabels.get(0);
@@ -74,7 +74,7 @@ public class DriverUtilitiesTests extends AndroidTestCase {
         ArrayList<TestPerson> people = new ArrayList<>();
         people.add(bigBird);
 
-        ArrayList<String> itemLabels = DriverUtilities.getListItemLabels(people, TestPerson.class, "Test Person");
+        ArrayList<String> itemLabels = DriverUtilities.getListItemLabels(people, TestPerson.class, "Test Person").labels;
 
         assertEquals("Unexpected number of item labels returned", 1, itemLabels.size());
         String bigBirdLabel = itemLabels.get(0);

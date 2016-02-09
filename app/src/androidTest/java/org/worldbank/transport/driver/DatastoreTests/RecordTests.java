@@ -50,8 +50,8 @@ public class RecordTests extends AndroidTestCase {
         constants.occurredFrom = new Date();
         constants.Weather = DriverConstantFields.WeatherEnum.CLEAR_DAY;
         DriverSchema driverSchema = record.getEditObject();
-        driverSchema.AccidentDetails = new AccidentDetails();
-        driverSchema.AccidentDetails.Description = "something";
+        driverSchema.accidentDetails = new AccidentDetails();
+        driverSchema.accidentDetails.Description = "something";
 
         record.save();
 
@@ -64,7 +64,7 @@ public class RecordTests extends AndroidTestCase {
 
         assertEquals(id, found.getRecordId());
         assertEquals(DriverConstantFields.WeatherEnum.CLEAR_DAY, found.getEditConstants().Weather);
-        assertEquals("something", found.getEditObject().AccidentDetails.Description);
+        assertEquals("something", found.getEditObject().accidentDetails.Description);
     }
 
 }
