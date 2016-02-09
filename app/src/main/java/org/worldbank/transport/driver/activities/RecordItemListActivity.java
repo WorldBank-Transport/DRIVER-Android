@@ -30,7 +30,6 @@ public class RecordItemListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private FormItemListAdapter recyclerViewAdapter;
 
-    private DriverAppContext mAppContext;
     private DriverApp app;
     protected DriverSchema currentlyEditing;
     protected int sectionId;
@@ -38,20 +37,10 @@ public class RecordItemListActivity extends AppCompatActivity {
     Class sectionClass;
     ArrayList sectionItems;
 
-    // constructors, for testing
-    public RecordItemListActivity(DriverAppContext context) {
-        super();
-        mAppContext = context;
-    }
-
-    public RecordItemListActivity() {
-        super();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // set up some state before calling super
-        mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
+        DriverAppContext mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = mAppContext.getDriverApp();
         currentlyEditing = app.getEditObject();
         Bundle bundle = getIntent().getExtras();
@@ -73,7 +62,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         });
 
         // set up list view
-        recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_View);
+        recyclerView = (RecyclerView) findViewById(R.id.record_item_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         buildItemList();
@@ -90,9 +79,8 @@ public class RecordItemListActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
         Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
-
-        // refresh item list whenever activity comes back into view
-        recyclerViewAdapter.rebuildLabelList(sectionItems, sectionClass);
+        // set item list whenever activity created or comes back into view
+        recyclerViewAdapter.buildLabelList(sectionItems, sectionClass);
     }
 
     private void buildItemList() {
@@ -140,7 +128,7 @@ public class RecordItemListActivity extends AppCompatActivity {
         };
 
         String defaultItemLabel = RecordFormSectionManager.getSingleTitle(sectionField, sectionLabel);
-        recyclerViewAdapter = new FormItemListAdapter(sectionItems, sectionClass, defaultItemLabel, clickListener);
+        recyclerViewAdapter = new FormItemListAdapter(defaultItemLabel, clickListener);
         recyclerView.setAdapter(recyclerViewAdapter);
     }
 

@@ -41,6 +41,9 @@
     <string name="record_delete_button">Delete</string>
     <string name="record_save_and_exit">Save &amp; Exit</string>
 
+    <!-- record item list -->
+    <string name="record_form_list_item_image_description">Picture of record form item</string>
+
     <!-- record status messages -->
     <string name="record_save_success">Record saved</string>
     <string name="record_save_failure">Failed to save record!</string>

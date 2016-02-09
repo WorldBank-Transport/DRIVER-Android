@@ -5,14 +5,19 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+
+import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
+import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.staticmodels.DriverSchemaUpload;
+import org.worldbank.transport.driver.staticmodels.DriverUploadGeom;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.utilities.UploadRecordUrlBuilder;
 
@@ -77,7 +82,7 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
         Cursor cursor = databaseManager.readAllRecords();
         int failed = cursor.getCount(); // decrement failure count as records are uploaded successfully
 
-        if(!DriverApp.getIsNetworkAvailable()) {
+        if (!DriverApp.getIsNetworkAvailable()) {
             // no network available. don't bother logging in
             errorMessage = context.getString(R.string.error_no_network);
             Log.d(LOG_LABEL, "No network");
@@ -157,36 +162,16 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                         continue;
                     }
 
-                    // go build the JSON to POST
-                    JSONObject postJson = new JSONObject();
-                    postJson.put("schema", schemaVersion);
-
-                    // the non-constant data section
-                    JSONObject dataJson = new JSONObject(data);
-                    postJson.put("data", dataJson);
-
-                    // constant fields
-                    if (weather != null && !weather.isEmpty()) {
-                        postJson.put("weather", weather);
-                    }
-
-                    if (light != null && !light.isEmpty()) {
-                        postJson.put("light", light);
-                    }
-
-                    // build geometry object
-                    JSONObject geomJson = new JSONObject();
-                    JSONArray coordArray = new JSONArray();
-                    coordArray.put(longitude);
-                    coordArray.put(latitude);
-                    geomJson.put("type", "Point");
-                    geomJson.put("coordinates", coordArray);
-                    postJson.put("geom", geomJson);
-
-                    postJson.put("occurred_from", occurredFrom);
-                    postJson.put("occurred_to", occurredTo);
-                    postJson.put("created", enteredAt);
-                    postJson.put("modified", updatedAt);
+                    DriverSchemaUpload driverSchemaUpload = new DriverSchemaUpload();
+                    driverSchemaUpload.driverData = DriverSchemaSerializer.readRecord(data);
+                    driverSchemaUpload.schemaVersion = schemaVersion;
+                    driverSchemaUpload.driverWeather = weather;
+                    driverSchemaUpload.driverLight = light;
+                    driverSchemaUpload.geom = new DriverUploadGeom(latitude, longitude);
+                    driverSchemaUpload.occurredFrom = occurredFrom;
+                    driverSchemaUpload.occurredTo = occurredTo;
+                    driverSchemaUpload.createdAt = enteredAt;
+                    driverSchemaUpload.modifiedAt = updatedAt;
 
                     // now go upload it
                     URL uploadUrl = uploadRecordUrl.recordUrl(serverUrl);
@@ -199,7 +184,13 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                     OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
 
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                    writer.write(postJson.toString());
+
+                    GsonBuilder builder = new GsonBuilder();
+                    builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
+                    Gson gson = builder.create();
+
+                    gson.toJson(driverSchemaUpload, DriverSchemaUpload.class, writer);
+
                     writer.flush();
                     writer.close();
                     out.close();
@@ -229,13 +220,9 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
                             Log.e(LOG_LABEL, "Failed to delete record " + recordId);
                         }
                         failed--;
-
                         publishProgress(1);
 
                     }
-                } catch (JSONException e) {
-                    Log.e(LOG_LABEL, "Error building JSON upload output");
-                    e.printStackTrace();
                 } catch (IOException e) {
                     Log.e(LOG_LABEL, "Error communicating with server to upload record");
                     e.printStackTrace();
@@ -247,6 +234,10 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
             Log.e(LOG_LABEL, "Did record post task fail to find a database column?");
             e.printStackTrace();
             errorMessage = context.getString(R.string.error_record_upload);
+            cancel(true);
+        } catch (JsonParseException ex) {
+            Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
+            ex.printStackTrace();
             cancel(true);
         } finally {
             cursor.close();

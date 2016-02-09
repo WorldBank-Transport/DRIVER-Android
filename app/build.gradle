@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.WorldBank-Transport.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.18-uuids'
+        classpath 'com.github.WorldBank-Transport.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.19-images'
         classpath 'com.google.code.gson:gson:2.4'
         classpath 'org.joda:joda-convert:1.8.1'
         classpath 'javax.annotation:javax.annotation-api:1.2'
@@ -47,7 +47,7 @@ android {
         versionCode 1
         versionName "1.0"
         // can enable this to allow >50K methods
-        //multiDexEnabled true
+        multiDexEnabled true
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
@@ -89,7 +89,7 @@ dependencies {
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
     compile 'com.google.code.gson:gson:2.4'
-    compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.18-uuids') {
+    compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.19-images') {
         // only want core
         exclude module: 'jsonschema2pojo-ant'
         exclude module: 'jsonschema2pojo-cli'
@@ -101,6 +101,7 @@ dependencies {
         exclude group: 'junit', module: 'junit'
         exclude group: 'android', module: 'net'
     }
+
     // used by jsonschema2pojo
     compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'commons-lang:commons-lang:2.6'
@@ -111,7 +112,7 @@ dependencies {
     compile 'com.google.code.findbugs:jsr305:3.0.1'
 
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.0.9'
+    compile 'com.github.azavea:AndroidValidatedForms:1.1.2'
 
     // test dependencies
     testCompile 'junit:junit:4.12'

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.apache.commons.lang.StringUtils;
 import org.jsonschema2pojo.annotations.Multiple;
 import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Title;
@@ -110,6 +111,8 @@ public class RecordFormSectionManager {
     @Nullable
     public static Class getSectionClass(String sectionName) {
         try {
+            // class names are capitalized; field names of that type may not be
+            sectionName = StringUtils.capitalize(sectionName);
             return Class.forName(MODEL_PACKAGE + sectionName);
         } catch (ClassNotFoundException e) {
             Log.e(LOG_LABEL, "Could not fine class named " + sectionName);

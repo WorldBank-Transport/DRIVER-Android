@@ -74,8 +74,8 @@ public class PostRecordsTaskTests extends AndroidTestCase {
 
             postRecordsTask.execute();
 
-            Mockito.verify(mockActivity, Mockito.timeout(500)).uploadedOneRecord();
-            Mockito.verify(mockActivity, Mockito.timeout(500)).recordUploadFinished(0);
+            Mockito.verify(mockActivity, Mockito.timeout(2000)).uploadedOneRecord();
+            Mockito.verify(mockActivity, Mockito.timeout(2000)).recordUploadFinished(0);
 
             assertEquals("Should have gotten response to record post from server", 1, server.getRequestCount());
 

@@ -5,10 +5,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.azavea.androidvalidatedforms.tasks.ResizeImageTask;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
+import org.worldbank.transport.driver.utilities.ListItemLabels;
 
 import java.util.ArrayList;
 
@@ -17,12 +22,16 @@ import java.util.ArrayList;
  *
  * Created by kathrynkillebrew on 12/31/15.
  */
-public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapter.ViewHolder> {
+public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapter.ViewHolder>
+    implements ResizeImageTask.ResizeImageCallback {
 
     private static final String LOG_LABEL = "FormItemListAdapter";
 
+    // size for downscaled images in list view; should match size in record_form_item.xml
+    private static final int IMAGE_SIZE = 80;
+
     private String defaultLabel;
-    private ArrayList<String> labelList;
+    private ListItemLabels listItemLabels;
     private FormItemClickListener clickListener;
 
     public interface FormItemClickListener {
@@ -31,13 +40,15 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView textView;
+        public ImageView imageView;
         public FormItemClickListener listener;
 
-        public ViewHolder(TextView v, FormItemClickListener listener) {
+        public ViewHolder(RelativeLayout v, FormItemClickListener listener) {
             super(v);
-            this.textView = v;
+            this.textView = (TextView)v.findViewById(R.id.record_form_list_item_text);
+            this.imageView = (ImageView)v.findViewById(R.id.record_form_list_item_image);
             this.listener = listener;
-            textView.setOnClickListener(this);
+            v.setOnClickListener(this);
         }
 
         @Override
@@ -46,32 +57,43 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
         }
     }
 
-    public FormItemListAdapter(ArrayList items, Class itemClass, String defaultLabel, FormItemClickListener clickListener) {
+    public FormItemListAdapter(String defaultLabel, FormItemClickListener clickListener) {
         this.defaultLabel = defaultLabel;
         this.clickListener = clickListener;
-        this.labelList = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
     }
 
-    public void rebuildLabelList(ArrayList items, Class itemClass) {
-        this.labelList = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
+    public void buildLabelList(ArrayList items, Class itemClass) {
+        this.listItemLabels = DriverUtilities.getListItemLabels(items, itemClass, defaultLabel);
         notifyDataSetChanged();
     }
 
     @Override
     public FormItemListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-        TextView view = (TextView) LayoutInflater.from(parent.getContext())
+        RelativeLayout view = (RelativeLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.record_form_item, parent, false);
         return new ViewHolder(view, clickListener);
     }
 
     @Override
     public void onBindViewHolder(FormItemListAdapter.ViewHolder holder, int position) {
-        holder.textView.setText(labelList.get(position));
+        holder.textView.setText(listItemLabels.labels.get(position));
+
+        if (listItemLabels.hasImages) {
+            holder.imageView.setVisibility(View.VISIBLE);
+
+            // set image in background task
+            ResizeImageTask resizeImageTask = new ResizeImageTask(holder.imageView, IMAGE_SIZE, IMAGE_SIZE, this);
+            resizeImageTask.execute(listItemLabels.imagePaths.get(position));
+        }
+    }
+
+    @Override
+    public void imageNotSet() {
+        Log.w(LOG_LABEL, "Could not set image on list view");
     }
 
     @Override
     public int getItemCount() {
-        return labelList.size();
+        return listItemLabels.labels.size();
     }
 }
