@@ -28,6 +28,9 @@
     <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
     <string name="schema_current">Current schema is up-to-date.</string>
 
+    <!-- schema update -->
+    <string name="error_schema_update">Error encountered updating schema. Please try again at another time.</string>
+
     <!-- record upload -->
     <string name ="error_record_upload">Server error uploading record.</string>
     <string name="records_uploaded_checking_schema">Records uploaded, now checking for schema updates&#8230;</string>

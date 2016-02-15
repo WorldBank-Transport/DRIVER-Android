@@ -193,20 +193,6 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         postRecordsTask.execute();
     }
 
-    private void startSchemaUpdateCheck() {
-        if (checkSchemaTask != null) {
-            Log.d(LOG_LABEL, "Already checking schema");
-            return;
-        }
-
-        Log.d(LOG_LABEL, "Going to check schema");
-        checkSchemaTask = new CheckSchemaTask(this);
-        checkSchemaTask.execute(app.getUserInfo());
-        // set up progress bar
-        progressBar.setIndeterminate(true);
-        progressBar.setVisibility(View.VISIBLE);
-    }
-
     /**
      * Helper to launch record editor. Currently editing record should be set first
      * (or cleared, if adding a new record).
@@ -224,10 +210,29 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         startActivity(intent);
     }
 
+    private void startSchemaUpdateCheck() {
+        if (checkSchemaTask != null) {
+            Log.d(LOG_LABEL, "Already checking schema");
+            return;
+        }
+
+        Log.d(LOG_LABEL, "Going to check schema");
+        checkSchemaTask = new CheckSchemaTask(this);
+        checkSchemaTask.execute(app.getUserInfo());
+        // set up progress bar
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public void foundSchema(String currentSchema) {
         Log.d(LOG_LABEL, "Found schema " + currentSchema);
         checkSchemaTask = null;
+
+        Log.d(LOG_LABEL, "Data dir is: " + getApplicationInfo().dataDir);
+
+        // sourceDir is actually the path to the APK
+        //Log.d(LOG_LABEL, "Source dir is: " + getApplicationInfo().sourceDir);
 
         if (!DriverApp.getCurrentSchema().equals(currentSchema)) {
             // TODO: update schema and restart app if a new one is available

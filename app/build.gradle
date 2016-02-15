@@ -148,6 +148,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:8.4.0'
 }
 
+// If this configuration is changed, the config used in UpdateSchemaTask should be updated as well.
 jsonSchema2Pojo {
     // Whether to generate builder-style methods of the form withXxx(value) (that return this),
     // alongside the standard, void-return setters.
