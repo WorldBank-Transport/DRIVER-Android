@@ -29,8 +29,8 @@
         android:layout_margin="@dimen/fab_margin"
         app:borderWidth="0dp"
         app:fabSize="normal"
-        app:backgroundTint="@color/colorPrimary"
-        app:rippleColor="@color/colorPrimaryDark"
+        app:backgroundTint="@color/color_primary"
+        app:rippleColor="@color/primary_dark"
         android:src="@drawable/ic_plus_white_18dp" />
 
 </android.support.design.widget.CoordinatorLayout>
