@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.content.SharedPreferences;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,8 +20,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import dalvik.system.DexClassLoader;
+import it.necst.grabnrun.SecureDexClassLoader;
+import it.necst.grabnrun.SecureLoaderFactory;
 
 
 /**
@@ -34,8 +38,15 @@ public class DriverApp extends Application {
 
     private static final String LOG_LABEL = "DriverApp";
 
+    // parent of the models package
+    public static final String MODELS_BASE_PACKAGE = "org.worldbank.transport.driver";
+
     // TODO: track current schema version
     private static final String CURRENT_SCHEMA = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
+
+    // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
+    // ugh no direct link to download for https://drive.google.com/file/d/0B7S04_17V_DFeW1zSDRKMnpVS28/view?usp=sharing
+    private static final String SCHEMA_CERT_URL = "https://flibbertigibbet.github.io/DRIVER-Android/driver_android_certificate.pem";
 
     /**
      * Current user.
@@ -52,7 +63,8 @@ public class DriverApp extends Application {
     private static RecordDatabaseManager databaseManager;
 
     private boolean amTesting = false;
-    private ClassLoader schemaClassLoader = null;
+    private SecureDexClassLoader schemaClassLoader = null;
+    private static Map<String, URL> packageNameCertMap = null;
 
     /**
      * Constructor for use in testing. Can use default constructor instead if not testing.
@@ -74,7 +86,14 @@ public class DriverApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        loadSchemaClasses("models.jar");
+        packageNameCertMap = new HashMap<>(1);
+        try {
+            packageNameCertMap.put(MODELS_BASE_PACKAGE, new URL(SCHEMA_CERT_URL));
+            loadSchemaClasses("models.jar");
+        } catch (MalformedURLException e) {
+            Log.e(LOG_LABEL, "Certificate URL for model packages is invalid");
+            e.printStackTrace();
+        }
 
         mContext = this;
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -220,17 +239,13 @@ public class DriverApp extends Application {
         return null;
     }
 
-    public static ClassLoader getSchemaClassLoader() {
+    public static SecureDexClassLoader getSchemaClassLoader() {
         DriverApp driverApp = (DriverApp) DriverApp.getContext();
         return driverApp.schemaClassLoader;
     }
 
     public void loadSchemaClasses(String jarPath) {
-
         Log.d(LOG_LABEL, "loading schema classes...");
-        //////////////////////////////////////////////////////////////////////////////////////////
-        // dynamic class loading. here goes!
-        //////////////////////////////////////////////////////////////////////////////////////////
 
         try {
             // first copy jar file out of assets directory to app data directory for a path to pass
@@ -238,7 +253,6 @@ public class DriverApp extends Application {
             File dexInternalStoragePath = new File(getDir("dex", Context.MODE_PRIVATE), jarPath);
 
             final int BUF_SIZE = 8 * 1024;
-
             BufferedInputStream bis = new BufferedInputStream(getAssets().open(jarPath));
             OutputStream dexWriter = new BufferedOutputStream(new FileOutputStream(dexInternalStoragePath));
             byte[] buf = new byte[BUF_SIZE];
@@ -249,23 +263,19 @@ public class DriverApp extends Application {
             dexWriter.close();
             bis.close();
 
-
-            //File dexOutputDir = getCodeCacheDir(); // Only available API 21 and up
-            // for some reason, getting the code cache directory via ContextCompat is not static.
-            // https://code.google.com/p/android/issues/detail?id=191323
-            ContextCompat contextCompat = new ContextCompat();
-            final File dexOutputDir = contextCompat.getCodeCacheDir(this);
-
             schemaClassLoader = null;
-            // getClassLoader()
-            schemaClassLoader = new DexClassLoader(dexInternalStoragePath.getAbsolutePath(),
-                    dexOutputDir.getAbsolutePath(),
-                    getApplicationInfo().dataDir + "/lib",
-                    //ClassLoader.getSystemClassLoader());
-                    getClassLoader());
-
             String modelPackageName = RecordFormSectionManager.MODEL_PACKAGE;
+            SecureLoaderFactory secureLoaderFactory = new SecureLoaderFactory(this);
+            schemaClassLoader = secureLoaderFactory.createDexClassLoader(dexInternalStoragePath.getAbsolutePath(),
+                    null, getClass().getClassLoader(), packageNameCertMap);
+
             Class newSchema = schemaClassLoader.loadClass(modelPackageName + "DriverSchema");
+
+            if (newSchema == null) {
+                // might get here if cert link not HTTPS, or is a redirect
+                Log.e(LOG_LABEL, "Failed to load class! Is signing certificate available?");
+                return;
+            }
 
             // recursively reload all the child classes from DriverSchema and its fields
             recursiveClassLoad(newSchema);
@@ -286,7 +296,6 @@ public class DriverApp extends Application {
             Log.e(LOG_LABEL, "Error copying jar file out to data directory");
             e.printStackTrace();
         }
-        ///////////////////////////////////////////////////////////////////////////////////
     }
 
     /**

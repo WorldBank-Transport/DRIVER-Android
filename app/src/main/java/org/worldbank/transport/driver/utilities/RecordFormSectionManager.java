@@ -41,8 +41,9 @@ public class RecordFormSectionManager {
     private static String[] schemaSectionOrder;
 
     // path to model classes created by jsonschema2pojo
-    // this must match the targetPackage declared in the gradle build file (with a trailing period)
-    public static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
+    // this must match the targetPackage declared in the jsonschema2pojo gradle build file
+    // for the models (with a trailing period)
+    public static final String MODEL_PACKAGE = DriverApp.MODELS_BASE_PACKAGE + ".models.";
 
     /**
      * Get the appropriate Activity to launch for a given form section.

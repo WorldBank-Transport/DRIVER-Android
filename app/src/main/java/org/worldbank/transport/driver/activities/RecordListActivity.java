@@ -34,7 +34,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 
-
 public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
         PostRecordsTask.PostRecordsListener {
 

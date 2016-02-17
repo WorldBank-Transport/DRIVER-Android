@@ -77,6 +77,27 @@
 -keep interface com.github.dkharrat.nexusdialog.** { public *; }
 -keepnames class com.github.dkharrat.nexusdialog.**
 
+# secure class loader
+-keep class it.necst.grabnrun.** { public *; }
+-keep interface it.necst.grabnrun.** { public *; }
+-keepnames class it.necst.grabnrun.**
+
+-keep class org.apache.harmony.security.** { public *; }
+-keep interface org.apache.harmony.security.** { public *; }
+-keepnames class org.apache.harmony.security.**
+
+
+-keep class java.security.** { public *; }
+-keep interface java.security.** { public *; }
+-keepnames class java.security.**
+
+-keep class com.google.common.** { public *; }
+-keep interface com.google.common.** { public *; }
+-keepnames class com.google.common.**
+
+-dontwarn com.google.common.cache.**
+-dontwarn com.google.common.primitives.**
+
 ####################
 # below configurations based on:
 # https://github.com/krschultz/android-proguard-snippets
@@ -183,6 +204,7 @@
 
 -dontwarn java.lang.**
 -dontwarn java.beans.**
+-dontwarn sun.misc.Unsafe.**
 
 # logger deps, ugh
 -dontwarn javax.swing.**
