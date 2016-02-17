@@ -5,7 +5,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.WorldBank-Transport.jsonschema2pojo:jsonschema2pojo-gradle-plugin:jsonschema2pojo-0.4.19-images'
         classpath 'com.google.code.gson:gson:2.4'
         classpath 'org.joda:joda-convert:1.8.1'
         classpath 'javax.annotation:javax.annotation-api:1.2'
@@ -22,7 +21,6 @@ configurations {
     all*.exclude group: 'swingui', module: 'swingui'
 }
 
-apply plugin: 'jsonschema2pojo'
 apply plugin: 'com.android.application'
 
 android {
@@ -101,7 +99,6 @@ dependencies {
         exclude group: 'junit', module: 'junit'
         exclude group: 'android', module: 'net'
     }
-
     // used by jsonschema2pojo
     compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'commons-lang:commons-lang:2.6'
@@ -110,22 +107,17 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
-
     // form builder
     compile 'com.github.azavea:AndroidValidatedForms:1.1.2'
-
     // test dependencies
     testCompile 'junit:junit:4.12'
-
     // mockito for unit tests
     testCompile 'org.mockito:mockito-core:1.10.19'
-
     // mockito for Android instrumentation tests
     androidTestCompile 'org.mockito:mockito-core:1.10.19'
     androidTestCompile 'com.crittercism.dexmaker:dexmaker:1.4'
     androidTestCompile 'com.crittercism.dexmaker:dexmaker-dx:1.4'
     androidTestCompile 'com.crittercism.dexmaker:dexmaker-mockito:1.4'
-
     // mock web server and friends
     androidTestCompile 'com.squareup.okhttp:mockwebserver:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp:2.7.0'
@@ -137,80 +129,14 @@ dependencies {
     androidTestCompile 'com.squareup.okhttp:okhttp-android-support:2.7.0'
     androidTestCompile 'com.squareup.okhttp:okhttp-urlconnection:2.7.0'
     androidTestCompile 'org.codehaus.mojo:animal-sniffer-annotations:1.14'
-
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:multidex:1.0.1'
-
     // for device location API access
     compile 'com.google.android.gms:play-services-location:8.4.0'
-}
 
-// If this configuration is changed, the config used in UpdateSchemaTask should be updated as well.
-jsonSchema2Pojo {
-    // Whether to generate builder-style methods of the form withXxx(value) (that return this),
-    // alongside the standard, void-return setters.
-    generateBuilders = false
-
-    usePrimitives = false
-
-    // Location of the JSON Schema file(s). This may refer to a single file or a directory of files.
-    //source = files("${sourceSets.main.output.resourcesDir}/json")
-    source = files("src/main/assets/json/schemas")
-
-    // Target directory for generated Java source files. The plugin will add this directory to the
-    // java source set so the compiler will find and compile the newly generated source files.
-    targetDirectory = file("${project.buildDir}/generated/source/js2p")
-
-    // Package name used for generated Java classes (for types where a fully qualified name has not
-    // been supplied in the schema using the 'javaType' property).
-    targetPackage = 'org.worldbank.transport.driver.models'
-
-    // The characters that should be considered as word delimiters when creating Java Bean property
-    // names from JSON property names. If blank or not set, JSON properties will be considered to
-    // contain a single word when creating Java Bean property names.
-    propertyWordDelimiters = [' ','_'] as char[]
-
-    // Whether to use the java type long (or Long) instead of int (or Integer) when representing the
-    // JSON Schema type 'integer'.
-    useLongIntegers = false
-
-    // Whether to use the java type double (or Double) instead of float (or Float) when representing
-    // the JSON Schema type 'number'.
-    useDoubleNumbers = true
-
-    // Whether to include hashCode and equals methods in generated Java types.
-    includeHashcodeAndEquals = true
-
-    // Whether to include a toString method in generated Java types.
-    includeToString = true
-
-    includeAccessors = false
-
-    includeAdditionalProperties = false
-
-    annotationStyle = 'gson'
-
-    //customAnnotator = 'org.jsonschema2pojo.NoopAnnotator'
-    customAnnotator = 'org.jsonschema2pojo.JsonEditorAnnotator'
-
-    includeJsr303Annotations = true
-
-    sourceType = 'jsonschema'
-
-    removeOldOutput = true
-
-    outputEncoding = 'UTF-8'
-
-    useJodaDates = false
-
-    useCommonsLang3 = false
-
-    // Whether to initialize Set and List fields as empty collections, or leave them as null.
-    initializeCollections = true
-
-    // **EXPERIMENTAL** Whether to make the generated types Parcelable for Android
-    parcelable = false
+    testCompile files('src/main/assets/models.jar')
+    androidTestCompile files('src/main/assets/models.jar')
 }

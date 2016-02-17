@@ -1,6 +1,5 @@
 package org.worldbank.transport.driver.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -34,7 +33,6 @@ import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.annotations.ConstantFieldType;
 import org.worldbank.transport.driver.annotations.ConstantFieldTypes;
 import org.worldbank.transport.driver.controls.DriverImageController;
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
@@ -65,7 +63,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     protected DriverAppContext mAppContext;
     protected DriverApp app;
 
-    protected DriverSchema currentlyEditing;
+    protected Object currentlyEditing;
 
     protected int sectionId;
 

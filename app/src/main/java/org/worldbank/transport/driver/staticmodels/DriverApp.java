@@ -6,11 +6,23 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.content.SharedPreferences;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import org.apache.commons.lang.StringUtils;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
-import org.worldbank.transport.driver.models.DriverSchema;
+import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+
+import dalvik.system.DexClassLoader;
 
 
 /**
@@ -40,6 +52,7 @@ public class DriverApp extends Application {
     private static RecordDatabaseManager databaseManager;
 
     private boolean amTesting = false;
+    private ClassLoader schemaClassLoader = null;
 
     /**
      * Constructor for use in testing. Can use default constructor instead if not testing.
@@ -60,6 +73,9 @@ public class DriverApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        loadSchemaClasses("models.jar");
+
         mContext = this;
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         record = null;
@@ -107,7 +123,7 @@ public class DriverApp extends Application {
         return userInfo;
     }
 
-    public DriverSchema getEditObject() {
+    public Object getEditObject() {
         if (record == null) {
             record = new Record();
         }
@@ -190,5 +206,108 @@ public class DriverApp extends Application {
     public static boolean getIsNetworkAvailable() {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
+    }
+
+    public static Class getSchemaClass() {
+        DriverApp driverApp = (DriverApp) DriverApp.getContext();
+        try {
+            return driverApp.schemaClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "DriverSchema");
+        } catch (ClassNotFoundException e) {
+            Log.e(LOG_LABEL, "Could not load DriverSchema class!");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static ClassLoader getSchemaClassLoader() {
+        DriverApp driverApp = (DriverApp) DriverApp.getContext();
+        return driverApp.schemaClassLoader;
+    }
+
+    public void loadSchemaClasses(String jarPath) {
+
+        Log.d(LOG_LABEL, "loading schema classes...");
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // dynamic class loading. here goes!
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        try {
+            // first copy jar file out of assets directory to app data directory for a path to pass
+            // http://android-developers.blogspot.com/2011/07/custom-class-loading-in-dalvik.html
+            File dexInternalStoragePath = new File(getDir("dex", Context.MODE_PRIVATE), jarPath);
+
+            final int BUF_SIZE = 8 * 1024;
+
+            BufferedInputStream bis = new BufferedInputStream(getAssets().open(jarPath));
+            OutputStream dexWriter = new BufferedOutputStream(new FileOutputStream(dexInternalStoragePath));
+            byte[] buf = new byte[BUF_SIZE];
+            int len;
+            while((len = bis.read(buf, 0, BUF_SIZE)) > 0) {
+                dexWriter.write(buf, 0, len);
+            }
+            dexWriter.close();
+            bis.close();
+
+
+            //File dexOutputDir = getCodeCacheDir(); // Only available API 21 and up
+            // for some reason, getting the code cache directory via ContextCompat is not static.
+            // https://code.google.com/p/android/issues/detail?id=191323
+            ContextCompat contextCompat = new ContextCompat();
+            final File dexOutputDir = contextCompat.getCodeCacheDir(this);
+
+            schemaClassLoader = null;
+            // getClassLoader()
+            schemaClassLoader = new DexClassLoader(dexInternalStoragePath.getAbsolutePath(),
+                    dexOutputDir.getAbsolutePath(),
+                    getApplicationInfo().dataDir + "/lib",
+                    //ClassLoader.getSystemClassLoader());
+                    getClassLoader());
+
+            String modelPackageName = RecordFormSectionManager.MODEL_PACKAGE;
+            Class newSchema = schemaClassLoader.loadClass(modelPackageName + "DriverSchema");
+
+            // recursively reload all the child classes from DriverSchema and its fields
+            recursiveClassLoad(newSchema);
+            Field[] fields = newSchema.getDeclaredFields();
+            for (Field field: fields) {
+                String fieldClassName = modelPackageName + StringUtils.capitalize(field.getName());
+                Log.d(LOG_LABEL, "Found section " + fieldClassName + " for field " + field.getName());
+                Log.d(LOG_LABEL, "Dynamically loading section " + fieldClassName);
+                Class sectionClass = schemaClassLoader.loadClass(fieldClassName);
+                recursiveClassLoad(sectionClass);
+            }
+
+            Log.d(LOG_LABEL, "Done dynamically loading schema classes");
+        } catch (ClassNotFoundException e) {
+            Log.e(LOG_LABEL, "Could not find class");
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e(LOG_LABEL, "Error copying jar file out to data directory");
+            e.printStackTrace();
+        }
+        ///////////////////////////////////////////////////////////////////////////////////
+    }
+
+    /**
+     * Dynamically load inner classes on sections
+     *
+     * @param clazz Already-loaded class to examine for inner classes
+     */
+    private void recursiveClassLoad(Class clazz) {
+        try {
+            Class[] hasClasses = clazz.getDeclaredClasses();
+            if (hasClasses != null && hasClasses.length > 0) {
+                for (Class child : hasClasses) {
+                    Log.d(LOG_LABEL, "Going to dynamically load class: " + child.getName());
+                    child = schemaClassLoader.loadClass(child.getName());
+                    // recurse
+                    recursiveClassLoad(child);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            Log.e(LOG_LABEL, "Could not find class to dynamically load");
+            e.printStackTrace();
+        }
     }
 }

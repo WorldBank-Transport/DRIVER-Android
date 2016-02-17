@@ -4,7 +4,6 @@ import android.util.Log;
 
 import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
-import org.worldbank.transport.driver.models.DriverSchema;
 
 /**
  * Manages the data associated with a record.
@@ -17,13 +16,13 @@ public class Record {
 
     private static final String LOG_LABEL = "Record";
 
-    private DriverSchema editObject;
+    private Object editObject;
     private long editObjectDatabaseId;
     private DriverConstantFields editConstants;
     private String recordSchemaVersion;
 
     // constructor for editing an existing record
-    public Record(DriverSchema editObject, long editObjectDatabaseId, DriverConstantFields editConstants, String recordSchemaVersion) {
+    public Record(Object editObject, long editObjectDatabaseId, DriverConstantFields editConstants, String recordSchemaVersion) {
         this.editObject = editObject;
         this.editObjectDatabaseId = editObjectDatabaseId;
         this.editConstants = editConstants;
@@ -32,7 +31,21 @@ public class Record {
 
     // constructor to make a new record
     public Record() {
-        editObject = new DriverSchema();
+        Class schemaClass = DriverApp.getSchemaClass();
+        if (schemaClass == null) {
+            Log.e(LOG_LABEL, "No driver schema to instantiate!");
+            return;
+        }
+        try {
+            editObject = schemaClass.newInstance();
+        } catch (InstantiationException e) {
+            Log.e(LOG_LABEL, "Could not instantiate driver schema class");
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            Log.e(LOG_LABEL, "Could not access driver schema class");
+            e.printStackTrace();
+        }
+
         editConstants = new DriverConstantFields();
         editObjectDatabaseId = -1;
         Log.d(LOG_LABEL, "Created new object to edit");
@@ -42,7 +55,7 @@ public class Record {
         return editObjectDatabaseId;
     }
 
-    public DriverSchema getEditObject() {
+    public Object getEditObject() {
         return editObject;
     }
 

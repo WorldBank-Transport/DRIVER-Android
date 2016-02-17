@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 
+
 public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
         PostRecordsTask.PostRecordsListener {
 
@@ -242,6 +243,11 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             Toast toast = Toast.makeText(this, getString(R.string.schema_current), Toast.LENGTH_SHORT);
             toast.show();
         }
+
+        //////////////
+        Log.d(LOG_LABEL, "Going to try loading alternate schema...");
+        app.loadSchemaClasses("modelsVehicleFoo.jar");
+        Log.d(LOG_LABEL, "Done loading alternate schema");
 
         progressBar.setVisibility(View.GONE);
     }

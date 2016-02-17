@@ -1,9 +1,7 @@
 package org.worldbank.transport.driver.utilities;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,18 +17,14 @@ import org.jsonschema2pojo.annotations.Multiple;
 import org.jsonschema2pojo.annotations.PluralTitle;
 import org.jsonschema2pojo.annotations.Title;
 import org.worldbank.transport.driver.R;
-import org.worldbank.transport.driver.activities.RecordFormActivity;
 import org.worldbank.transport.driver.activities.RecordFormConstantsActivity;
 import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 import org.worldbank.transport.driver.activities.RecordItemListActivity;
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 
 /**
  * Static methods to support moving around in paginated form sections.
@@ -48,7 +42,7 @@ public class RecordFormSectionManager {
 
     // path to model classes created by jsonschema2pojo
     // this must match the targetPackage declared in the gradle build file (with a trailing period)
-    private static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
+    public static final String MODEL_PACKAGE = "org.worldbank.transport.driver.models.";
 
     /**
      * Get the appropriate Activity to launch for a given form section.
@@ -80,7 +74,7 @@ public class RecordFormSectionManager {
      */
     private static String[] getSchemaSectionOrder() {
         if (schemaSectionOrder == null) {
-            schemaSectionOrder = DriverUtilities.getFieldOrder(DriverSchema.class);
+            schemaSectionOrder = DriverUtilities.getFieldOrder(DriverApp.getSchemaClass());
         }
         return schemaSectionOrder;
     }
@@ -113,9 +107,10 @@ public class RecordFormSectionManager {
         try {
             // class names are capitalized; field names of that type may not be
             sectionName = StringUtils.capitalize(sectionName);
-            return Class.forName(MODEL_PACKAGE + sectionName);
+            return DriverApp.getSchemaClassLoader().loadClass(MODEL_PACKAGE + sectionName);
+            //return Class.forName(MODEL_PACKAGE + sectionName);
         } catch (ClassNotFoundException e) {
-            Log.e(LOG_LABEL, "Could not fine class named " + sectionName);
+            Log.e(LOG_LABEL, "Could not find class named " + sectionName);
             e.printStackTrace();
         }
         return null;
@@ -163,8 +158,10 @@ public class RecordFormSectionManager {
     @Nullable
     public static Field getFieldForSectionName(String sectionName) {
         try {
-            return DriverSchema.class.getField(sectionName);
-
+            Class driverClass = DriverApp.getSchemaClass();
+            if (driverClass != null) {
+                return driverClass.getField(sectionName);
+            }
         } catch (NoSuchFieldException e) {
             Log.e(LOG_LABEL, "Could not find section field named " + sectionName);
             e.printStackTrace();
@@ -241,7 +238,7 @@ public class RecordFormSectionManager {
             Object section = sectionField.get(currentlyEditing);
 
             if (section == null) {
-                Log.d(LOG_LABEL, "No section found for field " + sectionField.getName());
+                Log.d(LOG_LABEL, "No section found for field " + sectionField.getName() + "; creating it");
                 // instantiate a new thing then
                 section = sectionClass.newInstance();
 
