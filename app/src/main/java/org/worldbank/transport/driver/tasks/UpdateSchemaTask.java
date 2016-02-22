@@ -130,7 +130,7 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
             // if get a 201 back, jar doesn't exist just yet (unlikely to happen)
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_CREATED) {
-                Log.d(LOG_LABEL, "Updated model jar does not ready; it is now being created");
+                Log.d(LOG_LABEL, "Updated model jar is not ready; it is now being created");
                 UpdateSchemaCallbackListener caller = listener.get();
                 if (caller != null) {
                     caller.schemaUpdateError(context.getString(R.string.schema_update_not_ready));
@@ -153,25 +153,29 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
                 InputStream inputStream = urlConnection.getInputStream();
                 OutputStream outputStream = new FileOutputStream(file);
 
+                boolean fileDownloadedOk = false;
                 try {
                     IOUtils.copy(inputStream, outputStream);
+                    fileDownloadedOk = true;
                 } catch (IOException e) {
                     Log.e(LOG_LABEL, "Failed to download jar file");
-                    publishProgress(context.getString(R.string.error_schema_update));
+                    // cancel task after streams closed
                     e.printStackTrace();
-                    cancel(true);
                 } finally {
                     IOUtils.closeQuietly(inputStream);
                     IOUtils.closeQuietly(outputStream);
                 }
 
+                if (!fileDownloadedOk) {
+                    publishProgress(context.getString(R.string.error_schema_update));
+                    cancel(true);
+                    return null;
+                }
+
                 // go load the downloaded schema
                 DriverApp driverApp = (DriverApp) DriverApp.getContext();
-                if (driverApp.loadSchemaClasses(DriverApp.UPDATED_JAR_NAME)) {
+                if (driverApp.loadSchemaClasses(DriverApp.UPDATED_JAR_NAME, recordSchemaUuid)) {
                     Log.d(LOG_LABEL, "New schema jar loaded successfully");
-                    // TODO: set current schema version on app
-                    // driverApp.setCurrentSchemaVersion(recordSchemaUuid);
-
                     return recordSchemaUuid;
                 } else {
                     Log.e(LOG_LABEL, "Could not load updated schema jar file!");
