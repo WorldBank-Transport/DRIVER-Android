@@ -30,6 +30,7 @@
 
     <!-- schema update -->
     <string name="error_schema_update">Error encountered updating schema. Please try again at another time.</string>
+    <string name="schema_update_not_ready">Schema update is not ready yet. Please try update again in a few minutes.</string>
 
     <!-- record upload -->
     <string name ="error_record_upload">Server error uploading record.</string>

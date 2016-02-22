@@ -45,7 +45,6 @@ public class DriverApp extends Application {
     private static final String CURRENT_SCHEMA = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
 
     // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
-    // ugh no direct link to download for https://drive.google.com/file/d/0B7S04_17V_DFeW1zSDRKMnpVS28/view?usp=sharing
     private static final String SCHEMA_CERT_URL = "https://flibbertigibbet.github.io/DRIVER-Android/driver_android_certificate.pem";
 
     /**
@@ -244,7 +243,14 @@ public class DriverApp extends Application {
         return driverApp.schemaClassLoader;
     }
 
-    public void loadSchemaClasses(String jarPath) {
+    /**
+     * Load a model schema jar file. Should only be called on app start or after all records are cleared;
+     * otherwise, old schema class references in memory may interfere with  the new ones.
+     *
+     * @param jarPath Path to the jar file containing the new models.
+     * @return True on success
+     */
+    public boolean loadSchemaClasses(String jarPath) {
         Log.d(LOG_LABEL, "loading schema classes...");
 
         try {
@@ -272,9 +278,10 @@ public class DriverApp extends Application {
             Class newSchema = schemaClassLoader.loadClass(modelPackageName + "DriverSchema");
 
             if (newSchema == null) {
-                // might get here if cert link not HTTPS, or is a redirect
+                // might get here if cert link not HTTPS, or is a redirect,
+                // or if cert does not match key used to sign model jar file
                 Log.e(LOG_LABEL, "Failed to load class! Is signing certificate available?");
-                return;
+                return false;
             }
 
             // recursively reload all the child classes from DriverSchema and its fields
@@ -289,6 +296,8 @@ public class DriverApp extends Application {
             }
 
             Log.d(LOG_LABEL, "Done dynamically loading schema classes");
+            return true;
+
         } catch (ClassNotFoundException e) {
             Log.e(LOG_LABEL, "Could not find class");
             e.printStackTrace();
@@ -296,6 +305,8 @@ public class DriverApp extends Application {
             Log.e(LOG_LABEL, "Error copying jar file out to data directory");
             e.printStackTrace();
         }
+
+        return false;
     }
 
     /**

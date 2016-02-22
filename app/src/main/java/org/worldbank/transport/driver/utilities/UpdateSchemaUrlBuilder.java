@@ -21,6 +21,7 @@ public class UpdateSchemaUrlBuilder implements UpdateSchemaTask.RecordSchemaUrl 
                     .buildUpon()
                     .appendEncodedPath(RECORDSCHEMA_ENDPOINT)
                     .appendEncodedPath(recordSchemaEndpoint)
+                    .appendQueryParameter("format", "jar")
                     .build()
                     .toString());
         } catch (MalformedURLException e) {

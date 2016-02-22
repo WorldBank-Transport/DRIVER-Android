@@ -4,36 +4,19 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.sun.codemodel.CodeWriter;
-import com.sun.codemodel.JCodeModel;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsonschema2pojo.AnnotationStyle;
-import org.jsonschema2pojo.Annotator;
-import org.jsonschema2pojo.DefaultGenerationConfig;
-import org.jsonschema2pojo.GenerationConfig;
-import org.jsonschema2pojo.GsonAnnotator;
-import org.jsonschema2pojo.JsonEditorAnnotator;
-import org.jsonschema2pojo.Jsonschema2Pojo;
-import org.jsonschema2pojo.SchemaGenerator;
-import org.jsonschema2pojo.SchemaMapper;
-import org.jsonschema2pojo.SchemaStore;
-import org.jsonschema2pojo.SourceType;
-import org.jsonschema2pojo.rules.RuleFactory;
+import org.apache.commons.io.IOUtils;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.staticmodels.DriverUserInfo;
 import org.worldbank.transport.driver.utilities.UpdateSchemaUrlBuilder;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -55,7 +38,7 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
     public interface RecordSchemaUrl {
         // Backend endpoints. Note that it is necessary to keep the trailing slash here.
-        String RECORDSCHEMA_ENDPOINT = "api/recordschema/";
+        String RECORDSCHEMA_ENDPOINT = "api/jars/";
 
         URL schemaUrl(String serverUrl, String recordSchemaUuid);
     }
@@ -143,66 +126,63 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
                 return null;
             }
 
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            BufferedReader ir = new BufferedReader(new InputStreamReader(in));
-
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = ir.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-            ir.close();
-            in.close();
-            String responseStr = stringBuilder.toString();
-
-            // parse the JSON response find the schema UUID
-            JSONObject json = new JSONObject(responseStr);
-            String foundSchemaUuid = json.getString("uuid");
-
-            // sanity check that returned schema UUID matches the requested UUID
-            if (!foundSchemaUuid.equals(recordSchemaUuid)) {
-                publishProgress(context.getString(R.string.error_schema_update));
+            // if get a 201 back, jar doesn't exist just yet (unlikely to happen)
+            if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_CREATED) {
+                Log.d(LOG_LABEL, "Updated model jar does not ready; it is now being created");
+                UpdateSchemaCallbackListener caller = listener.get();
+                if (caller != null) {
+                    caller.schemaUpdateError(context.getString(R.string.schema_update_not_ready));
+                } else {
+                    Log.w(LOG_LABEL, "Cannot notify of 201 because listener has gone");
+                }
                 cancel(true);
-                Log.e(LOG_LABEL, "Requested schema " + recordSchemaUuid + " but got " + foundSchemaUuid);
                 return null;
             }
 
-            // extract actual schema from meta-info on response
-            String schema = json.getString("schema");
+            if (urlConnection.getResponseCode() == 200) {
+                // download jar file
+                File file = new File(context.getDir("dex", Context.MODE_PRIVATE), "updatedModels.jar");
 
-            JCodeModel codeModel = new JCodeModel();
+                // delete any previously downloaded update
+                if (file.exists()) {
+                    file.delete();
+                }
 
-            //Jsonschema2Pojo.generate(getJsonSchema2PojoConfig());
+                InputStream inputStream = urlConnection.getInputStream();
+                OutputStream outputStream = new FileOutputStream(file);
 
-            SchemaMapper mapper = new SchemaMapper(new RuleFactory(getJsonSchema2PojoConfig(),
-                    new GsonAnnotator(), new SchemaStore()), new SchemaGenerator());
+                try {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (IOException e) {
+                    Log.e(LOG_LABEL, "Failed to download jar file");
+                    publishProgress(context.getString(R.string.error_schema_update));
+                    e.printStackTrace();
+                    cancel(true);
+                } finally {
+                    IOUtils.closeQuietly(inputStream);
+                    IOUtils.closeQuietly(outputStream);
+                }
 
-            mapper.generate(codeModel, "DriverSchema", "org.worldbank.transport.driver.models", schema);
+                // go load the downloaded schema
+                DriverApp driverApp = (DriverApp) DriverApp.getContext();
+                if (driverApp.loadSchemaClasses(file.getAbsolutePath())) {
+                    Log.d(LOG_LABEL, "New schema jar loaded successfully");
+                    // TODO: set current schema version on app
+                    // driverApp.setCurrentSchemaVersion(recordSchemaUuid);
+                    
+                    return recordSchemaUuid;
+                } else {
+                    Log.e(LOG_LABEL, "Could not load updated schema jar file!");
+                    // delete the downloaded file; hopefully trying again later will work
+                    file.delete();
+                }
 
-            File outFile = new File(context.getApplicationInfo().dataDir, "DriverSchema.java");
-            codeModel.build(outFile);
-
-            BufferedReader reader = new BufferedReader(new FileReader(outFile));
-            stringBuilder = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                 stringBuilder.append(line);
+            } else {
+                Log.e(LOG_LABEL, "Schema update download request got response " + urlConnection.getResponseCode()
+                        + ": " + urlConnection.getResponseMessage());
             }
-            reader.close();
-            String code = stringBuilder.toString();
-            Log.d(LOG_LABEL, "Built schema code: " + code);
-
-            // TODO: actually write updated models out
-            //codeModel.build(TODO OUTPUT FILE);
-
-            return null; // TODO: return something useful here
-
         } catch (IOException e) {
             Log.e(LOG_LABEL, "Error communicating with server to perform schema check");
-            publishProgress(context.getString(R.string.error_schema_update));
-            e.printStackTrace();
-            cancel(true);
-        } catch (JSONException e) {
-            Log.e(LOG_LABEL, "Error parsing JSON response to schema check");
             publishProgress(context.getString(R.string.error_schema_update));
             e.printStackTrace();
             cancel(true);
@@ -233,8 +213,6 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String s) {
-
-        /*
         // sanity check; shouldn't happen
         if (s == null || s.isEmpty()) {
             Log.e(LOG_LABEL, "Schema check task finished with no schema!");
@@ -242,130 +220,9 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
         UpdateSchemaCallbackListener caller = listener.get();
         if (caller != null) {
-            caller.foundSchema(s);
+            caller.schemaUpdated();
         } else {
             Log.w(LOG_LABEL, "Cannot send back current schema because listener has gone");
         }
-        */
-    }
-
-    /**
-     * Helper to build a JsonSchema2Pojo configuration. The settings here should match those
-     * in the gradle section for jsonSchema2Pojo.
-     *
-     * @return JsonSchema2Pojo configuration
-     */
-    public GenerationConfig getJsonSchema2PojoConfig() {
-        return new DefaultGenerationConfig() {
-
-            @Override
-            public File getTargetDirectory() {
-
-                // context.getApplicationInfo().sourceDir
-
-                // TODO: file("${project.buildDir}/generated/source/js2p")
-                return super.getTargetDirectory();
-            }
-
-            @Override
-            public String getTargetPackage() {
-                return "org.worldbank.transport.driver.models";
-            }
-
-            @Override
-            public boolean isGenerateBuilders() {
-                return false;
-            }
-
-            @Override
-            public boolean isUsePrimitives() {
-                return false;
-            }
-
-            @Override
-            public char[] getPropertyWordDelimiters() {
-                return new char[]{' ', '_'};
-            }
-
-            @Override
-            public boolean isUseLongIntegers() {
-                return false;
-            }
-
-            @Override
-            public boolean isUseDoubleNumbers() {
-                return true;
-            }
-
-            @Override
-            public boolean isIncludeHashcodeAndEquals() {
-                return true;
-            }
-
-            @Override
-            public boolean isIncludeToString() {
-                return true;
-            }
-
-            @Override
-            public boolean isIncludeAccessors() {
-                return false;
-            }
-
-            @Override
-            public boolean isIncludeAdditionalProperties() {
-                return false;
-            }
-
-            @Override
-            public AnnotationStyle getAnnotationStyle() {
-                return AnnotationStyle.GSON;
-            }
-
-            @Override
-            public Class<? extends Annotator> getCustomAnnotator() {
-                return JsonEditorAnnotator.class;
-            }
-
-            @Override
-            public boolean isIncludeJsr303Annotations() {
-                return true;
-            }
-
-            @Override
-            public SourceType getSourceType() {
-                return SourceType.JSONSCHEMA;
-            }
-
-            @Override
-            public boolean isRemoveOldOutput() {
-                return true;
-            }
-
-            @Override
-            public String getOutputEncoding() {
-                return "UTF-8";
-            }
-
-            @Override
-            public boolean isUseJodaDates() {
-                return false;
-            }
-
-            @Override
-            public boolean isUseCommonsLang3() {
-                return false;
-            }
-
-            @Override
-            public boolean isInitializeCollections() {
-                return true;
-            }
-
-            @Override
-            public boolean isParcelable() {
-                return false;
-            }
-        };
     }
 }
