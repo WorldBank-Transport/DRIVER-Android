@@ -7,17 +7,18 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -46,6 +47,10 @@ public class DriverApp extends Application {
 
     // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
     private static final String SCHEMA_CERT_URL = "https://flibbertigibbet.github.io/DRIVER-Android/driver_android_certificate.pem";
+
+    public static final String BACKUP_JAR_NAME = "models.jar";
+    public static final String BACKUP_JAR_SCHEMA_VERSION = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
+    public static final String UPDATED_JAR_NAME = "updatedModels.jar";
 
     /**
      * Current user.
@@ -88,7 +93,17 @@ public class DriverApp extends Application {
         packageNameCertMap = new HashMap<>(1);
         try {
             packageNameCertMap.put(MODELS_BASE_PACKAGE, new URL(SCHEMA_CERT_URL));
-            loadSchemaClasses("models.jar");
+
+            // check if there is a schema update jar available, and use that first;
+            // fall back to backup jar if not
+            if (haveUpdatedSchemaJar()) {
+                if (!loadSchemaClasses(UPDATED_JAR_NAME)) {
+                    loadBackupSchema();
+                }
+            } else {
+                loadBackupSchema();
+            }
+
         } catch (MalformedURLException e) {
             Log.e(LOG_LABEL, "Certificate URL for model packages is invalid");
             e.printStackTrace();
@@ -244,30 +259,61 @@ public class DriverApp extends Application {
     }
 
     /**
+     * Helper to revert to the backup model classes, if updates not found or could not be loaded.
+     */
+    public void loadBackupSchema() {
+        if (loadSchemaClasses(BACKUP_JAR_NAME)) {
+            // TODO: set schema version to
+            // BACKUP_JAR_SCHEMA_VERSION
+
+            Log.d(LOG_LABEL, "Reverted to backup schema");
+
+        } else {
+            Log.e(LOG_LABEL, "Could not load backup schema!");
+            // should never happen
+            Toast toast = Toast.makeText(this, getString(R.string.error_schema_update), Toast.LENGTH_LONG);
+            toast.show();
+        }
+    }
+
+    /**
+     * Helper to check if an updated schema model jar file is available locally.
+     *
+     * @return True if updated jar available
+     */
+    public boolean haveUpdatedSchemaJar() {
+        File updatedJarPath = new File(getDir("dex", Context.MODE_PRIVATE), UPDATED_JAR_NAME);
+        return updatedJarPath.exists();
+    }
+
+    /**
      * Load a model schema jar file. Should only be called on app start or after all records are cleared;
      * otherwise, old schema class references in memory may interfere with  the new ones.
      *
-     * @param jarPath Path to the jar file containing the new models.
+     * @param jarPath Relative path to the jar file containing the new models.
      * @return True on success
      */
     public boolean loadSchemaClasses(String jarPath) {
         Log.d(LOG_LABEL, "loading schema classes...");
 
         try {
-            // first copy jar file out of assets directory to app data directory for a path to pass
-            // http://android-developers.blogspot.com/2011/07/custom-class-loading-in-dalvik.html
             File dexInternalStoragePath = new File(getDir("dex", Context.MODE_PRIVATE), jarPath);
 
-            final int BUF_SIZE = 8 * 1024;
-            BufferedInputStream bis = new BufferedInputStream(getAssets().open(jarPath));
-            OutputStream dexWriter = new BufferedOutputStream(new FileOutputStream(dexInternalStoragePath));
-            byte[] buf = new byte[BUF_SIZE];
-            int len;
-            while((len = bis.read(buf, 0, BUF_SIZE)) > 0) {
-                dexWriter.write(buf, 0, len);
+            // if loading fallback model jar file from assets for the first time, it will need
+            // to be copied first out to the app data directory
+            if (!dexInternalStoragePath.exists()) {
+                InputStream inputStream = getAssets().open(jarPath);
+                OutputStream outputStream = new FileOutputStream(dexInternalStoragePath);
+                try {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (IOException e) {
+                    Log.e(LOG_LABEL, "Failed to copy out model jar file");
+                    return false;
+                } finally {
+                    IOUtils.closeQuietly(inputStream);
+                    IOUtils.closeQuietly(outputStream);
+                }
             }
-            dexWriter.close();
-            bis.close();
 
             schemaClassLoader = null;
             String modelPackageName = RecordFormSectionManager.MODEL_PACKAGE;

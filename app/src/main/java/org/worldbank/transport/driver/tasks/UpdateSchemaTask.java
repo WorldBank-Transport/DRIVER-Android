@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.UUID;
 
 /**
+ * Background task for downloading a jar file with updated models for a schema and loading it.
+ *
  * Created by kathrynkillebrew on 2/15/16.
  */
 public class UpdateSchemaTask extends AsyncTask<String, String, String> {
@@ -141,7 +143,7 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
             if (urlConnection.getResponseCode() == 200) {
                 // download jar file
-                File file = new File(context.getDir("dex", Context.MODE_PRIVATE), "updatedModels.jar");
+                File file = new File(context.getDir("dex", Context.MODE_PRIVATE), DriverApp.UPDATED_JAR_NAME);
 
                 // delete any previously downloaded update
                 if (file.exists()) {
@@ -165,16 +167,20 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
                 // go load the downloaded schema
                 DriverApp driverApp = (DriverApp) DriverApp.getContext();
-                if (driverApp.loadSchemaClasses(file.getAbsolutePath())) {
+                if (driverApp.loadSchemaClasses(DriverApp.UPDATED_JAR_NAME)) {
                     Log.d(LOG_LABEL, "New schema jar loaded successfully");
                     // TODO: set current schema version on app
                     // driverApp.setCurrentSchemaVersion(recordSchemaUuid);
-                    
+
                     return recordSchemaUuid;
                 } else {
                     Log.e(LOG_LABEL, "Could not load updated schema jar file!");
                     // delete the downloaded file; hopefully trying again later will work
                     file.delete();
+
+                    // load backup model jar file
+                    driverApp.loadBackupSchema();
+                    return DriverApp.BACKUP_JAR_SCHEMA_VERSION;
                 }
 
             } else {
