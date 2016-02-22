@@ -42,8 +42,8 @@ public class DriverApp extends Application {
     // parent of the models package
     public static final String MODELS_BASE_PACKAGE = "org.worldbank.transport.driver";
 
-    // TODO: track current schema version
-    private static final String CURRENT_SCHEMA = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
+    // track current schema version
+    private static String currentSchemaVersion;
 
     // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
     private static final String SCHEMA_CERT_URL = "https://flibbertigibbet.github.io/DRIVER-Android/driver_android_certificate.pem";
@@ -93,17 +93,21 @@ public class DriverApp extends Application {
         packageNameCertMap = new HashMap<>(1);
         try {
             packageNameCertMap.put(MODELS_BASE_PACKAGE, new URL(SCHEMA_CERT_URL));
-
             // check if there is a schema update jar available, and use that first;
             // fall back to backup jar if not
             if (haveUpdatedSchemaJar()) {
-                if (!loadSchemaClasses(UPDATED_JAR_NAME)) {
+                // get current schema version from shared preferences
+                String preferencesSchemaVersion = getSchemaVersionFromSharedPreferences();
+                if (preferencesSchemaVersion.isEmpty()) {
+                    Log.e(LOG_LABEL, "Have an updated schema jar file, but its version was not found in shared preferences!");
+                    loadBackupSchema();
+                } else if (!loadSchemaClasses(UPDATED_JAR_NAME, preferencesSchemaVersion)) {
+                    Log.e(LOG_LABEL, "Failed to load updated schema from stored file; reverting to backup");
                     loadBackupSchema();
                 }
             } else {
                 loadBackupSchema();
             }
-
         } catch (MalformedURLException e) {
             Log.e(LOG_LABEL, "Certificate URL for model packages is invalid");
             e.printStackTrace();
@@ -120,7 +124,7 @@ public class DriverApp extends Application {
     }
 
     public static String getCurrentSchema() {
-        return CURRENT_SCHEMA;
+        return currentSchemaVersion;
     }
 
     public static RecordDatabaseManager getDatabaseManager() {
@@ -241,6 +245,28 @@ public class DriverApp extends Application {
         return networkInfo != null && networkInfo.isConnected();
     }
 
+    private String getSchemaVersionFromSharedPreferences() {
+        SharedPreferences preferences = getSharedPreferences(
+                getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
+        return preferences.getString(getString(R.string.shared_preferences_schema_version), "");
+    }
+
+    /**
+     * Store schema version on app object and in shared preferences.
+     * @param newVersion UUID fo the new schema to use.
+     */
+    public void setCurrentSchemaVersion(String newVersion) {
+        SharedPreferences preferences = getSharedPreferences(
+                getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putString(getString(R.string.shared_preferences_schema_version), newVersion);
+        editor.apply();
+        currentSchemaVersion = newVersion;
+        Log.d("DriverUserInfo", "Updated schema written to shared preferences");
+    }
+
     public static Class getSchemaClass() {
         DriverApp driverApp = (DriverApp) DriverApp.getContext();
         try {
@@ -262,12 +288,8 @@ public class DriverApp extends Application {
      * Helper to revert to the backup model classes, if updates not found or could not be loaded.
      */
     public void loadBackupSchema() {
-        if (loadSchemaClasses(BACKUP_JAR_NAME)) {
-            // TODO: set schema version to
-            // BACKUP_JAR_SCHEMA_VERSION
-
+        if (loadSchemaClasses(BACKUP_JAR_NAME, BACKUP_JAR_SCHEMA_VERSION)) {
             Log.d(LOG_LABEL, "Reverted to backup schema");
-
         } else {
             Log.e(LOG_LABEL, "Could not load backup schema!");
             // should never happen
@@ -291,9 +313,10 @@ public class DriverApp extends Application {
      * otherwise, old schema class references in memory may interfere with  the new ones.
      *
      * @param jarPath Relative path to the jar file containing the new models.
+     * @param schemaVersion UUID of new schema, to be stored after successful class load
      * @return True on success
      */
-    public boolean loadSchemaClasses(String jarPath) {
+    public boolean loadSchemaClasses(String jarPath, String schemaVersion) {
         Log.d(LOG_LABEL, "loading schema classes...");
 
         try {
@@ -301,17 +324,24 @@ public class DriverApp extends Application {
 
             // if loading fallback model jar file from assets for the first time, it will need
             // to be copied first out to the app data directory
+
+            boolean copiedOk = false;
             if (!dexInternalStoragePath.exists()) {
                 InputStream inputStream = getAssets().open(jarPath);
                 OutputStream outputStream = new FileOutputStream(dexInternalStoragePath);
                 try {
                     IOUtils.copy(inputStream, outputStream);
+                    copiedOk = true;
                 } catch (IOException e) {
                     Log.e(LOG_LABEL, "Failed to copy out model jar file");
-                    return false;
+                    // return after streams have been closed
                 } finally {
                     IOUtils.closeQuietly(inputStream);
                     IOUtils.closeQuietly(outputStream);
+                }
+
+                if (!copiedOk) {
+                    return false;
                 }
             }
 
@@ -342,6 +372,7 @@ public class DriverApp extends Application {
             }
 
             Log.d(LOG_LABEL, "Done dynamically loading schema classes");
+            setCurrentSchemaVersion(schemaVersion);
             return true;
 
         } catch (ClassNotFoundException e) {

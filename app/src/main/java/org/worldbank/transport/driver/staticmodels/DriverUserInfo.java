@@ -63,7 +63,15 @@ public class DriverUserInfo {
         SharedPreferences preferences = context.getSharedPreferences(
                 context.getString(R.string.shared_preferences_file), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+
+        // keep stored schema version (all other keys are for user info)
+        String currentStoredSchema = preferences.getString(context.getString(R.string.shared_preferences_schema_version), "");
         editor.clear(); // clears last saved user, if there is one
+
+        // set back stored schema version, if any, after clearing out the app shared preferences
+        if (!currentStoredSchema.isEmpty()) {
+            editor.putString(context.getString(R.string.shared_preferences_schema_version), currentStoredSchema);
+        }
 
         editor.putInt(context.getString(R.string.shared_preferences_user_id_key), id);
         editor.putString(context.getString(R.string.shared_preferences_username_key), username);
