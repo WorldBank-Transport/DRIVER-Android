@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public class DriverUserInfo {
 
+    public static final String LOG_LABEL = "DriverUserInfo";
     public static final String ADMIN_GROUP = "admin";
     public static final String ANALYST_GROUP = "analyst";
 
@@ -41,17 +42,17 @@ public class DriverUserInfo {
      */
     public boolean setUserToken(DriverUserAuth auth) {
         if (auth == null || auth.token.isEmpty()) {
-            Log.e("DriverUserInfo", "Missing authentication info for user; cannot set");
+            Log.e(LOG_LABEL, "Missing authentication info for user; cannot set");
             return false;
         }
 
         if (auth.user != id) {
-            Log.e("DriverUserInfo", "Got authentication info for different user ID; cannot set");
+            Log.e(LOG_LABEL, "Got authentication info for different user ID; cannot set");
             return false;
         }
 
         token = auth.token;
-        Log.d("DriverUserInfo", "Authentication info set for user");
+        Log.d(LOG_LABEL, "Authentication info set for user");
         return true;
     }
 
@@ -84,7 +85,7 @@ public class DriverUserInfo {
         editor.putStringSet(context.getString(R.string.shared_preferences_groups_key), groupSet);
 
         editor.apply();
-        Log.d("DriverUserInfo", "User info written to shared preferences");
+        Log.d(LOG_LABEL, "User info written to shared preferences");
     }
 
     public void readFromSharedPreferences(Context context) {
@@ -101,7 +102,7 @@ public class DriverUserInfo {
         groups = new ArrayList<>(groupSet.size());
         groups.addAll(groupSet);
 
-        Log.d("DriverUserInfo", "User info read in from shared preferences");
+        Log.d(LOG_LABEL, "User info read in from shared preferences");
     }
 }
 
