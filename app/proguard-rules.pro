@@ -56,6 +56,10 @@
 -keep class sun.nio.cs.** { public *; }
 -keep class javax.lang.model.** { public *; }
 
+-keep class org.apache.commons.lang.** { public *; }
+-keep interface org.apache.commons.lang.** { public *; }
+-keepnames class org.apache.commons.lang.**
+
 # needed for dynamic references
 -keep class libcore.icu.** { public *; }
 -keep class android.graphics.** { public *; }
