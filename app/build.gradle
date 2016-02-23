@@ -24,9 +24,13 @@ configurations {
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        release
+
+    if (!travisBuild) {
+        signingConfigs {
+            release
+        }
     }
+    
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
     // Must specify individually all duplicated files from libraries to exclude or pickFirst
@@ -64,7 +68,10 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
-            signingConfig signingConfigs.release
+
+            if (!travisBuild) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     dexOptions {
@@ -146,8 +153,11 @@ dependencies {
 }
 
 def props = new Properties()
-props.load(new FileInputStream(project.file("release.properties")))
-android.signingConfigs.release.storeFile project.file(props.keyStore)
-android.signingConfigs.release.storePassword props.keyStorePassword
-android.signingConfigs.release.keyAlias props.keyAlias
-android.signingConfigs.release.keyPassword props.keyAliasPassword
+
+if (!travisBuild) {
+    props.load(new FileInputStream(project.file("release.properties")))
+    android.signingConfigs.release.storeFile project.file(props.keyStore)
+    android.signingConfigs.release.storePassword props.keyStorePassword
+    android.signingConfigs.release.keyAlias props.keyAlias
+    android.signingConfigs.release.keyPassword props.keyAliasPassword
+}
