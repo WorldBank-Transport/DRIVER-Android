@@ -318,14 +318,13 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         } else {
             Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_checking_schema), Toast.LENGTH_SHORT);
             toast.show();
+            // start schema update check
+            startSchemaUpdateCheck();
         }
 
         // clear now-outdated list view of the uploaded records
         adapter.changeCursor(app.getAllRecords());
         adapter.notifyDataSetChanged();
-
-        // start schema update check
-        startSchemaUpdateCheck();
     }
 
     @Override
