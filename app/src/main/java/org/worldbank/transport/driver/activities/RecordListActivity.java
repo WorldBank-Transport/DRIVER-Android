@@ -23,6 +23,7 @@ import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.tasks.CheckSchemaTask;
 import org.worldbank.transport.driver.tasks.PostRecordsTask;
+import org.worldbank.transport.driver.tasks.UpdateSchemaTask;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -35,7 +36,7 @@ import java.util.TimeZone;
 
 
 public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
-        PostRecordsTask.PostRecordsListener {
+        PostRecordsTask.PostRecordsListener, UpdateSchemaTask.UpdateSchemaCallbackListener {
 
     private static final String LOG_LABEL = "RecordListActivity";
 
@@ -46,6 +47,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     DriverApp app;
     CheckSchemaTask checkSchemaTask;
     PostRecordsTask postRecordsTask;
+    UpdateSchemaTask updateSchemaTask;
     ProgressBar progressBar;
 
     @Override
@@ -229,26 +231,22 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         Log.d(LOG_LABEL, "Found schema " + currentSchema);
         checkSchemaTask = null;
 
-        Log.d(LOG_LABEL, "Data dir is: " + getApplicationInfo().dataDir);
-
-        // sourceDir is actually the path to the APK
-        //Log.d(LOG_LABEL, "Source dir is: " + getApplicationInfo().sourceDir);
-
         if (!DriverApp.getCurrentSchema().equals(currentSchema)) {
-            // TODO: update schema and restart app if a new one is available
-            Log.w(LOG_LABEL, "There is a new schema available! Go get it.");
+            // update schema if a new one is available
+            if (updateSchemaTask != null) {
+                Log.w(LOG_LABEL, "Schema update task already running! Doing nothing.");
+            } else {
+                Log.d(LOG_LABEL, "Starting schema update task");
+                updateSchemaTask = new UpdateSchemaTask(this, app.getUserInfo());
+                updateSchemaTask.execute(currentSchema);
+            }
+
         } else {
             Log.d(LOG_LABEL, "This schema version is the latest!");
             Toast toast = Toast.makeText(this, getString(R.string.schema_current), Toast.LENGTH_SHORT);
             toast.show();
+            progressBar.setVisibility(View.GONE);
         }
-
-        //////////////
-        Log.d(LOG_LABEL, "Going to try loading alternate schema...");
-        app.loadSchemaClasses("modelsVehicleFoo.jar");
-        Log.d(LOG_LABEL, "Done loading alternate schema");
-
-        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -267,6 +265,31 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         checkSchemaTask = null;
     }
 
+    @Override
+    public void schemaUpdated() {
+        Log.d(LOG_LABEL, "Schema updated!");
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+        Toast toast = Toast.makeText(this, getString(R.string.schema_updated), Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    @Override
+    public void schemaUpdateCancelled() {
+        Log.w(LOG_LABEL, "Schema update cancelled");
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void schemaUpdateError(String errorMessage) {
+        Log.e(LOG_LABEL, "Schema update error: " + errorMessage);
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
+        toast.show();
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+    }
+
     /**
      * This callback method is shared by the schema check task and record post task.
      */
@@ -279,6 +302,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         startActivity(intent);
         checkSchemaTask = null;
         postRecordsTask = null;
+        updateSchemaTask = null;
         progressBar.setVisibility(View.GONE);
         finish();
     }
