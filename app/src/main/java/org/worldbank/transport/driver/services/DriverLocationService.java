@@ -248,7 +248,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     public void onDestroy() {
         // Android Studio insists we check for permissions again here
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, locationListener);
+            if (apiClient != null && apiClient.isConnected()) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, locationListener);
+            }
             locationManager.removeGpsStatusListener(this);
         }
 

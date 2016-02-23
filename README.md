@@ -6,7 +6,7 @@ Android client for adding DRIVER records
 [![Build Status](https://travis-ci.org/WorldBank-Transport/DRIVER-Android.svg?branch=develop)](https://travis-ci.org/WorldBank-Transport/DRIVER-Android)
 
 ## Setup
-Before running app from Android Studio, copy over the two tempates:
+Before running app from Android Studio, copy over the two templates:
 ```
 cp templates/configurables.xml.template app/src/main/res/values/configurables.xml
 ```

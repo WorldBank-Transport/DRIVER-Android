@@ -128,8 +128,7 @@ dependencies {
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
     // example model files in library only used for test
-    testCompile files('src/main/assets/models.jar')
-    androidTestCompile files('src/main/assets/models.jar')
+    //androidTestCompile files('src/main/assets/models.jar')
     // test dependencies
     testCompile 'junit:junit:4.12'
     // mockito for unit tests
