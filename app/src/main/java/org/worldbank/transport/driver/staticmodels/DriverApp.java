@@ -46,7 +46,7 @@ public class DriverApp extends Application {
     private static String currentSchemaVersion;
 
     // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
-    private static final String SCHEMA_CERT_URL = "https://flibbertigibbet.github.io/DRIVER-Android/driver_android_certificate.pem";
+    private static final String SCHEMA_CERT_URL = "https://worldbank-transport.github.io/DRIVER-Android/driver_android_certificate.pem";
 
     public static final String BACKUP_JAR_NAME = "models.jar";
     public static final String BACKUP_JAR_SCHEMA_VERSION = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
