@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationListener;
+import com.google.android.gms.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import org.worldbank.transport.driver.R;
@@ -68,6 +69,7 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
         }
     }
 
+    private GoogleApiClient apiClient;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private Context context;
@@ -86,7 +88,13 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
         // after a permissions check that is in the same method
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d(LOG_LABEL, "Actually starting location updates now.");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setInterval(50);
+            locationRequest.setMaxWaitTime(25);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, locationListener);
         } else {
             Log.w(LOG_LABEL, "Got onConnected callback, but do not have location services permissions now");
         }
@@ -240,7 +248,9 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
     public void onDestroy() {
         // Android Studio insists we check for permissions again here
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.removeUpdates(locationListener);
+            if (apiClient != null && apiClient.isConnected()) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, locationListener);
+            }
             locationManager.removeGpsStatusListener(this);
         }
 
@@ -295,29 +305,6 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
 
                 if (doneWaitingForUpdates()) {
                     finishWithBestLocation();
-                    return;
-                }
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                // TODO: what info comes through here?
-                Log.d(LOG_LABEL, "Location listener got status change");
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                    Log.w(LOG_LABEL, "GPS enabled while location service already running. How did we get here?");
-                }
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                // GPS got disabled after location updates already started; prompt to re-enable
-                if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                    Log.w(LOG_LABEL, "GPS disabled!");
-                    promptToEnableGps(null);
                 }
             }
         };
@@ -396,13 +383,14 @@ public class DriverLocationService extends Service implements GpsStatus.Listener
             }
             // have permission and access to GPS location, and GPS is enabled; request updates
 
-            GoogleApiClient client = new GoogleApiClient.Builder(this)
+            apiClient = new GoogleApiClient.Builder(this)
                     .addApi(LocationServices.API)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
 
-            client.connect();
+            apiClient.connect();
+            Log.d(LOG_LABEL, "Connecting to GoogleApiClient for GPS...");
 
             // cannot actually start requesting location updates until API client sends
             // onConnect callback

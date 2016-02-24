@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.util.Log;
 
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 import org.worldbank.transport.driver.staticmodels.Record;
 
@@ -290,7 +289,7 @@ public class RecordDatabaseManager {
         String schemaVersion = cursor.getString(schemaColumn);
         cursor.close();
 
-        DriverSchema recordObject;
+        Object recordObject;
         if (recordData == null) {
             Log.e(LOG_LABEL, "Cannot deserialize null record data string!");
         }

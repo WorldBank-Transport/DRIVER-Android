@@ -23,7 +23,7 @@ android:
 
 before_install:
   - free -m # show available memory on VM
-  - cp xmltemplates/configurables.xml.template app/src/main/res/values/configurables.xml
+  - cp templates/configurables.xml.template app/src/main/res/values/configurables.xml
   - echo yes | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
   - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
 

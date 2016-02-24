@@ -28,10 +28,15 @@
     <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
     <string name="schema_current">Current schema is up-to-date.</string>
 
+    <!-- schema update -->
+    <string name="error_schema_update">Error encountered updating schema. Please try again at another time.</string>
+    <string name="schema_update_not_ready">Schema update is not ready yet. Please try update again in a few minutes.</string>
+    <string name="schema_updated">Schema has been updated.</string>
+
     <!-- record upload -->
     <string name ="error_record_upload">Server error uploading record.</string>
     <string name="records_uploaded_checking_schema">Records uploaded, now checking for schema updates&#8230;</string>
-    <string name="records_uploaded_some_failed">%1$d records failed to upload. Now checking for schema updates&#8230;</string>
+    <string name="records_uploaded_some_failed">%1$d records failed to upload.</string>
     <string name="records_nothing_to_upload">No records found to upload.</string>
 
     <!-- record form -->
@@ -62,7 +67,7 @@
     <string name="shared_preferences_token_key" translatable="false">user_token</string>
     <string name="shared_preferences_email_key" translatable="false">user_email</string>
     <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
-    <string name="title_activity_record_item_list">RecordItemListActivity</string>
+    <string name="shared_preferences_schema_version" translatable="false">schema_version</string>
 
     <!-- device location -->
     <string name="location_fine_permission_rationale">Device location permission required. Records cannot be entered without a location.</string>

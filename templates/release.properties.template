@@ -1,0 +1,4 @@
+keyStore=driver.keystore
+keyStorePassword=password
+keyAlias=driver
+keyAliasPassword=password

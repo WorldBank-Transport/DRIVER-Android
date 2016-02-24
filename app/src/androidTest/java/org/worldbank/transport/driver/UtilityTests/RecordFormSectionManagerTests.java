@@ -4,16 +4,15 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
-import org.worldbank.transport.driver.TestModels.TestPerson;
 import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 import org.worldbank.transport.driver.activities.RecordItemListActivity;
-import org.worldbank.transport.driver.models.AccidentDetails;
-import org.worldbank.transport.driver.models.DriverSchema;
-import org.worldbank.transport.driver.models.Person;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+
+import it.necst.grabnrun.SecureDexClassLoader;
 
 /**
  * Unit tests form RecordFormSectionManager static methods
@@ -24,13 +23,32 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
     private static final String LOG_LABEL = "SectionMgrTests";
 
-    DriverSchema driverSchema;
+    Object driverSchema;
+    Class personClass;
+    Class detailsClass;
+    Class vehicleClass;
+
+    Field personField;
+    Field nameField;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        driverSchema = new DriverSchema();
+        Class driverClass = DriverApp.getSchemaClass();
+        SecureDexClassLoader modelClassLoader = DriverApp.getSchemaClassLoader();
+
+        if (driverClass == null) {
+            fail("top level model class not found");
+        }
+        driverSchema = driverClass.newInstance();
+
+        personClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Person");
+        detailsClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "AccidentDetails");
+        vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
+
+        personField = driverSchema.getClass().getField("person");
+        nameField = personClass.getField("Name");
     }
 
     @Override
@@ -65,7 +83,10 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetSectionClass() {
         Class foundClass = RecordFormSectionManager.getSectionClass("person");
-        assertEquals("Did not find expected class for Person", Person.class, foundClass);
+        if (foundClass == null) {
+            fail("class not found");
+        }
+        assertEquals("Did not find expected class for Person", "Person", foundClass.getSimpleName());
     }
 
     @SmallTest
@@ -100,7 +121,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         assertEquals("Unexpected plural title", "People", foundPlural);
 
         try {
-            Field invalidField = TestPerson.class.getField("Injury");
+            Field invalidField = personClass.getField("Injury");
             foundPlural  = RecordFormSectionManager.getPluralTitle(invalidField, "some default");
             assertEquals("Did not get default plural title", foundPlural, "some default");
         } catch (NoSuchFieldException e) {
@@ -117,7 +138,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
         try {
             // this field is not a section, and so does not have a title
-            Field invalidField = TestPerson.class.getField("Injury");
+            Field invalidField = personClass.getField("Injury");
             foundTitle  = RecordFormSectionManager.getSingleTitle(invalidField, "some default");
             assertEquals("Did not get default plural title", foundTitle, "some default");
         } catch (NoSuchFieldException e) {
@@ -130,65 +151,110 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     public void testGetOrCreateSectionObject() {
         // check new section creation
         Field detailsField = RecordFormSectionManager.getFieldForSectionName("accidentDetails");
-        Object obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, AccidentDetails.class, driverSchema);
+        Object obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, detailsClass, driverSchema);
         assertNotNull(obj);
 
         // check fetch of existing section
-        driverSchema.accidentDetails.Description = "blah blah blah";
-        obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, AccidentDetails.class, driverSchema);
-        assertNotNull(obj);
-        assertEquals(obj.getClass(), AccidentDetails.class);
-        AccidentDetails details = (AccidentDetails) obj;
-        assertEquals(details.Description, "blah blah blah");
+        try {
+            Field detailField = driverSchema.getClass().getField("accidentDetails");
+            assertEquals(detailField, detailsField);
+            Object details = detailField.get(driverSchema);
+            details.getClass().getField("Description").set(details, "blah blah blah");
+
+            obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, detailsClass, driverSchema);
+            assertNotNull(obj);
+            assertEquals(obj.getClass(), detailsClass);
+
+            assertEquals(obj.getClass(), detailsClass);
+            Object foundDescription = obj.getClass().getField("Description").get(obj);
+            assertEquals(foundDescription, "blah blah blah");
+
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            fail("could not access field");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            fail("could not find field");
+        }
     }
 
+    @SuppressWarnings("unchecked")
     @SmallTest
     public void testGetCreateDeleteListItems() {
         // create new list and add an object to it
         Field foundField = RecordFormSectionManager.getFieldForSectionName("person");
-        Object obj = RecordFormSectionManager.getOrCreateListItem(foundField, Person.class, driverSchema, 0);
+        Object obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 0);
         assertNotNull(obj);
-        assertEquals(obj.getClass(), Person.class);
-        assertEquals(driverSchema.person.size(), 1);
+        assertEquals(obj.getClass(), personClass);
+        try {
+            Object people = personField.get(driverSchema);
+            assertEquals(ArrayList.class, people.getClass());
+            ArrayList peopleList = (ArrayList) people;
+            assertEquals(1, peopleList.size());
 
-        // test getting an object that already exists
-        Person newPerson = new Person();
-        newPerson.Name = "Bob";
-        driverSchema.person.add(newPerson);
-        obj = RecordFormSectionManager.getOrCreateListItem(foundField, Person.class, driverSchema, 1);
-        assertNotNull(obj);
-        assertEquals(obj.getClass(), Person.class);
-        Person gotPerson = (Person) obj;
-        assertEquals("Unexpected Person returned from list", gotPerson, newPerson);
-        assertEquals("Unexpected name for Person returned from list", gotPerson.Name, "Bob");
+            // test getting an object that already exists
+            Object newPerson = personClass.newInstance();
 
-        // delete first person
-        boolean didItWork = RecordFormSectionManager.deleteListItem(foundField, Person.class, driverSchema, 0);
-        assertTrue(didItWork);
-        assertEquals(driverSchema.person.size(), 1);
-        obj = RecordFormSectionManager.getOrCreateListItem(foundField, Person.class, driverSchema, 0);
+            nameField.set(newPerson, "Bob");
+            peopleList.add(newPerson);
 
-        // first person should now be Bob
-        assertNotNull(obj);
-        assertEquals(obj.getClass(), Person.class);
-        gotPerson = (Person) obj;
-        assertEquals("Unexpected name for Person returned from list after deletion", gotPerson.Name, "Bob");
+            obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 1);
+            assertNotNull(obj);
+            assertEquals(obj.getClass(), personClass);
+            assertEquals("Unexpected Person returned from list", obj, newPerson);
+            assertEquals("Unexpected name for Person returned from list", nameField.get(obj), "Bob");
+
+            // delete first person
+            boolean didItWork = RecordFormSectionManager.deleteListItem(foundField, personClass, driverSchema, 0);
+            assertTrue(didItWork);
+            assertEquals(((ArrayList) personField.get(driverSchema)).size(), 1);
+            obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 0);
+
+            // first person should now be Bob
+            assertNotNull(obj);
+            assertEquals(obj.getClass(), personClass);
+            assertEquals("Unexpected name for Person returned from list after deletion", nameField.get(obj), "Bob");
+
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            fail("cannot access");
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            fail("could not instantiate");
+        }
+
+
     }
 
+    @SuppressWarnings("unchecked")
     @SmallTest
     public void testGetSectionList() {
-        Person personOne = new Person();
-        personOne.Name = "ThingOne";
-        driverSchema.person.add(personOne);
+        try {
+            Object personOne = personClass.newInstance();
+            Object personTwo = personClass.newInstance();
+            nameField.set(personOne, "ThingOne");
+            nameField.set(personTwo, "ThingTwo");
 
-        Person personTwo = new Person();
-        personTwo.Name = "Thing Two";
-        driverSchema.person.add(personTwo);
+            ArrayList personList = (ArrayList)personField.get(driverSchema);
+            personList.add(personOne);
+            personList.add(personTwo);
 
-        ArrayList gotPeople = RecordFormSectionManager.getSectionList(driverSchema.person);
-        assertEquals(gotPeople, driverSchema.person);
+            ArrayList gotPeople = RecordFormSectionManager.getSectionList(personField.get(driverSchema));
+            assertEquals(gotPeople, personField.get(driverSchema));
 
-        ArrayList gotVehicles = RecordFormSectionManager.getSectionList(driverSchema.vehicle);
-        assertEquals(gotVehicles.size(), 0);
+            Field vehicleField = driverSchema.getClass().getField("vehicle");
+            ArrayList gotVehicles = RecordFormSectionManager.getSectionList(vehicleField.get(driverSchema));
+            assertEquals(gotVehicles.size(), 0);
+
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            fail("could not instantiate");
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            fail("could not access");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            fail("field not found");
+        }
     }
 }

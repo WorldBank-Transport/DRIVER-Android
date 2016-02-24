@@ -1,6 +1,5 @@
 package org.worldbank.transport.driver.datastore;
 
-import android.util.JsonWriter;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -8,11 +7,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
 import org.jsonschema2pojo.media.SerializableMedia;
-import org.worldbank.transport.driver.models.DriverSchema;
-import org.worldbank.transport.driver.staticmodels.DriverSchemaUpload;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 
 /**
  * Handles reading and writing records to and from JSON strings.
@@ -23,25 +19,37 @@ public class DriverSchemaSerializer {
 
     public static final String LOG_LABEL = "SchemaSerializer";
 
-    public static DriverSchema readRecord(String jsonData) {
+    public static Object readRecord(String jsonData) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
         Gson gson = builder.create();
         try {
-            return gson.fromJson(jsonData, DriverSchema.class);
+            Class driverClass = DriverApp.getSchemaClass();
+            if (driverClass != null) {
+                return gson.fromJson(jsonData, driverClass);
+            } else {
+                Log.e(LOG_LABEL, "Could not read record; driver schema undefined");
+            }
         } catch (JsonParseException ex) {
             Log.e(LOG_LABEL, "Failed to parse record from JSON");
             ex.printStackTrace();
-            return null;
         }
+
+        return null;
     }
 
-    public static String serializeRecordForStorage(DriverSchema object) {
+    public static String serializeRecordForStorage(Object object) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
         Gson gson = builder.create();
         try {
-            return gson.toJson(object, DriverSchema.class);
+            Class driverSchemaClass = DriverApp.getSchemaClass();
+            if (driverSchemaClass != null) {
+                return gson.toJson(object, driverSchemaClass);
+            } else {
+                Log.e(LOG_LABEL, "No driver schema class to serialize!");
+                return null;
+            }
         } catch (JsonParseException ex) {
             Log.e(LOG_LABEL, "Failed to serialize record to JSON string");
             ex.printStackTrace();

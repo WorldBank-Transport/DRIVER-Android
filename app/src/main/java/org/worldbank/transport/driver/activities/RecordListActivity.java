@@ -23,6 +23,7 @@ import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.tasks.CheckSchemaTask;
 import org.worldbank.transport.driver.tasks.PostRecordsTask;
+import org.worldbank.transport.driver.tasks.UpdateSchemaTask;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -35,7 +36,7 @@ import java.util.TimeZone;
 
 
 public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
-        PostRecordsTask.PostRecordsListener {
+        PostRecordsTask.PostRecordsListener, UpdateSchemaTask.UpdateSchemaCallbackListener {
 
     private static final String LOG_LABEL = "RecordListActivity";
 
@@ -46,6 +47,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     DriverApp app;
     CheckSchemaTask checkSchemaTask;
     PostRecordsTask postRecordsTask;
+    UpdateSchemaTask updateSchemaTask;
     ProgressBar progressBar;
 
     @Override
@@ -193,20 +195,6 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         postRecordsTask.execute();
     }
 
-    private void startSchemaUpdateCheck() {
-        if (checkSchemaTask != null) {
-            Log.d(LOG_LABEL, "Already checking schema");
-            return;
-        }
-
-        Log.d(LOG_LABEL, "Going to check schema");
-        checkSchemaTask = new CheckSchemaTask(this);
-        checkSchemaTask.execute(app.getUserInfo());
-        // set up progress bar
-        progressBar.setIndeterminate(true);
-        progressBar.setVisibility(View.VISIBLE);
-    }
-
     /**
      * Helper to launch record editor. Currently editing record should be set first
      * (or cleared, if adding a new record).
@@ -224,21 +212,41 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         startActivity(intent);
     }
 
+    private void startSchemaUpdateCheck() {
+        if (checkSchemaTask != null) {
+            Log.d(LOG_LABEL, "Already checking schema");
+            return;
+        }
+
+        Log.d(LOG_LABEL, "Going to check schema");
+        checkSchemaTask = new CheckSchemaTask(this);
+        checkSchemaTask.execute(app.getUserInfo());
+        // set up progress bar
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public void foundSchema(String currentSchema) {
         Log.d(LOG_LABEL, "Found schema " + currentSchema);
         checkSchemaTask = null;
 
         if (!DriverApp.getCurrentSchema().equals(currentSchema)) {
-            // TODO: update schema and restart app if a new one is available
-            Log.w(LOG_LABEL, "There is a new schema available! Go get it.");
+            // update schema if a new one is available
+            if (updateSchemaTask != null) {
+                Log.w(LOG_LABEL, "Schema update task already running! Doing nothing.");
+            } else {
+                Log.d(LOG_LABEL, "Starting schema update task");
+                updateSchemaTask = new UpdateSchemaTask(this, app.getUserInfo());
+                updateSchemaTask.execute(currentSchema);
+            }
+
         } else {
             Log.d(LOG_LABEL, "This schema version is the latest!");
             Toast toast = Toast.makeText(this, getString(R.string.schema_current), Toast.LENGTH_SHORT);
             toast.show();
+            progressBar.setVisibility(View.GONE);
         }
-
-        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -257,6 +265,31 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         checkSchemaTask = null;
     }
 
+    @Override
+    public void schemaUpdated() {
+        Log.d(LOG_LABEL, "Schema updated!");
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+        Toast toast = Toast.makeText(this, getString(R.string.schema_updated), Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    @Override
+    public void schemaUpdateCancelled() {
+        Log.w(LOG_LABEL, "Schema update cancelled");
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void schemaUpdateError(String errorMessage) {
+        Log.e(LOG_LABEL, "Schema update error: " + errorMessage);
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
+        toast.show();
+        updateSchemaTask = null;
+        progressBar.setVisibility(View.GONE);
+    }
+
     /**
      * This callback method is shared by the schema check task and record post task.
      */
@@ -269,6 +302,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         startActivity(intent);
         checkSchemaTask = null;
         postRecordsTask = null;
+        updateSchemaTask = null;
         progressBar.setVisibility(View.GONE);
         finish();
     }
@@ -284,14 +318,13 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         } else {
             Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_checking_schema), Toast.LENGTH_SHORT);
             toast.show();
+            // start schema update check
+            startSchemaUpdateCheck();
         }
 
         // clear now-outdated list view of the uploaded records
         adapter.changeCursor(app.getAllRecords());
         adapter.notifyDataSetChanged();
-
-        // start schema update check
-        startSchemaUpdateCheck();
     }
 
     @Override

@@ -15,7 +15,6 @@ import android.view.View;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.adapters.FormItemListAdapter;
-import org.worldbank.transport.driver.models.DriverSchema;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
@@ -31,7 +30,7 @@ public class RecordItemListActivity extends AppCompatActivity {
     private FormItemListAdapter recyclerViewAdapter;
 
     private DriverApp app;
-    protected DriverSchema currentlyEditing;
+    protected Object currentlyEditing;
     protected int sectionId;
     String sectionLabel;
     Class sectionClass;
