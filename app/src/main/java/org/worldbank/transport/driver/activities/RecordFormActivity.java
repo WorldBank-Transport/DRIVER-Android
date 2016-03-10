@@ -471,6 +471,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        if (!this.isFormReady()) {
+            return true; // cannot run validation until form finishes loading
+        }
+
         switch (id) {
             // up/home button
             case android.R.id.home:

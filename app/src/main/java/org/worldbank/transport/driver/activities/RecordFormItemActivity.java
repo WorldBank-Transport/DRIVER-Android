@@ -115,6 +115,9 @@ public class RecordFormItemActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Save button clicked");
+                if (!thisActivity.isFormReady()) {
+                    return; // cannot run validation until form finishes loading
+                }
                 goPrevious = false;
                 goExit = false;
                 new ValidationTask(thisActivity).execute();
