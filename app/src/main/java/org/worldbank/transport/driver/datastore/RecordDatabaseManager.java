@@ -260,11 +260,15 @@ public class RecordDatabaseManager {
         return recordData;
     }
 
-    public Record getRecordById(long recordId) {
-
+    /**
+     * Get a cursor that queries for a single database record
+     * @param recordId ID for the record
+     * @return Database cursor that should have one record in it
+     */
+    public Cursor getRecordByIdCursor(long recordId) {
         String[] whereArgs = { String.valueOf(recordId) };
 
-        Cursor cursor = readableDb.query(
+        return readableDb.query(
                 DriverRecordContract.RecordEntry.TABLE_NAME,
                 ALL_FIELDS, // columns
                 WHERE_ID,   // WHERE
@@ -273,6 +277,16 @@ public class RecordDatabaseManager {
                 null,       // HAVING
                 null        // ORDER BY
         );
+    }
+
+    /**
+     * Retrieve a single record by ID from the database
+     * @param recordId ID for the record
+     * @return deserialized record, with constants
+     */
+    public Record getRecordById(long recordId) {
+
+        Cursor cursor = getRecordByIdCursor(recordId);
 
         if (!cursor.moveToFirst()) {
             Log.e(LOG_LABEL, "Record with ID " + recordId + " not found!");

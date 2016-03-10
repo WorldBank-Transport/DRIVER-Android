@@ -27,6 +27,7 @@
     <!-- schema check -->
     <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
     <string name="schema_current">Current schema is up-to-date.</string>
+    <string name="schema_not_updated_have_records">Not updating schema. New schema is available, but cannot be used until all records are uploaded or deleted.</string>
 
     <!-- schema update -->
     <string name="error_schema_update">Error encountered updating schema. Please try again at another time.</string>
@@ -48,6 +49,10 @@
 
     <!-- record item list -->
     <string name="record_form_list_item_image_description">Picture of record form item</string>
+
+    <!-- record form list -->
+    <string name="record_select_title">Upload single record</string>
+    <string name="record_select_message">Are you sure you want to upload this record now?</string>
 
     <!-- record status messages -->
     <string name="record_save_success">Record saved</string>

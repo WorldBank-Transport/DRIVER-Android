@@ -33,9 +33,12 @@ import java.net.URL;
 /**
  * Upload records to server, then delete them from the local database.
  *
+ * To upload a single record, send its ID into doInBackground. If no record ID is sent,
+ * task will attempt to upload all records.
+ *
  * Created by kathrynkillebrew on 1/28/16.
  */
-public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
+public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
 
     public static final String LOG_LABEL = "PostRecordsTask";
 
@@ -77,9 +80,17 @@ public class PostRecordsTask extends AsyncTask<Integer, Integer, Integer> {
     }
 
     @Override
-    protected Integer doInBackground(Integer... params) {
+    protected Integer doInBackground(Long... params) {
 
-        Cursor cursor = databaseManager.readAllRecords();
+        Cursor cursor;
+        if (params.length == 0) {
+            Log.d(LOG_LABEL, "Going to upload all records");
+            cursor = databaseManager.readAllRecords();
+        } else {
+            Log.d(LOG_LABEL, "Going to upload single record with ID " + params[0]);
+            cursor = databaseManager.getRecordByIdCursor(params[0]);
+        }
+
         int failed = cursor.getCount(); // decrement failure count as records are uploaded successfully
 
         if (!DriverApp.getIsNetworkAvailable()) {
