@@ -119,6 +119,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         RecordFormSectionManager.saveAndExit(app, this);
     }
 
+    protected void deleteAndExit() {
+        RecordFormSectionManager.deleteAndExit(this);
+    }
+
     /**
      * This method gets called by the form building background task after it finishes.
      */
@@ -499,6 +503,13 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 goPrevious = false;
                 goExit = true;
                 new ValidationTask(this).execute();
+                return true;
+
+            case R.id.action_delete_record:
+                Log.d(LOG_LABEL, "Record delete button clicked");
+                goPrevious = false;
+                goExit = true;
+                deleteAndExit();
                 return true;
         }
 

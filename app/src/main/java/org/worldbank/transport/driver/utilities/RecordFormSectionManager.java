@@ -399,6 +399,42 @@ public class RecordFormSectionManager {
         }
     }
 
+    public static void deleteAndExit(AppCompatActivity activity) {
+        Log.d(LOG_LABEL, "Going to prompt to confirm record deletion");
+        WarnRecordDeletionDialog dialog = new WarnRecordDeletionDialog();
+        dialog.show(activity.getSupportFragmentManager(), "recorddeletion");
+    }
+
+    private static void deleteAndExitWithoutWarnings(DriverApp app, AppCompatActivity activity) {
+        app.deleteRecordAndClearCurrentlyEditing();
+        Toast toast = Toast.makeText(activity, activity.getString(R.string.record_delete_success), Toast.LENGTH_SHORT);
+        toast.show();
+        NavUtils.navigateUpFromSameTask(activity);
+    }
+
+    public static class WarnRecordDeletionDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.record_deletion_dialog_title)
+                    .setMessage(R.string.record_deletion_dialog_message)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            AppCompatActivity activity = (AppCompatActivity)getActivity();
+                            DriverApp app = (DriverApp)activity.getApplication();
+                            deleteAndExitWithoutWarnings(app, activity);
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                           Log.d(LOG_LABEL, "Not deleting record (user cancelled action)");
+                        }
+                    });
+            return builder.create();
+        }
+    }
+
     public static class WarnLocationNotSetDialog extends DialogFragment {
         @NonNull
         @Override

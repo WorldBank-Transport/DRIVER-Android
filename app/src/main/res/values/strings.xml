@@ -40,12 +40,19 @@
     <string name="records_uploaded_some_failed">%1$d records failed to upload.</string>
     <string name="records_nothing_to_upload">No records found to upload.</string>
 
+    <!-- record delete -->
+    <string name="record_delete_success">Record deleted.</string>
+    <string name="record_delete_failure">Failed to delete record!</string>
+    <string name="record_deletion_dialog_title">Delete record?</string>
+    <string name="record_deletion_dialog_message">Are you sure you want to delete this record?</string>
+
     <!-- record form -->
     <string name="record_save_button">Save</string>
     <string name="record_next_button">Next</string>
     <string name="record_previous_button">Back</string>
     <string name="record_delete_button">Delete</string>
     <string name="record_save_and_exit">Save &amp; Exit</string>
+    <string name="record_delete">Delete Record</string>
 
     <!-- record item list -->
     <string name="record_form_list_item_image_description">Picture of record form item</string>
