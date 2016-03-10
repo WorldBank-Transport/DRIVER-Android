@@ -88,9 +88,6 @@ public class RecordFormItemActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Delete button clicked");
-
-                // TODO: confirmation prompt
-
                 if (RecordFormSectionManager.deleteListItem(sectionField, sectionClass, currentlyEditing, itemIndex)) {
                     Toast toast = Toast.makeText(thisActivity, getString(R.string.record_item_delete_success), Toast.LENGTH_SHORT);
                     toast.show();
