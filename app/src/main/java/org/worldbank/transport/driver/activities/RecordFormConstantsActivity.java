@@ -78,6 +78,9 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
             @Override
             public void onClick(View view) {
                 // launch DriverSchema first form here
+                if (!thisActivity.isFormReady()) {
+                    return; // cannot run validation until form finishes loading
+                }
                 goPrevious = false;
                 goExit = false;
                 new ValidationTask(thisActivity).execute();
@@ -291,6 +294,9 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
      */
     @Override
     public void onBackPressed() {
+        if (!this.isFormReady()) {
+            return; // cannot run validation until form finishes loading
+        }
         goPrevious = true;
         goExit = false;
         new ValidationTask(this).execute();

@@ -61,6 +61,9 @@ public class RecordFormSectionActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Back button clicked");
+                if (!thisActivity.isFormReady()) {
+                    return; // cannot run validation until form finishes loading
+                }
                 // set this to let callback know next action to take
                 goPrevious = true;
                 goExit = false;
@@ -94,6 +97,10 @@ public class RecordFormSectionActivity extends RecordFormActivity {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_LABEL, "Next/save button clicked");
+                if (!thisActivity.isFormReady()) {
+                    return; // cannot run validation until form finishes loading
+                }
+
                 goPrevious = false;
                 goExit = false;
                 new ValidationTask(thisActivity).execute();
@@ -108,6 +115,9 @@ public class RecordFormSectionActivity extends RecordFormActivity {
      */
     @Override
     public void onBackPressed() {
+        if (!this.isFormReady()) {
+            return; // cannot run validation until form finishes loading
+        }
         goPrevious = true;
         goExit = false;
         new ValidationTask(this).execute();
