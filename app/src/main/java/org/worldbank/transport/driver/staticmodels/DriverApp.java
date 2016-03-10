@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jsonschema2pojo.annotations.FieldType;
+import org.jsonschema2pojo.annotations.FieldTypes;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
@@ -20,11 +22,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import it.necst.grabnrun.SecureDexClassLoader;
 import it.necst.grabnrun.SecureLoaderFactory;
@@ -393,6 +398,7 @@ public class DriverApp extends Application {
      */
     private void recursiveClassLoad(Class clazz) {
         try {
+            enumClassLoad(clazz);
             Class[] hasClasses = clazz.getDeclaredClasses();
             if (hasClasses != null && hasClasses.length > 0) {
                 for (Class child : hasClasses) {
@@ -405,6 +411,35 @@ public class DriverApp extends Application {
         } catch (ClassNotFoundException e) {
             Log.e(LOG_LABEL, "Could not find class to dynamically load");
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Find and load enums that are in separate classes (not inner classes)
+     * @param clazz Section class to introspect for enum class references
+     */
+    private void enumClassLoad(Class clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            Class fieldType = field.getType();
+            if (fieldType.equals(Set.class) || fieldType.equals(List.class)) {
+                Annotation[] annotations = field.getDeclaredAnnotations();
+                for (Annotation annotation : annotations) {
+                    if (annotation.annotationType().equals(FieldType.class)) {
+                        FieldTypes type = ((FieldType) annotation).value();
+                        if (type.equals(FieldTypes.selectlist)) {
+                            String enumClassName = RecordFormSectionManager.MODEL_PACKAGE + field.getName() + "Enum";
+                            Log.d(LOG_LABEL, "Going to dynamically load class: " + enumClassName);
+                            try {
+                                schemaClassLoader.loadClass(enumClassName);
+                            } catch (ClassNotFoundException e) {
+                                Log.e(LOG_LABEL, "Could not find enum class to dynamically load for " + field.getName());
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

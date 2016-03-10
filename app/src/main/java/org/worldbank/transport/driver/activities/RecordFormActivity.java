@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormWithAppCompatActivity;
+import com.azavea.androidvalidatedforms.controllers.CheckBoxController;
 import com.azavea.androidvalidatedforms.controllers.DatePickerController;
 import com.azavea.androidvalidatedforms.controllers.EditTextController;
 import com.azavea.androidvalidatedforms.controllers.FormSectionController;
@@ -44,6 +45,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Base class for creating dynamic forms for DriverSchema sections.
@@ -258,8 +261,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     case image:
                         Log.d(LOG_LABEL, "found image field");
                         String appName = getApplicationInfo().loadLabel(getPackageManager()).toString();
-                        Log.d(LOG_LABEL, "App name is: " + appName);
-                        /////////////////////
 
                         if (!field.getType().equals(SerializableMedia.class)) {
                             Log.e(LOG_LABEL, "image field has wrong type: " + field.getType());
@@ -270,20 +271,35 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         break;
                     case selectlist:
                         // find enum with the options in it
-                        String enumFieldName = field.getType().getSimpleName();
-                        Class enumClass = enums.get(enumFieldName);
+                        Class fieldClass = field.getType();
+                        Class enumClass = enums.get(fieldClass.getSimpleName());
 
+                        // for checkbox-formatted fields, enum is in a separate class (not inner)
                         if (enumClass == null) {
-                            Log.e(LOG_LABEL, "No enum class found for field named " + fieldName);
-                            continue;
+                            if (fieldClass.equals(Set.class) || fieldClass.equals(List.class)) {
+                                String enumName = RecordFormSectionManager.MODEL_PACKAGE + fieldName + "Enum";
+                                try {
+                                    enumClass = DriverApp.getSchemaClassLoader().loadClass(enumName);
+                                    SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
+                                    control = new CheckBoxController(this, fieldName, fieldLabel, isRequired,
+                                            enumListInfo.labels, enumListInfo.items);
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                    Log.e(LOG_LABEL, "selectlist enumeration class " + enumName + " not found for " + fieldClass);
+                                    continue;
+                                }
+                            } else {
+                                Log.e(LOG_LABEL, "selectlist enumeration not found for " + fieldClass);
+                                continue;
+                            }
+                        } else {
+                            SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
+                            // TODO: fix or remove prompt arg in form builder library
+                            // no matter what gets passed for the prompt argument, it seems to always display "Select"
+                            control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                                    enumListInfo.labels, enumListInfo.items);
                         }
 
-                        SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
-
-                        // TODO: fix or remove prompt arg in form builder library
-                        // no matter what gets passed for the prompt argument, it seems to always display "Select"
-                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
-                                enumListInfo.labels, enumListInfo.items);
                         break;
                     case text:
                         control = new EditTextController(this, fieldName, fieldLabel);
