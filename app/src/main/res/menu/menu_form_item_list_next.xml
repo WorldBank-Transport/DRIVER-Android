@@ -13,4 +13,9 @@ tools:context=".activities.RecordItemListActivity">
         android:orderInCategory="300"
         android:title="@string/record_save_and_exit"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_delete_record"
+        android:orderInCategory="400"
+        android:title="@string/record_delete"
+        app:showAsAction="never" />
 </menu>

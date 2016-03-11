@@ -27,6 +27,7 @@
     <!-- schema check -->
     <string name="error_schema_check">Server error checking schema version. Please try again at another time.</string>
     <string name="schema_current">Current schema is up-to-date.</string>
+    <string name="schema_not_updated_have_records">Not updating schema. New schema is available, but cannot be used until all records are uploaded or deleted.</string>
 
     <!-- schema update -->
     <string name="error_schema_update">Error encountered updating schema. Please try again at another time.</string>
@@ -39,15 +40,26 @@
     <string name="records_uploaded_some_failed">%1$d records failed to upload.</string>
     <string name="records_nothing_to_upload">No records found to upload.</string>
 
+    <!-- record delete -->
+    <string name="record_delete_success">Record deleted.</string>
+    <string name="record_delete_failure">Failed to delete record!</string>
+    <string name="record_deletion_dialog_title">Delete record?</string>
+    <string name="record_deletion_dialog_message">Are you sure you want to delete this record?</string>
+
     <!-- record form -->
     <string name="record_save_button">Save</string>
     <string name="record_next_button">Next</string>
     <string name="record_previous_button">Back</string>
     <string name="record_delete_button">Delete</string>
     <string name="record_save_and_exit">Save &amp; Exit</string>
+    <string name="record_delete">Delete Record</string>
 
     <!-- record item list -->
     <string name="record_form_list_item_image_description">Picture of record form item</string>
+
+    <!-- record form list -->
+    <string name="record_select_title">Upload single record</string>
+    <string name="record_select_message">Are you sure you want to upload this record now?</string>
 
     <!-- record status messages -->
     <string name="record_save_success">Record saved</string>

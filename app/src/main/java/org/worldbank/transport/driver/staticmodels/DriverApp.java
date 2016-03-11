@@ -185,9 +185,12 @@ public class DriverApp extends Application {
     /**
      * Check if currently editing record is missing a location reading.
      *
-     * @return false if a location is set and it's not on Null Island
+     * @return false if a location is set and it's not on Null Island (or if there is no current record)
      */
     public boolean isLocationMissing() {
+        if (record == null) {
+            return false;
+        }
         DriverConstantFields constantFields = record.getEditConstants();
         if (constantFields != null) {
             if (constantFields.location != null) {
@@ -210,6 +213,20 @@ public class DriverApp extends Application {
         boolean wasSaved = saveRecord();
         clearCurrentlyEditingRecord();
         return wasSaved;
+    }
+
+    /**
+     * Delete currently editing record. The database manager may not have anything to delete, if
+     * current record has not been saved yet. In that case it will simply clear current record
+     * from memory and exit to record list.
+     */
+    public void deleteRecordAndClearCurrentlyEditing() {
+        if (record == null) {
+            Log.w(LOG_LABEL, "No record to delete");
+            return;
+        }
+        databaseManager.deleteRecord(record.getRecordId());
+        clearCurrentlyEditingRecord();
     }
 
     /**

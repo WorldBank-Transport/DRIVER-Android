@@ -1,9 +1,14 @@
 package org.worldbank.transport.driver.activities;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -130,6 +135,19 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                 loadRecordForm();
             }
         });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(LOG_LABEL, "Long-pressed record with ID: " + id);
+                RecordLongPressDialog dialog = new RecordLongPressDialog();
+                Bundle dialogBundle = new Bundle();
+                dialogBundle.putLong("recordId", id);
+                dialog.setArguments(dialogBundle);
+                dialog.show(getSupportFragmentManager(), "RecordLongPressDialog");
+                return true;
+            }
+        });
     }
 
     @Override
@@ -236,9 +254,17 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             if (updateSchemaTask != null) {
                 Log.w(LOG_LABEL, "Schema update task already running! Doing nothing.");
             } else {
-                Log.d(LOG_LABEL, "Starting schema update task");
-                updateSchemaTask = new UpdateSchemaTask(this, app.getUserInfo());
-                updateSchemaTask.execute(currentSchema);
+                // be sure there are no records around before updating
+                if (adapter.getCount() == 0) {
+                    Log.d(LOG_LABEL, "Starting schema update task");
+                    updateSchemaTask = new UpdateSchemaTask(this, app.getUserInfo());
+                    updateSchemaTask.execute(currentSchema);
+                } else {
+                    Log.w(LOG_LABEL, "Have records that have not uploaded yet; not updating schema now");
+                    Toast toast = Toast.makeText(this, getString(R.string.schema_not_updated_have_records), Toast.LENGTH_LONG);
+                    toast.show();
+                    progressBar.setVisibility(View.GONE);
+                }
             }
 
         } else {
@@ -282,12 +308,18 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     }
 
     @Override
-    public void schemaUpdateError(String errorMessage) {
+    public void schemaUpdateError(final String errorMessage) {
         Log.e(LOG_LABEL, "Schema update error: " + errorMessage);
-        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
-        toast.show();
-        updateSchemaTask = null;
-        progressBar.setVisibility(View.GONE);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(RecordListActivity.this, errorMessage, Toast.LENGTH_LONG);
+                toast.show();
+                updateSchemaTask = null;
+                progressBar.setVisibility(View.GONE);
+            }
+        });
     }
 
     /**
@@ -310,6 +342,8 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     @Override
     public void recordUploadFinished(int failed) {
         postRecordsTask = null;
+        progressBar.setVisibility(View.GONE);
+        progressBar.setIndeterminate(true);
 
         if (failed > 0) {
             Log.e(LOG_LABEL, failed + " records failed to upload");
@@ -347,5 +381,44 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                 progressBar.incrementProgressBy(1);
             }
         });
+    }
+
+    public void startSingleRecordUploadTask(long recordId) {
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+
+        if (postRecordsTask != null) {
+            Log.w(LOG_LABEL, "Already uploading records; not going to start single record upload");
+            return;
+        }
+        postRecordsTask = new PostRecordsTask(this, app.getUserInfo());
+        postRecordsTask.execute(recordId);
+    }
+
+    public static class RecordLongPressDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle bundle = getArguments();
+            final long recordId = bundle.getLong("recordId");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.record_select_title)
+                    .setMessage(R.string.record_select_message)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d(LOG_LABEL, "User selected to upload a single record");
+                            RecordListActivity activity = (RecordListActivity) getActivity();
+                            activity.startSingleRecordUploadTask(recordId);
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d(LOG_LABEL, "User cancelled single record upload");
+                        }
+                    });
+            return builder.create();
+        }
     }
 }

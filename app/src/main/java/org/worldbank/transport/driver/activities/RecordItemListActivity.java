@@ -182,6 +182,11 @@ public class RecordItemListActivity extends AppCompatActivity {
                 Log.d(LOG_LABEL, "Save and exit button clicked");
                 RecordFormSectionManager.saveAndExit(app, this);
                 return true;
+
+            case R.id.action_delete_record:
+                Log.d(LOG_LABEL, "Delete record button clicked");
+                RecordFormSectionManager.deleteAndExit(this);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
