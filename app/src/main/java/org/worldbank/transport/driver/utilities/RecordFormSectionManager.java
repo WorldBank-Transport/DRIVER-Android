@@ -109,7 +109,6 @@ public class RecordFormSectionManager {
             // class names are capitalized; field names of that type may not be
             sectionName = StringUtils.capitalize(sectionName);
             return DriverApp.getSchemaClassLoader().loadClass(MODEL_PACKAGE + sectionName);
-            //return Class.forName(MODEL_PACKAGE + sectionName);
         } catch (ClassNotFoundException e) {
             Log.e(LOG_LABEL, "Could not find class named " + sectionName);
             e.printStackTrace();
