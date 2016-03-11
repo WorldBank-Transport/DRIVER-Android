@@ -88,6 +88,9 @@ android {
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
+    flatDir{
+        dirs 'libs'
+    }
 }
 
 dependencies {
@@ -96,6 +99,9 @@ dependencies {
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
     compile 'com.google.code.gson:gson:2.4'
+
+    compile(name:'jsonschema2pojo-core-0.4.20-SNAPSHOT', ext:'jar')
+    compile(name:'androidvalidatedforms-debug', ext: 'aar')
     /*
     compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.19-images') {
         // only want core
