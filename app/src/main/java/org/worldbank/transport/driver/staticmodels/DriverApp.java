@@ -54,8 +54,8 @@ public class DriverApp extends Application {
     private static final String SCHEMA_CERT_URL = "https://worldbank-transport.github.io/DRIVER-Android/driver_android_certificate.pem";
 
     public static final String BACKUP_JAR_NAME = "models.jar";
-    public static final String BACKUP_JAR_SCHEMA_VERSION = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
+    public String backupJarSchemaVersion; // set in configurables.xml
 
     /**
      * Current user.
@@ -119,6 +119,7 @@ public class DriverApp extends Application {
         }
 
         mContext = this;
+        backupJarSchemaVersion = getString(R.string.backup_schema_uuid);
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         record = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
@@ -310,7 +311,7 @@ public class DriverApp extends Application {
      * Helper to revert to the backup model classes, if updates not found or could not be loaded.
      */
     public void loadBackupSchema() {
-        if (loadSchemaClasses(BACKUP_JAR_NAME, BACKUP_JAR_SCHEMA_VERSION)) {
+        if (loadSchemaClasses(BACKUP_JAR_NAME, backupJarSchemaVersion)) {
             Log.d(LOG_LABEL, "Reverted to backup schema");
         } else {
             Log.e(LOG_LABEL, "Could not load backup schema!");
