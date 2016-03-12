@@ -55,7 +55,7 @@ public class DriverApp extends Application {
 
     public static final String BACKUP_JAR_NAME = "models.jar";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
-    private String backupJarSchemaVersion; // set in configurables.xml
+    public static final String BACKUP_JAR_SCHEMA_VERSION = "b25a9119-13ba-4494-9bfd-be62168eca1e";
 
     /**
      * Current user.
@@ -119,7 +119,6 @@ public class DriverApp extends Application {
         }
 
         mContext = this;
-        backupJarSchemaVersion = getString(R.string.backup_schema_uuid);
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         record = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
@@ -155,10 +154,6 @@ public class DriverApp extends Application {
             editor.clear(); // clears last saved user, if there is one
             editor.apply();
         }
-    }
-
-    public String getBackupJarSchemaVersion() {
-        return backupJarSchemaVersion;
     }
 
     public DriverUserInfo getUserInfo() {
@@ -315,7 +310,8 @@ public class DriverApp extends Application {
      * Helper to revert to the backup model classes, if updates not found or could not be loaded.
      */
     public void loadBackupSchema() {
-        if (loadSchemaClasses(BACKUP_JAR_NAME, backupJarSchemaVersion)) {
+        Log.d(LOG_LABEL, "Loading backup jar with schema version " + BACKUP_JAR_SCHEMA_VERSION);
+        if (loadSchemaClasses(BACKUP_JAR_NAME, BACKUP_JAR_SCHEMA_VERSION)) {
             Log.d(LOG_LABEL, "Reverted to backup schema");
         } else {
             Log.e(LOG_LABEL, "Could not load backup schema!");

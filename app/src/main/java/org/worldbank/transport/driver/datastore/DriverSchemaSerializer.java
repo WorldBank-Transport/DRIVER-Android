@@ -22,6 +22,7 @@ public class DriverSchemaSerializer {
     public static Object readRecord(String jsonData) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
+
         Gson gson = builder.create();
         try {
             Class driverClass = DriverApp.getSchemaClass();

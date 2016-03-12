@@ -184,7 +184,7 @@ public class UpdateSchemaTask extends AsyncTask<String, String, String> {
 
                     // load backup model jar file
                     driverApp.loadBackupSchema();
-                    return ((DriverApp) DriverApp.getContext()).getBackupJarSchemaVersion();
+                    return DriverApp.BACKUP_JAR_SCHEMA_VERSION;
                 }
 
             } else {
