@@ -55,7 +55,7 @@ public class DriverApp extends Application {
 
     public static final String BACKUP_JAR_NAME = "models.jar";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
-    public String backupJarSchemaVersion; // set in configurables.xml
+    private String backupJarSchemaVersion; // set in configurables.xml
 
     /**
      * Current user.
@@ -155,6 +155,10 @@ public class DriverApp extends Application {
             editor.clear(); // clears last saved user, if there is one
             editor.apply();
         }
+    }
+
+    public String getBackupJarSchemaVersion() {
+        return backupJarSchemaVersion;
     }
 
     public DriverUserInfo getUserInfo() {

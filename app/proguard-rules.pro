@@ -218,4 +218,12 @@
 
 -dontwarn javax.xml.namespace.QName
 
+# deal with pulling jsonschema2pojo from local jar file
+-dontwarn org.apache.tools.ant.**
+-dontwarn org.easymock.**
+-dontwarn org.jmock.**
+-dontwarn org.hamcrest.generator.qdox.ant.**
+-dontwarn edu.umd.cs.findbugs.annotations.**
+
+
 
