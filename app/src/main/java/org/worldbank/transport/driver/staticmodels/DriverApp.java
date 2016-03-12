@@ -55,7 +55,7 @@ public class DriverApp extends Application {
 
     public static final String BACKUP_JAR_NAME = "models.jar";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
-    public static final String BACKUP_JAR_SCHEMA_VERSION = "b25a9119-13ba-4494-9bfd-be62168eca1e";
+    public static final String BACKUP_JAR_SCHEMA_VERSION = "1485fc06-aff7-456f-b490-f54a4d03e33c";
 
     /**
      * Current user.
