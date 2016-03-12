@@ -335,7 +335,13 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         checkSchemaTask = null;
         postRecordsTask = null;
         updateSchemaTask = null;
-        progressBar.setVisibility(View.GONE);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
         finish();
     }
 
