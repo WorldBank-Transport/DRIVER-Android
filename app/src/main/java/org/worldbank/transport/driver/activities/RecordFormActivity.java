@@ -20,6 +20,7 @@ import com.azavea.androidvalidatedforms.controllers.FormSectionController;
 import com.azavea.androidvalidatedforms.controllers.LabeledFieldController;
 import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
+import org.apache.commons.lang.StringUtils;
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
@@ -281,7 +282,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         // for checkbox-formatted fields, enum is in a separate class (not inner)
                         if (enumClass == null) {
                             if (fieldClass.equals(Set.class) || fieldClass.equals(List.class)) {
-                                String enumName = RecordFormSectionManager.MODEL_PACKAGE + fieldName + "Enum";
+                                String enumName = RecordFormSectionManager.MODEL_PACKAGE +
+                                        StringUtils.capitalize(fieldName) + "Enum";
                                 try {
                                     enumClass = DriverApp.getSchemaClassLoader().loadClass(enumName);
                                     SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
