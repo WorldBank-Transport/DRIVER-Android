@@ -50,7 +50,7 @@ public class GsonSetDeserializer implements JsonDeserializer<Set> {
                 Object checkedEnum = fromValueMethod.invoke(loadedClass, array.get(i).getAsString());
                 set.add(checkedEnum);
             }
-            
+
             return set;
 
         } catch (ClassNotFoundException e) {

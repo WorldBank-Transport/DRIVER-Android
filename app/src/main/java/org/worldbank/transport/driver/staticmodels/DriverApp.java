@@ -54,7 +54,7 @@ public class DriverApp extends Application {
     private static final String SCHEMA_CERT_URL = "https://worldbank-transport.github.io/DRIVER-Android/driver_android_certificate.pem";
 
     public static final String BACKUP_JAR_NAME = "models.jar";
-    public static final String BACKUP_JAR_SCHEMA_VERSION = "cd3394a1-7b80-45fd-8007-f7b65dde0c3c";
+    public static final String BACKUP_JAR_SCHEMA_VERSION = "70c8eb79-c6c0-4aa3-859a-fdae45c9db65";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
 
     /**
