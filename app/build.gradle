@@ -83,6 +83,10 @@ android {
     lintOptions {
         abortOnError false
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
 }
 
 repositories {
@@ -117,7 +121,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.1.2'
+    compile 'com.github.azavea:AndroidValidatedForms:1.1.9'
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.2.0'
     compile 'com.android.support:recyclerview-v7:23.2.0'
@@ -128,7 +132,9 @@ dependencies {
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
     // example model files in library only used for test
+
     //androidTestCompile files('src/main/assets/models.jar')
+
     // test dependencies
     testCompile 'junit:junit:4.12'
     // mockito for unit tests

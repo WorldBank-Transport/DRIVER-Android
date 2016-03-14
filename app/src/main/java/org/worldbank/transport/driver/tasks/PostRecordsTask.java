@@ -13,6 +13,7 @@ import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.datastore.DriverSchemaSerializer;
+import org.worldbank.transport.driver.datastore.GsonSetDeserializer;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
@@ -29,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Set;
 
 /**
  * Upload records to server, then delete them from the local database.
@@ -198,6 +200,7 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
 
                     GsonBuilder builder = new GsonBuilder();
                     builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaByteArrayAdapter());
+                    builder.registerTypeAdapter(Set.class, new GsonSetDeserializer());
                     Gson gson = builder.create();
 
                     gson.toJson(driverSchemaUpload, DriverSchemaUpload.class, writer);

@@ -9,6 +9,8 @@ import com.google.gson.JsonParseException;
 import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
 
+import java.util.Set;
+
 
 /**
  * Handles reading and writing records to and from JSON strings.
@@ -22,6 +24,7 @@ public class DriverSchemaSerializer {
     public static Object readRecord(String jsonData) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SerializableMedia.class, new SerializableMedia.SerializableMediaPathStringAdapter());
+        builder.registerTypeAdapter(Set.class, new GsonSetDeserializer());
         Gson gson = builder.create();
         try {
             Class driverClass = DriverApp.getSchemaClass();

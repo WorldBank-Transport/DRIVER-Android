@@ -445,7 +445,8 @@ public class DriverApp extends Application {
                     if (annotation.annotationType().equals(FieldType.class)) {
                         FieldTypes type = ((FieldType) annotation).value();
                         if (type.equals(FieldTypes.selectlist)) {
-                            String enumClassName = RecordFormSectionManager.MODEL_PACKAGE + field.getName() + "Enum";
+                            String enumClassName = RecordFormSectionManager.MODEL_PACKAGE +
+                                    StringUtils.capitalize(field.getName()) + "Enum";
                             Log.d(LOG_LABEL, "Going to dynamically load class: " + enumClassName);
                             try {
                                 schemaClassLoader.loadClass(enumClassName);
