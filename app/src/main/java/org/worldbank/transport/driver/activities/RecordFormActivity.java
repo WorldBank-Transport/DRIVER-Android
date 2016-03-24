@@ -300,8 +300,11 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             }
                         } else {
                             SelectListInfo enumListInfo = buildSelectEnumInfo(enumClass);
-                            // TODO: fix or remove prompt arg in form builder library
-                            // no matter what gets passed for the prompt argument, it seems to always display "Select"
+                            if (!isRequired) {
+                                Log.d(LOG_LABEL, "Adding empty option to list for " + fieldClass);
+                                enumListInfo.labels.add(0, "");
+                                enumListInfo.items.add(0, "");
+                            }
                             control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
                                     enumListInfo.labels, enumListInfo.items);
                         }
@@ -326,7 +329,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 }
             } else {
                 if (constantFieldType == null) {
-                    // TODO: in this case, it's probably a subsection. Does that ever happen?
+                    // In this case, it's probably a subsection, which doesn't happen in our usage.
                     Log.e(LOG_LABEL, "No field type found for field " + fieldName);
                     continue;
                 } else {
