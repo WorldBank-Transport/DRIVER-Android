@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 
 /**
  * Constant fields that exist for every record, in addition to those specified in DriverSchema.
@@ -37,13 +38,13 @@ public class DriverConstantFields {
     // constant fields on Record model in DRF
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
 
+    @Past
     @SerializedName("Occurred")
     @ConstantFieldType(ConstantFieldTypes.date)
     @NotNull
     public Date occurredFrom;
 
     // occurredTo is set to match value of occurredFrom before upload
-
 
     // location form component is added outside of the form builder
     @SerializedName("Location")
