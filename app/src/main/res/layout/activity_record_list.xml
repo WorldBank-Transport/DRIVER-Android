@@ -12,10 +12,10 @@
     <!-- Loader -->
     <ProgressBar
         android:id="@+id/record_list_progress"
-        style="@android:style/Widget.ProgressBar.Horizontal"
+        style="?android:attr/progressBarStyleLarge"
         android:indeterminate="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 

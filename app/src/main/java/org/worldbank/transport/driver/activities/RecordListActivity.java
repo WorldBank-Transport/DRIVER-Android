@@ -54,6 +54,8 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     PostRecordsTask postRecordsTask;
     UpdateSchemaTask updateSchemaTask;
     ProgressBar progressBar;
+    FloatingActionButton fab;
+    ListView recordListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         app = appContext.getDriverApp();
 
         // add record button
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
+        fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -81,7 +83,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         });
 
         // set up list view
-        ListView listView = (ListView) findViewById(R.id.record_list_view);
+        recordListView = (ListView) findViewById(R.id.record_list_view);
         String[] useColumns = { DriverRecordContract.RecordEntry.COLUMN_ENTERED_AT };
         int[] toViews = { R.id.record_list_item_entered_at };
         adapter = new SimpleCursorAdapter(
@@ -124,9 +126,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                 return false;
             }
         });
-        listView.setAdapter(adapter);
+        recordListView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        recordListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // id here is database _ID
@@ -136,7 +138,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             }
         });
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        recordListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(LOG_LABEL, "Long-pressed record with ID: " + id);
@@ -195,22 +197,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             return;
         }
 
-        // set up progress bar
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // set indeterminate to false results in actual bar for progress within top of
-                // existing view, instead of fullscreen indeterminate spinner
-                progressBar.setIndeterminate(true);
-                progressBar.requestLayout();
-                progressBar.setMax(adapter.getCount());
-                progressBar.setProgress(0);
-
-                Log.d(LOG_LABEL, "progress bar max set to " + adapter.getCount());
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        });
-
+        showProgressBar(true);
         postRecordsTask = new PostRecordsTask(this, app.getUserInfo());
         postRecordsTask.execute();
     }
@@ -239,11 +226,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         }
 
         Log.d(LOG_LABEL, "Going to check schema");
+        showProgressBar(true);
         checkSchemaTask = new CheckSchemaTask(this);
         checkSchemaTask.execute(app.getUserInfo());
-        // set up progress bar
-        progressBar.setIndeterminate(true);
-        progressBar.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -263,17 +248,15 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                     updateSchemaTask.execute(currentSchema);
                 } else {
                     Log.w(LOG_LABEL, "Have records that have not uploaded yet; not updating schema now");
-                    Toast toast = Toast.makeText(this, getString(R.string.schema_not_updated_have_records), Toast.LENGTH_LONG);
-                    toast.show();
-                    progressBar.setVisibility(View.GONE);
+                    showToast(getString(R.string.schema_not_updated_have_records), true);
+                    showProgressBar(false);
                 }
             }
 
         } else {
             Log.d(LOG_LABEL, "This schema version is the latest!");
-            Toast toast = Toast.makeText(this, getString(R.string.schema_current), Toast.LENGTH_SHORT);
-            toast.show();
-            progressBar.setVisibility(View.GONE);
+            showToast(getString(R.string.schema_current), true);
+            showProgressBar(false);
         }
     }
 
@@ -281,47 +264,38 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     public void schemaCheckCancelled() {
         Log.d(LOG_LABEL, "Schema check cancelled");
         checkSchemaTask = null;
-        progressBar.setVisibility(View.GONE);
+        showProgressBar(false);
     }
 
     @Override
     public void schemaCheckError(String errorMessage) {
         Log.d(LOG_LABEL, "Got schema check error: " + errorMessage);
-        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
-        toast.show();
-        progressBar.setVisibility(View.GONE);
+        showToast(errorMessage, true);
         checkSchemaTask = null;
+        showProgressBar(false);
     }
 
     @Override
     public void schemaUpdated() {
         Log.d(LOG_LABEL, "Schema updated!");
         updateSchemaTask = null;
-        progressBar.setVisibility(View.GONE);
-        Toast toast = Toast.makeText(this, getString(R.string.schema_updated), Toast.LENGTH_LONG);
-        toast.show();
+        showToast(getString(R.string.schema_updated), true);
+        showProgressBar(false);
     }
 
     @Override
     public void schemaUpdateCancelled() {
         Log.w(LOG_LABEL, "Schema update cancelled");
         updateSchemaTask = null;
-        progressBar.setVisibility(View.GONE);
+        showProgressBar(false);
     }
 
     @Override
     public void schemaUpdateError(final String errorMessage) {
         Log.e(LOG_LABEL, "Schema update error: " + errorMessage);
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast toast = Toast.makeText(RecordListActivity.this, errorMessage, Toast.LENGTH_LONG);
-                toast.show();
-                updateSchemaTask = null;
-                progressBar.setVisibility(View.GONE);
-            }
-        });
+        showToast(errorMessage, true);
+        updateSchemaTask = null;
+        showProgressBar(false);
     }
 
     /**
@@ -337,13 +311,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         checkSchemaTask = null;
         postRecordsTask = null;
         updateSchemaTask = null;
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.GONE);
-            }
-        });
+        showProgressBar(false);
         finish();
     }
 
@@ -351,15 +319,14 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     public void recordUploadFinished(int failed) {
         postRecordsTask = null;
         progressBar.setVisibility(View.GONE);
-        progressBar.setIndeterminate(true);
+        recordListView.setVisibility(View.VISIBLE);
+        fab.setVisibility(View.VISIBLE);
 
         if (failed > 0) {
             Log.e(LOG_LABEL, failed + " records failed to upload");
-            Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_some_failed, failed), Toast.LENGTH_LONG);
-            toast.show();
+            showToast(getString(R.string.records_uploaded_some_failed, failed), true);
         } else {
-            Toast toast = Toast.makeText(this, getString(R.string.records_uploaded_checking_schema), Toast.LENGTH_SHORT);
-            toast.show();
+            showToast(getString(R.string.records_uploaded_checking_schema), false);
             // start schema update check
             startSchemaUpdateCheck();
         }
@@ -372,12 +339,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     @Override
     public void recordUploadCancelled(String errorMessage) {
         Log.e(LOG_LABEL, "Record upload failed with error: " + errorMessage);
-        progressBar.setVisibility(View.GONE);
-        progressBar.setIndeterminate(true);
+        showProgressBar(false);
         postRecordsTask = null;
-
-        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
-        toast.show();
+        showToast(errorMessage, true);
     }
 
     @Override
@@ -392,8 +356,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     }
 
     public void startSingleRecordUploadTask(long recordId) {
-        progressBar.setIndeterminate(true);
-        progressBar.setVisibility(View.VISIBLE);
+        showProgressBar(true);
 
         if (postRecordsTask != null) {
             Log.w(LOG_LABEL, "Already uploading records; not going to start single record upload");
@@ -428,5 +391,41 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                     });
             return builder.create();
         }
+    }
+
+    /**
+     * Show/hide the progress bar. When showing, hide record list and floating action button.
+     *
+     * @param show Show progress bar if true; hide it if false.
+     */
+    private void showProgressBar(final boolean show) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (show) {
+                    progressBar.setIndeterminate(true);
+                    progressBar.requestLayout();
+                    progressBar.setVisibility(View.VISIBLE);
+                    recordListView.setVisibility(View.INVISIBLE);
+                    fab.setVisibility(View.INVISIBLE);
+                } else {
+                    progressBar.setVisibility(View.GONE);
+                    recordListView.setVisibility(View.VISIBLE);
+                    fab.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
+    }
+
+    private void showToast(final CharSequence message, final boolean isLong) {
+        final int toastLength = isLong ? Toast.LENGTH_LONG: Toast.LENGTH_SHORT;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(RecordListActivity.this, message, toastLength);
+                toast.show();
+            }
+        });
     }
 }
