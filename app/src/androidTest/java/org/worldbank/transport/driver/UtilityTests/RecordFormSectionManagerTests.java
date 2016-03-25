@@ -2,7 +2,6 @@ package org.worldbank.transport.driver.UtilityTests;
 
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Log;
 
 import org.worldbank.transport.driver.activities.RecordFormSectionActivity;
 import org.worldbank.transport.driver.activities.RecordItemListActivity;
@@ -29,7 +28,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     Class vehicleClass;
 
     Field personField;
-    Field nameField;
+    Field firstNameField;
 
     @Override
     protected void setUp() throws Exception {
@@ -48,7 +47,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
 
         personField = driverSchema.getClass().getField("person");
-        nameField = personClass.getField("Name");
+        firstNameField = personClass.getField("FirstName");
     }
 
     @Override
@@ -195,14 +194,14 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             // test getting an object that already exists
             Object newPerson = personClass.newInstance();
 
-            nameField.set(newPerson, "Bob");
+            firstNameField.set(newPerson, "Bob");
             peopleList.add(newPerson);
 
             obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 1);
             assertNotNull(obj);
             assertEquals(obj.getClass(), personClass);
             assertEquals("Unexpected Person returned from list", obj, newPerson);
-            assertEquals("Unexpected name for Person returned from list", nameField.get(obj), "Bob");
+            assertEquals("Unexpected name for Person returned from list", firstNameField.get(obj), "Bob");
 
             // delete first person
             boolean didItWork = RecordFormSectionManager.deleteListItem(foundField, personClass, driverSchema, 0);
@@ -213,7 +212,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             // first person should now be Bob
             assertNotNull(obj);
             assertEquals(obj.getClass(), personClass);
-            assertEquals("Unexpected name for Person returned from list after deletion", nameField.get(obj), "Bob");
+            assertEquals("Unexpected name for Person returned from list after deletion", firstNameField.get(obj), "Bob");
 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -232,8 +231,8 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         try {
             Object personOne = personClass.newInstance();
             Object personTwo = personClass.newInstance();
-            nameField.set(personOne, "ThingOne");
-            nameField.set(personTwo, "ThingTwo");
+            firstNameField.set(personOne, "ThingOne");
+            firstNameField.set(personTwo, "ThingTwo");
 
             ArrayList personList = (ArrayList)personField.get(driverSchema);
             personList.add(personOne);
