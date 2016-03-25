@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import com.azavea.androidvalidatedforms.FormActivityBase;
 import com.azavea.androidvalidatedforms.FormController;
+import com.azavea.androidvalidatedforms.FormElementController;
+import com.azavea.androidvalidatedforms.controllers.DatePickerController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
@@ -157,6 +159,11 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
 
         Log.d(LOG_LABEL, "Initial setup of location views");
 
+        // disallow future dates in date picker calendar
+        DatePickerController datePicker = (DatePickerController) getFormController().getElement("occurredFrom");
+        datePicker.setMaxDateToNow();
+
+        // set up location fix status text
         if (LocationServiceManager.isRunning()) {
             int status = LocationServiceManager.getCurrentStatus();
             locationStatusView.setText(getString(status));
