@@ -250,7 +250,8 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
             vehicleField.set(editObj, vehicles);
 
             Object testPerson = classLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Person").newInstance();
-            testPerson.getClass().getField("Name").set(testPerson, "Evel Knievel");
+            testPerson.getClass().getField("FirstName").set(testPerson, "Evel");
+            testPerson.getClass().getField("LastName").set(testPerson, "Knievel");
 
             Field vehicleIdField = vehicleClass.getField("LocalId");
             testPerson.getClass().getField("vehicle").set(testPerson, vehicleIdField.get(testVehicleOne));
