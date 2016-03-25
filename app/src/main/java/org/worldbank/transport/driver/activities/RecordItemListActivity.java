@@ -28,6 +28,7 @@ public class RecordItemListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private FormItemListAdapter recyclerViewAdapter;
+    private View emptyListMessage;
 
     private DriverApp app;
     protected Object currentlyEditing;
@@ -49,9 +50,11 @@ public class RecordItemListActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_record_item_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        emptyListMessage = findViewById(R.id.empty_form_item_list_text);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_item_list_fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,6 +83,11 @@ public class RecordItemListActivity extends AppCompatActivity {
         Log.d(LOG_LABEL, "in onPostResume for RecordItemList");
         // set item list whenever activity created or comes back into view
         recyclerViewAdapter.buildLabelList(sectionItems, sectionClass);
+        if (recyclerViewAdapter.getItemCount() == 0) {
+            emptyListMessage.setVisibility(View.VISIBLE);
+        } else {
+            emptyListMessage.setVisibility(View.GONE);
+        }
     }
 
     private void buildItemList() {
@@ -99,7 +107,6 @@ public class RecordItemListActivity extends AppCompatActivity {
         Object section = RecordFormSectionManager.getOrCreateSectionObject(sectionField, sectionClass, currentlyEditing);
 
         // use singular title for form section label
-        // TODO: also use 'Description' annotation somewhere?
         sectionLabel = sectionClass.getSimpleName(); // default
         sectionLabel = RecordFormSectionManager.getPluralTitle(sectionField, sectionLabel);
 

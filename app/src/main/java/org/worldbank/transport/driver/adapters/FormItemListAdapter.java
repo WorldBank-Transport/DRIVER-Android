@@ -94,6 +94,10 @@ public class FormItemListAdapter extends RecyclerView.Adapter<FormItemListAdapte
 
     @Override
     public int getItemCount() {
+        if (listItemLabels == null || listItemLabels.labels == null) {
+            return 0;
+        }
+
         return listItemLabels.labels.size();
     }
 }

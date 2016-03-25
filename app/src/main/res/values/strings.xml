@@ -56,10 +56,12 @@
 
     <!-- record item list -->
     <string name="record_form_list_item_image_description">Picture of record form item</string>
+    <string name="record_form_list_item_empty_list">No items added yet. Tap round button to add an item.</string>
 
     <!-- record form list -->
     <string name="record_select_title">Upload single record</string>
     <string name="record_select_message">Are you sure you want to upload this record now?</string>
+    <string name="record_form_list_empty">No records on device. Tap round button to add a record.</string>
 
     <!-- record status messages -->
     <string name="record_save_success">Record saved</string>
