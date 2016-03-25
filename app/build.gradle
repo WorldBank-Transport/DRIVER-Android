@@ -62,6 +62,10 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'proguard-rules-test.pro'
+
+            if (!travisBuild) {
+                signingConfig signingConfigs.release
+            }
         }
         release {
             minifyEnabled true
@@ -129,6 +133,8 @@ dependencies {
     compile 'com.android.support:multidex:1.0.1'
     // for device location API access
     compile 'com.google.android.gms:play-services-location:8.4.0'
+    compile 'com.google.android.gms:play-services-auth:8.4.0'
+
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
     // example model files in library only used for test

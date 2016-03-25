@@ -9,7 +9,7 @@
     <string name="title_activity_login">Sign in</string>
     <string name="prompt_email">User name</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This user name is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
