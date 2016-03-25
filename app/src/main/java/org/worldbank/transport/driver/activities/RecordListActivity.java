@@ -199,7 +199,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                progressBar.setIndeterminate(false);
+                // set indeterminate to false results in actual bar for progress within top of
+                // existing view, instead of fullscreen indeterminate spinner
+                progressBar.setIndeterminate(true);
                 progressBar.requestLayout();
                 progressBar.setMax(adapter.getCount());
                 progressBar.setProgress(0);
