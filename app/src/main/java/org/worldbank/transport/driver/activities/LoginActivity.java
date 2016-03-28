@@ -4,7 +4,10 @@ import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,7 +49,6 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
     private static final String LOG_LABEL = "Login";
 
-    private static final int REQUEST_CODE_PICK_ACCOUNT = 1000;
     private static final int RC_SIGN_IN = 9001;
 
     /**
@@ -139,8 +141,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                //.requestIdToken(clientId)
-                .requestServerAuthCode(clientId, true)
+                .requestIdToken(clientId)
                 .build();
         googleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -165,11 +166,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
      */
     public boolean haveSavedUserInfo() {
         DriverUserInfo lastUser = app.getUserInfo();
-        if (lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
-            return true;
-        }
+        return lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty();
 
-        return false;
     }
 
     /**
@@ -230,12 +228,10 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.length() > 0;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 0;
     }
 
@@ -275,26 +271,12 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         }
     }
 
-    private void attemptSSO() {
-        Log.d(LOG_LABEL, "attempt sso login");
-        //pickUserAccount();
-        initiateSSO();
-    }
-
-    // another SSO auth guide here:
-    // https://developers.google.com/identity/sign-in/android/sign-in#start_the_sign-in_flow
-    private void initiateSSO() {
-        Intent signInItent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-        startActivityForResult(signInItent, RC_SIGN_IN);
-    }
-
     // SSO auth guide here:
-    // https://developers.google.com/android/guides/http-auth#invoke_the_account_picker
-    private void pickUserAccount() {
-        String[] accountTypes = new String[]{"com.google"};
-        Intent intent = AccountPicker.newChooseAccountIntent(null, null,
-                accountTypes, false, null, null, null, null);
-        startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+    // https://developers.google.com/identity/sign-in/android/sign-in#start_the_sign-in_flow
+    private void attemptSSO() {
+        showProgress(true);
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -302,20 +284,28 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         if (result.isSuccess()) {
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
+                Log.d(LOG_LABEL, "Got back account:");
                 Log.d(LOG_LABEL, "display name: " + acct.getDisplayName());
                 Log.d(LOG_LABEL, "email: " + acct.getEmail());
                 Log.d(LOG_LABEL, "ID: " + acct.getId());
-                Log.d(LOG_LABEL, "ID token: " + acct.getIdToken());
-                Log.d(LOG_LABEL, "Server auth code: " + acct.getServerAuthCode());
-                if (acct.getPhotoUrl() != null) {
-                    Log.d(LOG_LABEL, "Photo URL: " + acct.getPhotoUrl().getPath());
+
+                if (mAuthTask != null) {
+                    Log.w(LOG_LABEL, "Authentication task already in progress");
+                    return;
                 }
-                Log.d(LOG_LABEL, "Scopes: " + acct.getGrantedScopes().toString());
+
+                // get user info from API
+                mAuthTask = new LoginTask(acct.getIdToken(), this, mLoginUrlBuilder);
+                mAuthTask.execute();
             } else {
-                Log.e(LOG_LABEL, "SSO result acct is null?!");
+                Log.e(LOG_LABEL, "SSO result acct is null.");
+                loginError(getString(R.string.error_login_unknown));
+                loginCancelled();
             }
         } else {
-            Log.d(LOG_LABEL, "Oh noes, SSO failed! TODO: handle stuff");
+            Log.e(LOG_LABEL, "SSO failed.");
+            loginError(getString(R.string.error_login_unknown));
+            loginCancelled();
         }
     }
 
@@ -324,20 +314,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         Log.d(LOG_LABEL, "Got activity result!");
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE_PICK_ACCOUNT) {
-            // Receiving a result from the AccountPicker
-            if (resultCode == RESULT_OK) {
-                String email = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                Log.d(LOG_LABEL, "got back email: " + email);
-                // With the account name acquired, go get the auth token
-                // TODO: getUsername();
-            } else if (resultCode == RESULT_CANCELED) {
-                // The account picker dialog closed without selecting an account.
-                // Notify users that they must pick an account to proceed.
-                Log.w(LOG_LABEL, "Hey! You didn't pick anything.");
-                //TODO: Toast.makeText(this, R.string.pick_account, Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == RC_SIGN_IN) {
+        if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                 handleSignInResult(result);
@@ -352,9 +329,18 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
                 }
 
                 Log.e(LOG_LABEL, "SSO sign-in status code: " + Integer.toString(status.getStatusCode()));
-                Log.e(LOG_LABEL, "has resolution? " + status.hasResolution());
 
-                // TODO: if there is a resolution, launch its pending intent? how to handle?
+                // if there is a resolution available for the failed sign-in, try it
+                if (status.hasResolution()) {
+                    Log.d(LOG_LABEL, "Attempting to launch resolution for failed SSO sign-in");
+                    try {
+                        status.startResolutionForResult(this, RC_SIGN_IN);
+                    } catch (IntentSender.SendIntentException e) {
+                        e.printStackTrace();
+                        loginError(getString(R.string.error_login_unknown));
+                        loginCancelled();
+                    }
+                }
 
             }
         }
@@ -387,10 +373,15 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         mErrorMessage.setText(errorMessage);
     }
 
+    /**
+     * Might occur if there is a failure in the Google API client connection.
+     * @param connectionResult Possible codes here: https://developers.google.com/android/reference/com/google/android/gms/common/ConnectionResult
+     */
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        // TODO: handle
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(LOG_LABEL, "Google SSO API connection failed!");
         Log.e(LOG_LABEL, connectionResult.getErrorMessage());
+        loginError(getString(R.string.error_login_unknown));
+        loginCancelled();
     }
 }

@@ -55,26 +55,54 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
         // Backend endpoints. Note that it is necessary to keep the trailing slash here.
         // Publicly accessible for testing convenience.
         String TOKEN_ENDPOINT = "api-token-auth/";
+        String SSO_TOKEN_ENDPOINT = "api/sso-token-auth/";
         String USER_ENDPOINT = "api/users/";
 
-        URL userTokenUrl(String serverUrl);
+        URL userTokenUrl(String serverUrl, boolean isSso);
         URL userInfoUrl(String serverUrl, int userId);
     }
 
     private String serverUrl;
     private final Context context = DriverAppContext.getContext();
 
-    private final String mUsername;
-    private final String mPassword;
+    private String mUsername;
+    private String mPassword;
+    private String mSsoToken;
     private final WeakReference<LoginCallbackListener> mListener;
     private final LoginUrls mLoginUrls;
 
+    /**
+     * Create login task for username/password login.
+     *
+     * @param username Username for login, entered in login form.
+     * @param password Password for user, entered in login form.
+     * @param listener Listening activity that will receive callbacks.
+     * @param loginUrls Endpoints used to log in and get user info.
+     */
     public LoginTask(String username, String password, LoginCallbackListener listener, LoginUrls loginUrls) {
+        this(listener, loginUrls);
         mUsername = username;
         mPassword = password;
+        mSsoToken = null;
+    }
+
+    /**
+     * Create login task for SSO login.
+     *
+     * @param ssoToken ID token returned by Google sign-in authentication request
+     * @param listener Listening activity that will receive callbacks.
+     * @param loginUrls Endpoints used to log in and get user info.
+     */
+    public LoginTask(String ssoToken, LoginCallbackListener listener, LoginUrls loginUrls) {
+        this(listener, loginUrls);
+        mSsoToken = ssoToken;
+        mUsername = null;
+        mPassword = null;
+    }
+
+    public LoginTask(LoginCallbackListener listener, LoginUrls loginUrls) {
         mListener = new WeakReference<>(listener);
         mLoginUrls = loginUrls;
-
         serverUrl = context.getString(R.string.api_server_url);
     }
 
@@ -93,22 +121,33 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
         // will contain fetched credentials if login successful
         DriverUserInfo userInfo = null;
 
-        try {
-            URL tokenUrl = mLoginUrls.userTokenUrl(serverUrl);
-            Log.d(LOG_LABEL, "Going to attempt login with token endpoint: " + tokenUrl);
+        JSONObject authJson = new JSONObject();
 
-            urlConnection = (HttpURLConnection) tokenUrl.openConnection();
+        try {
+            if (mUsername != null && mPassword != null) {
+                // username/password login
+                URL tokenUrl = mLoginUrls.userTokenUrl(serverUrl, false);
+                Log.d(LOG_LABEL, "Going to attempt username/password login with token endpoint: " + tokenUrl);
+                urlConnection = (HttpURLConnection) tokenUrl.openConnection();
+                authJson.put("username", mUsername);
+                authJson.put("password", mPassword);
+            } else {
+                // SSO login
+                URL tokenUrl = mLoginUrls.userTokenUrl(serverUrl, true);
+                Log.d(LOG_LABEL, "Going to attempt SSO login with token endpoint: " + tokenUrl);
+                urlConnection = (HttpURLConnection) tokenUrl.openConnection();
+                authJson.put("token", mSsoToken);
+            }
 
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             urlConnection.setDoOutput(true);
             urlConnection.setChunkedStreamingMode(0);
             OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
 
-            JSONObject authJson = new JSONObject();
-            authJson.put("username", mUsername);
-            authJson.put("password", mPassword);
-
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
+
+            Log.d(LOG_LABEL, "Sending authJson: " + authJson.toString());
+
             writer.write(authJson.toString());
             writer.flush();
             writer.close();
@@ -119,7 +158,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             if (responseCode != 200) {
                 Log.e(LOG_LABEL, "Failed to login. Got response: " +
                         urlConnection.getResponseCode() + ": " + urlConnection.getResponseMessage());
-                if (responseCode == 400) {
+                if (responseCode == 400 && mUsername != null) {
                     // will get a 400 response if username/password invalid
                     publishProgress(context.getString(R.string.error_incorrect_username_or_password));
                 } else {
