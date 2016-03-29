@@ -135,36 +135,51 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             return;
         }
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestIdToken(clientId)
-                .build();
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .addOnConnectionFailedListener(this)
-                .build();
+        try {
+            ssoSignInButton.setSize(SignInButton.SIZE_WIDE);
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestIdToken(clientId)
+                    .build();
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .addOnConnectionFailedListener(this)
+                    .build();
 
-        ssoSignInButton.setSize(SignInButton.SIZE_WIDE);
-        ssoSignInButton.setScopes(gso.getScopeArray());
-        ssoSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                attemptSSO();
-            }
-        });
+            ssoSignInButton.setScopes(gso.getScopeArray());
+            ssoSignInButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    attemptSSO();
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to set up Google API client for SSO. Is the oauth_client_id set and the client secret json file put in the app directory?");
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        googleApiClient.connect();
+        try {
+            googleApiClient.connect();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to connect to Google API client");
+        }
     }
 
     @Override
     protected void onStop() {
-        googleApiClient.unregisterConnectionFailedListener(this);
-        googleApiClient.disconnect();
+        try {
+            googleApiClient.unregisterConnectionFailedListener(this);
+            googleApiClient.disconnect();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to disconnect from Google API client");
+        }
         super.onStop();
     }
 
@@ -284,8 +299,15 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     // https://developers.google.com/identity/sign-in/android/sign-in#start_the_sign-in_flow
     private void attemptSSO() {
         showProgress(true);
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        try {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to connect to Google API to sign in");
+            loginError(getString(R.string.error_login_unknown));
+            loginCancelled();
+        }
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -380,8 +402,14 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         app.setUserInfo(null);
 
         // clear authorized Google account, so user can pick a different one
-        if (googleApiClient.isConnected()) {
-            Auth.GoogleSignInApi.signOut(googleApiClient);
+        try {
+            if (googleApiClient.isConnected()) {
+                Auth.GoogleSignInApi.signOut(googleApiClient);
+            } else {
+                Log.e(LOG_LABEL, "Google API client not connected; could not log out");
+            }
+        } catch (Exception ex) {
+            Log.e(LOG_LABEL, "Could not sign out of Google API");
         }
     }
 
