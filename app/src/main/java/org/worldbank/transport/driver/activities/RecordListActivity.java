@@ -71,7 +71,8 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         app = appContext.getDriverApp();
 
         // add record button
-        fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,6 +128,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             }
         });
         recordListView.setAdapter(adapter);
+	recordListView.setEmptyView(findViewById(android.R.id.empty));
 
         recordListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -318,9 +320,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     @Override
     public void recordUploadFinished(int failed) {
         postRecordsTask = null;
-        progressBar.setVisibility(View.GONE);
-        recordListView.setVisibility(View.VISIBLE);
-        fab.setVisibility(View.VISIBLE);
+        showProgressBar(false);
 
         if (failed > 0) {
             Log.e(LOG_LABEL, failed + " records failed to upload");

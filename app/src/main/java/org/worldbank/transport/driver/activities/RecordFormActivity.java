@@ -518,7 +518,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             case R.id.action_save:
                 Log.d(LOG_LABEL, "Save button clicked");
                 goExit = true;
-                goPrevious= false;
+                goPrevious = false;
                 new ValidationTask(this).execute();
                 return true;
 
