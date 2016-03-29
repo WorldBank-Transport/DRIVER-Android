@@ -4,6 +4,7 @@
     <!-- main menu -->
     <string name="action_upload">Upload Records</string>
     <string name="action_update_schema">Update Schema</string>
+    <string name="action_logout">Log out</string>
 
     <!-- login -->
     <string name="title_activity_login">Sign in</string>
@@ -20,6 +21,10 @@
     <string name="error_user_cannot_write_records">User account does not have access to add records. Please contact a system administrator to gain write access.</string>
     <string name="error_login_unknown">Unknown error logging in.</string>
     <string name="error_login_network">Network error logging in.</string>
+
+    <!-- logout -->
+    <string name="logout_dialog_title">Are you sure you want to log out?</string>
+    <string name="logout_dialog_message">You will need to log in again to enter or manage records after logging out. Logging in will require Internet access. Are you sure you want to log out now?</string>
 
     <!-- network -->
     <string name="error_no_network">Network is not available.</string>

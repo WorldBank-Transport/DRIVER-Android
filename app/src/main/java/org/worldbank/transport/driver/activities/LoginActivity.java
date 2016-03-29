@@ -1,10 +1,8 @@
 package org.worldbank.transport.driver.activities;
 
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.support.annotation.NonNull;
@@ -21,13 +19,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -139,24 +135,52 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             return;
         }
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestIdToken(clientId)
-                .build();
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .addOnConnectionFailedListener(this)
-                .build();
+        try {
+            ssoSignInButton.setSize(SignInButton.SIZE_WIDE);
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestIdToken(clientId)
+                    .build();
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .addOnConnectionFailedListener(this)
+                    .build();
 
-        ssoSignInButton.setSize(SignInButton.SIZE_WIDE);
-        ssoSignInButton.setScopes(gso.getScopeArray());
-        ssoSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                attemptSSO();
-            }
-        });
+            ssoSignInButton.setScopes(gso.getScopeArray());
+            ssoSignInButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    attemptSSO();
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to set up Google API client for SSO. Is the oauth_client_id set and the client secret json file put in the app directory?");
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            googleApiClient.connect();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to connect to Google API client");
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        try {
+            googleApiClient.unregisterConnectionFailedListener(this);
+            googleApiClient.disconnect();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to disconnect from Google API client");
+        }
+        super.onStop();
     }
 
     /**
@@ -275,8 +299,15 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     // https://developers.google.com/identity/sign-in/android/sign-in#start_the_sign-in_flow
     private void attemptSSO() {
         showProgress(true);
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        try {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.e(LOG_LABEL, "Failed to connect to Google API to sign in");
+            loginError(getString(R.string.error_login_unknown));
+            loginCancelled();
+        }
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -366,6 +397,20 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     public void loginCancelled() {
         mAuthTask = null;
         showProgress(false);
+
+        // clear user info, if any, after failed login attempt
+        app.setUserInfo(null);
+
+        // clear authorized Google account, so user can pick a different one
+        try {
+            if (googleApiClient.isConnected()) {
+                Auth.GoogleSignInApi.signOut(googleApiClient);
+            } else {
+                Log.e(LOG_LABEL, "Google API client not connected; could not log out");
+            }
+        } catch (Exception ex) {
+            Log.e(LOG_LABEL, "Could not sign out of Google API");
+        }
     }
 
     @Override
