@@ -1,9 +1,13 @@
 package org.worldbank.transport.driver.activities;
 
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +21,17 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.AccountPicker;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
@@ -29,7 +44,12 @@ import org.worldbank.transport.driver.utilities.LoginUrlBuilder;
 /**
  * A login screen that offers login via username/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoginTask.LoginCallbackListener {
+public class LoginActivity extends AppCompatActivity implements LoginTask.LoginCallbackListener,
+        GoogleApiClient.OnConnectionFailedListener {
+
+    private static final String LOG_LABEL = "Login";
+
+    private static final int RC_SIGN_IN = 9001;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -46,6 +66,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     private TextView mErrorMessage;
 
     DriverApp app;
+    GoogleApiClient googleApiClient;
 
     // public so server interactions can be mocked in testing
     public LoginTask.LoginUrls mLoginUrlBuilder;
@@ -75,9 +96,6 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         app = mAppContext.getDriverApp();
         mLoginUrlBuilder = new LoginUrlBuilder();
 
-        // TODO: start from a different activity to do this check and bypass loading this activity?
-        // check to see if previous login saved, and skip this screen if so
-
         if (haveSavedUserInfo()) {
             Log.d("LoginActivity", "Have saved user info; skipping login screen");
             Intent intent = new Intent(this, RecordListActivity.class);
@@ -99,6 +117,11 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             }
         });
 
+        mLoginFormView = findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.login_progress);
+        mErrorMessage = (TextView) findViewById(R.id.error_message);
+        mErrorMessage.setText("");
+
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -107,10 +130,33 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
             }
         });
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
-        mErrorMessage = (TextView) findViewById(R.id.error_message);
-        mErrorMessage.setText("");
+        // Set up SSO client
+        SignInButton ssoSignInButton = (SignInButton) findViewById(R.id.sso_sign_in_button);
+        String clientId = getString(R.string.oauth_client_id);
+        if (clientId == null || clientId.isEmpty()) {
+            Log.e(LOG_LABEL, "No OAuth client ID defined! Be sure to set it in configurables.xml to enable SSO.");
+            ssoSignInButton.setEnabled(false);
+            return;
+        }
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken(clientId)
+                .build();
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        ssoSignInButton.setSize(SignInButton.SIZE_WIDE);
+        ssoSignInButton.setScopes(gso.getScopeArray());
+        ssoSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                attemptSSO();
+            }
+        });
     }
 
     /**
@@ -120,11 +166,8 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
      */
     public boolean haveSavedUserInfo() {
         DriverUserInfo lastUser = app.getUserInfo();
-        if (lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty()) {
-            return true;
-        }
+        return lastUser != null && lastUser.id > -1 && !lastUser.getUserToken().isEmpty();
 
-        return false;
     }
 
     /**
@@ -185,12 +228,10 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.length() > 0;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 0;
     }
 
@@ -230,6 +271,81 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
         }
     }
 
+    // SSO auth guide here:
+    // https://developers.google.com/identity/sign-in/android/sign-in#start_the_sign-in_flow
+    private void attemptSSO() {
+        showProgress(true);
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private void handleSignInResult(GoogleSignInResult result) {
+        Log.d(LOG_LABEL, "handleSignInResult: " + result.isSuccess());
+        if (result.isSuccess()) {
+            GoogleSignInAccount acct = result.getSignInAccount();
+            if (acct != null) {
+                Log.d(LOG_LABEL, "Got back account:");
+                Log.d(LOG_LABEL, "display name: " + acct.getDisplayName());
+                Log.d(LOG_LABEL, "email: " + acct.getEmail());
+                Log.d(LOG_LABEL, "ID: " + acct.getId());
+
+                if (mAuthTask != null) {
+                    Log.w(LOG_LABEL, "Authentication task already in progress");
+                    return;
+                }
+
+                // get user info from API
+                mAuthTask = new LoginTask(acct.getIdToken(), this, mLoginUrlBuilder);
+                mAuthTask.execute();
+            } else {
+                Log.e(LOG_LABEL, "SSO result acct is null.");
+                loginError(getString(R.string.error_login_unknown));
+                loginCancelled();
+            }
+        } else {
+            Log.e(LOG_LABEL, "SSO failed.");
+            loginError(getString(R.string.error_login_unknown));
+            loginCancelled();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(LOG_LABEL, "Got activity result!");
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                handleSignInResult(result);
+            } else if (resultCode == RESULT_CANCELED) {
+                Log.w(LOG_LABEL, "SSO sign-in attempt got cancellation result.");
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                Log.e(LOG_LABEL, result.toString());
+                Status status = result.getStatus();
+
+                if (status.getStatusMessage() != null) {
+                    Log.e(LOG_LABEL, status.getStatusMessage());
+                }
+
+                Log.e(LOG_LABEL, "SSO sign-in status code: " + Integer.toString(status.getStatusCode()));
+
+                // if there is a resolution available for the failed sign-in, try it
+                if (status.hasResolution()) {
+                    Log.d(LOG_LABEL, "Attempting to launch resolution for failed SSO sign-in");
+                    try {
+                        status.startResolutionForResult(this, RC_SIGN_IN);
+                    } catch (IntentSender.SendIntentException e) {
+                        e.printStackTrace();
+                        loginError(getString(R.string.error_login_unknown));
+                        loginCancelled();
+                    }
+                }
+
+            }
+        }
+    }
+
     @Override
     public void loginCompleted(DriverUserInfo userInfo) {
         mAuthTask = null;
@@ -255,5 +371,17 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     @Override
     public void loginError(String errorMessage) {
         mErrorMessage.setText(errorMessage);
+    }
+
+    /**
+     * Might occur if there is a failure in the Google API client connection.
+     * @param connectionResult Possible codes here: https://developers.google.com/android/reference/com/google/android/gms/common/ConnectionResult
+     */
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(LOG_LABEL, "Google SSO API connection failed!");
+        Log.e(LOG_LABEL, connectionResult.getErrorMessage());
+        loginError(getString(R.string.error_login_unknown));
+        loginCancelled();
     }
 }

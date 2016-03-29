@@ -20,7 +20,7 @@ public class MockLoginUrlBuilder implements LoginTask.LoginUrls {
         this.server = server;
     }
     @Override
-    public URL userTokenUrl(String serverUrl) {
+    public URL userTokenUrl(String serverUrl, boolean isSso) {
         HttpUrl httpUrl = server.url("/token");
         return httpUrl.url();
     }

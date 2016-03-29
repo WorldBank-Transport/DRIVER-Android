@@ -15,12 +15,14 @@ import java.net.URL;
  */
 public class LoginUrlBuilder implements LoginTask.LoginUrls {
     @Override
-    public URL userTokenUrl(String serverUrl) {
+    public URL userTokenUrl(String serverUrl, boolean isSso) {
+
+        String endpoint = isSso ? SSO_TOKEN_ENDPOINT : TOKEN_ENDPOINT;
 
         try {
             return new URL(Uri.parse(serverUrl)
                     .buildUpon()
-                    .appendEncodedPath(TOKEN_ENDPOINT)
+                    .appendEncodedPath(endpoint)
                     .build()
                     .toString());
         } catch (MalformedURLException e) {

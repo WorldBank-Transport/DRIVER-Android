@@ -1,4 +1,5 @@
 release.properties
 /build
 *.keystore
+client_secret_*.apps.googleusercontent.com.json
 
