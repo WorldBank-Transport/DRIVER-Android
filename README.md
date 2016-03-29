@@ -20,7 +20,7 @@ cp templates/release.properties.template app/release.properties
 ## Setting up Google Sign-In
 This will enable users to sign in with their Google account using OpenID, instead of requiring them
 to have a username and password set up. Note that logging in with Google the first time will create
-a read-only user account; to use this app, the user will need to have at least 'anayst' access granted
+a read-only user account; to use this app, the user will need to have at least 'analyst' access granted
 to their account.
 
   - Create Android OAuth credentials in Google API console. Copy downloaded credentials json to `app` directory.
