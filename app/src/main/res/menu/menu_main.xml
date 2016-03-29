@@ -12,4 +12,10 @@
         android:orderInCategory="150"
         android:title="@string/action_update_schema"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:orderInCategory="175"
+        android:title="@string/action_logout"
+        app:showAsAction="never" />
 </menu>

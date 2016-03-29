@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -22,6 +23,11 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.DriverRecordContract;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
@@ -38,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 
 public class RecordListActivity extends AppCompatActivity implements CheckSchemaTask.CheckSchemaCallbackListener,
@@ -184,11 +191,57 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         } else if (id == R.id.action_update_schema) {
             startSchemaUpdateCheck();
             return true;
+        } else if (id == R.id.action_logout) {
+            confirmLogout();
         } else {
             Log.w(LOG_LABEL, "Unrecognized menu action: " + id);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Show confirmation dialog to user before actually logging out
+     */
+    private void confirmLogout() {
+        Log.d(LOG_LABEL, "Logout menu option selected");
+        WarnLogoutDialog dialog = new WarnLogoutDialog();
+        dialog.show(getSupportFragmentManager(), "warnlogout");
+    }
+
+    /**
+     * Call after user has confirmed logout action in dialog
+     */
+    private void logout() {
+        Log.d(LOG_LABEL, "Logging out user");
+
+        // clear stored user info from app settings and shared preferences
+        app.setUserInfo(null);
+
+        if (DriverApp.getIsNetworkAvailable()) {
+            showProgressBar(true);
+            // attempt to log out of Google SSO session as well, on background thread
+            new LogoutGoogleApiClient().execute();
+        } else {
+           backToLogin();
+        }
+    }
+
+    /**
+     * Close this activity and go back to login screen after logout.
+     */
+    public void backToLogin() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOG_LABEL, "navigating back to login screen");
+                showProgressBar(false);
+                Intent intent = new Intent(RecordListActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // clear back history
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     private void startRecordUpload() {
@@ -428,4 +481,74 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             }
         });
     }
+
+    /**
+     * Prompt user to save or lose unsaved changes to currently editing record before exiting.
+     * Validation should be run before opening this dialog.
+     */
+    public static class WarnLogoutDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.logout_dialog_title)
+                    .setMessage(R.string.logout_dialog_message)
+                    .setPositiveButton(R.string.confirm_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Log.d(LOG_LABEL, "User confirmed logout action.");
+                            ((RecordListActivity) getActivity()).logout();
+                        }
+                    })
+                    .setNegativeButton(R.string.stop_action, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Log.d(LOG_LABEL, "User cancelled logout.");
+                            // (do nothing)
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    /**
+     * Create a background thread for making a blocking connection call to the Google API client,
+     * then using it to log out. Doing this instead of connecting/disconnecting to API client
+     * with activity lifecycle as logging out is uncommon thing to do, and so always maintaining
+     * a Google API client connection with the activity would be unnecessary overhead.
+     */
+    private class LogoutGoogleApiClient extends AsyncTask<String, String, Void> {
+
+        private GoogleApiClient googleApiClient;
+
+        public LogoutGoogleApiClient() {
+            googleApiClient = new GoogleApiClient.Builder(RecordListActivity.this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API)
+                    .build();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            googleApiClient.blockingConnect(10, TimeUnit.SECONDS);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (googleApiClient.isConnected()) {
+                Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
+                    @Override
+                    public void onResult(@NonNull com.google.android.gms.common.api.Status status) {
+                        googleApiClient.disconnect();
+                        Log.d(LOG_LABEL, "background logout task finished");
+                        RecordListActivity.this.backToLogin();
+                        LogoutGoogleApiClient.this.cancel(true);
+                    }
+                });
+            } else {
+                Log.e(LOG_LABEL, "Not connected to Google to logout; giving up.");
+                RecordListActivity.this.backToLogin();
+            }
+        }
+    }
 }
+

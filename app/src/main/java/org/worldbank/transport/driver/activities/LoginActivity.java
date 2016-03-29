@@ -156,6 +156,12 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
+    }
+
+    @Override
     protected void onStop() {
         googleApiClient.unregisterConnectionFailedListener(this);
         googleApiClient.disconnect();
@@ -369,6 +375,14 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     public void loginCancelled() {
         mAuthTask = null;
         showProgress(false);
+
+        // clear user info, if any, after failed login attempt
+        app.setUserInfo(null);
+
+        // clear authorized Google account, so user can pick a different one
+        if (googleApiClient.isConnected()) {
+            Auth.GoogleSignInApi.signOut(googleApiClient);
+        }
     }
 
     @Override

@@ -235,7 +235,6 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
             }
         } catch (IOException e) {
             Log.e(LOG_LABEL, "Network error logging in");
-            // TODO: This is the error if there is no Internet connection; handle this specially
             e.printStackTrace();
             publishProgress(context.getString(R.string.error_login_network));
             userInfo = null;
