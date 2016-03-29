@@ -1,10 +1,8 @@
 package org.worldbank.transport.driver.activities;
 
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.support.annotation.NonNull;
@@ -21,13 +19,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -157,6 +153,13 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
                 attemptSSO();
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        googleApiClient.unregisterConnectionFailedListener(this);
+        googleApiClient.disconnect();
+        super.onStop();
     }
 
     /**
