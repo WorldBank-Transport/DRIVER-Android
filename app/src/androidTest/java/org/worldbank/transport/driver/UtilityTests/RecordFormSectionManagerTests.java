@@ -28,7 +28,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     Class vehicleClass;
 
     Field personField;
-    Field firstNameField;
+    Field nameField;
 
     @Override
     protected void setUp() throws Exception {
@@ -47,7 +47,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
 
         personField = driverSchema.getClass().getField("person");
-        firstNameField = personClass.getField("FirstName");
+        nameField = personClass.getField("Name");
     }
 
     @Override
@@ -194,14 +194,14 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             // test getting an object that already exists
             Object newPerson = personClass.newInstance();
 
-            firstNameField.set(newPerson, "Bob");
+            nameField.set(newPerson, "Bob");
             peopleList.add(newPerson);
 
             obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 1);
             assertNotNull(obj);
             assertEquals(obj.getClass(), personClass);
             assertEquals("Unexpected Person returned from list", obj, newPerson);
-            assertEquals("Unexpected name for Person returned from list", firstNameField.get(obj), "Bob");
+            assertEquals("Unexpected name for Person returned from list", nameField.get(obj), "Bob");
 
             // delete first person
             boolean didItWork = RecordFormSectionManager.deleteListItem(foundField, personClass, driverSchema, 0);
@@ -212,7 +212,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             // first person should now be Bob
             assertNotNull(obj);
             assertEquals(obj.getClass(), personClass);
-            assertEquals("Unexpected name for Person returned from list after deletion", firstNameField.get(obj), "Bob");
+            assertEquals("Unexpected name for Person returned from list after deletion", nameField.get(obj), "Bob");
 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -231,8 +231,8 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         try {
             Object personOne = personClass.newInstance();
             Object personTwo = personClass.newInstance();
-            firstNameField.set(personOne, "ThingOne");
-            firstNameField.set(personTwo, "ThingTwo");
+            nameField.set(personOne, "ThingOne");
+            nameField.set(personTwo, "ThingTwo");
 
             ArrayList personList = (ArrayList)personField.get(driverSchema);
             personList.add(personOne);
