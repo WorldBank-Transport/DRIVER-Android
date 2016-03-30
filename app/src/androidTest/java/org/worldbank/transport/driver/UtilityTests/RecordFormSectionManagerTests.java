@@ -43,7 +43,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         driverSchema = driverClass.newInstance();
 
         personClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Person");
-        detailsClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "AccidentDetails");
+        detailsClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "IncidentDetails");
         vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
 
         personField = driverSchema.getClass().getField("person");
@@ -69,7 +69,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetSectionName() {
         String sectionName = RecordFormSectionManager.getSectionName(0);
-        assertEquals("accidentDetails", sectionName);
+        assertEquals("incidentDetails", sectionName);
 
         sectionName = RecordFormSectionManager.getSectionName(2);
         assertEquals("person", sectionName);
@@ -131,9 +131,9 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testGetSingleTitle() {
-        Field foundField = RecordFormSectionManager.getFieldForSectionName("accidentDetails");
+        Field foundField = RecordFormSectionManager.getFieldForSectionName("incidentDetails");
         String foundTitle = RecordFormSectionManager.getSingleTitle(foundField, "some default");
-        assertEquals("Unexpected title", "Accident Details", foundTitle);
+        assertEquals("Unexpected title", "Incident Details", foundTitle);
 
         try {
             // this field is not a section, and so does not have a title
@@ -149,13 +149,13 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetOrCreateSectionObject() {
         // check new section creation
-        Field detailsField = RecordFormSectionManager.getFieldForSectionName("accidentDetails");
+        Field detailsField = RecordFormSectionManager.getFieldForSectionName("incidentDetails");
         Object obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, detailsClass, driverSchema);
         assertNotNull(obj);
 
         // check fetch of existing section
         try {
-            Field detailField = driverSchema.getClass().getField("accidentDetails");
+            Field detailField = driverSchema.getClass().getField("incidentDetails");
             assertEquals(detailField, detailsField);
             Object details = detailField.get(driverSchema);
             details.getClass().getField("Description").set(details, "blah blah blah");

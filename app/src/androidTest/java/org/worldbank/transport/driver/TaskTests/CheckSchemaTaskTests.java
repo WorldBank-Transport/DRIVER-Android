@@ -59,9 +59,9 @@ public class CheckSchemaTaskTests extends AndroidTestCase {
                         "            \"current_schema\": \"e3290fbe-56a4-4527-ad96-e2e6561a9ac5\",\n" +
                         "            \"created\": \"2015-10-28T20:32:56.446799Z\",\n" +
                         "            \"modified\": \"2015-10-28T21:42:40.040549Z\",\n" +
-                        "            \"label\": \"Accident\",\n" +
-                        "            \"plural_label\": \"Accidents\",\n" +
-                        "            \"description\": \"Historical accident data\",\n" +
+                        "            \"label\": \"Incident\",\n" +
+                        "            \"plural_label\": \"Incidents\",\n" +
+                        "            \"description\": \"Historical incident data\",\n" +
                         "            \"active\": true\n" +
                         "        }\n" +
                         "    ]\n" +
