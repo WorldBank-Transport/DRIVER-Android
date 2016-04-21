@@ -12,6 +12,7 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.staticmodels.DriverAppContext;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 
@@ -77,7 +78,12 @@ public class RecordFormItemActivity extends RecordFormActivity {
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-        backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        if (DriverUtilities.localeIsRTL()) {
+            backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        } else {
+            backBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        }
+
         deleteBtn.setLayoutParams(backBtnLayoutParams);
 
         deleteBtn.setId(R.id.record_back_button_id);
@@ -103,7 +109,11 @@ public class RecordFormItemActivity extends RecordFormActivity {
         Button goBtn = new Button(this);
         RelativeLayout.LayoutParams goBtnLayoutParams = new RelativeLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT,
                 ActionBar.LayoutParams.WRAP_CONTENT);
-        goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        if (DriverUtilities.localeIsRTL()) {
+            goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        } else {
+            goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        }
         goBtn.setLayoutParams(goBtnLayoutParams);
 
         goBtn.setText(R.string.record_save_button);
