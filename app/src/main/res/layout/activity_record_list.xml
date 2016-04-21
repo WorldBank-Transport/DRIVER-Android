@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="start"
     android:fitsSystemWindows="true"
     tools:context=".activities.RecordListActivity">
 
@@ -31,6 +32,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".activities.RecordListActivity"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
         android:text="@string/record_form_list_empty" />
 
     <android.support.design.widget.FloatingActionButton
