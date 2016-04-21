@@ -20,6 +20,7 @@
         android:id="@+id/record_form_list_item_text"
         android:layout_toRightOf="@id/record_form_list_item_image"
         android:layout_toEndOf="@id/record_form_list_item_image"
+        android:textDirection="locale"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         style="@style/Base.TextAppearance.AppCompat.Large"
         android:padding="5dp" />
