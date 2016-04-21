@@ -10,6 +10,7 @@ import org.jsonschema2pojo.media.SerializableMedia;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Static helper methods.
@@ -186,5 +187,22 @@ public class DriverUtilities {
         }
 
         return new ListItemLabels(labels, imagePaths);
+    }
+
+    /**
+     * Check if current system locale is in a right-to-left language. Useful to support RTL
+     * checking on API < 17.
+     *
+     * @return True if system language displays right to left.
+     */
+    public static boolean localeIsRTL() {
+        return localeIsRTL(Locale.getDefault());
+    }
+
+    public static boolean localeIsRTL(Locale locale) {
+        Log.d(LOG_LABEL, locale.getDisplayName());
+        int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
+        return  direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC ||
+                direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT;
     }
 }
