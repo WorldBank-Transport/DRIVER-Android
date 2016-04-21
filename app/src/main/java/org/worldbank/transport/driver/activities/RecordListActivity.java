@@ -401,6 +401,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (progressBar == null) {
+                    return; // view is gone already
+                }
                 Log.d(LOG_LABEL, "uploaded one record, updating progress...");
                 progressBar.incrementProgressBy(1);
             }
@@ -454,6 +457,10 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (progressBar == null) {
+                    return; // view is gone already
+                }
+
                 if (show) {
                     progressBar.setIndeterminate(true);
                     progressBar.requestLayout();
