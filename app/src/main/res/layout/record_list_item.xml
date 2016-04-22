@@ -7,7 +7,7 @@
     android:layout_alignParentStart="true"
     android:layout_alignParentLeft="true">
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/record_list_item_entered_at"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,6 +15,6 @@
         style="@style/Base.TextAppearance.AppCompat.Large"
         android:textColor="@android:color/black"
         android:padding="5dp">
-    </TextView>
+    </android.support.v7.widget.AppCompatTextView>
 
 </LinearLayout>

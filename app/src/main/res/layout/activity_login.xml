@@ -30,19 +30,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:gravity="start"
             android:weightSum="1">
 
             <android.support.design.widget.TextInputLayout
+                android:layout_gravity="start"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <AutoCompleteTextView
+                <android.support.v7.widget.AppCompatAutoCompleteTextView
                     android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentLeft="true"
                     android:textDirection="locale"
+                    android:textAlignment="viewStart"
+                    android:gravity="start"
+                    android:layout_gravity="start"
                     android:hint="@string/prompt_email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
@@ -51,16 +56,19 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
+                android:layout_gravity="start"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textDirection="locale">
+                android:layout_height="wrap_content">
 
-                <EditText
+                <android.support.v7.widget.AppCompatEditText
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentLeft="true"
+                    android:textAlignment="viewStart"
+                    android:gravity="start"
+                    android:layout_gravity="start"
                     android:textDirection="locale"
                     android:hint="@string/prompt_password"
                     android:imeActionId="@+id/login"
@@ -72,11 +80,12 @@
 
             </android.support.design.widget.TextInputLayout>
 
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/email_sign_in_button"
                 style="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textDirection="locale"
                 android:layout_marginTop="16dp"
                 android:text="@string/action_sign_in"
                 android:textStyle="bold" />
@@ -85,9 +94,10 @@
                 android:id="@+id/sso_sign_in_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textDirection="locale"
                 android:layout_marginTop="32dp" />
 
-            <TextView
+            <android.support.v7.widget.AppCompatTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textDirection="locale"

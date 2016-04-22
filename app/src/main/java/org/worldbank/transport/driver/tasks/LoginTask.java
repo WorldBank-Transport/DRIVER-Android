@@ -146,8 +146,6 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
 
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
 
-            Log.d(LOG_LABEL, "Sending authJson: " + authJson.toString());
-
             writer.write(authJson.toString());
             writer.flush();
             writer.close();

@@ -22,7 +22,8 @@
 
     <include layout="@layout/content_record_list" />
 
-    <TextView android:id="@android:id/empty"
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@android:id/empty"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
