@@ -15,7 +15,7 @@ android:
     - android-23
     - sys-img-armeabi-v7a-android-17
     - addon-google_apis-google-17
-    - build-tools-23.0.2
+    - build-tools-23.0.3
 
   licenses:
     - 'android-*'
@@ -24,8 +24,8 @@ android:
 before_install:
   - free -m # show available memory on VM
   - cp templates/configurables.xml.template app/src/main/res/values/configurables.xml
-  - echo yes | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
-  - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.2" --force > /dev/null
+  - echo yes | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force
+  - echo yes | android update sdk --no-ui -a --filter "build-tools-23.0.3" --force
 
 before_script:
   - ulimit -c unlimited -S # increase stack size
