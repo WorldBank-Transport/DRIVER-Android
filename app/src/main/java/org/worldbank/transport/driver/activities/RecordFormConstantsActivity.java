@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.services.DriverLocationService;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -66,7 +68,13 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
         Button goBtn = new Button(this);
         RelativeLayout.LayoutParams goBtnLayoutParams = new RelativeLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT,
                 ActionBar.LayoutParams.WRAP_CONTENT);
-        goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+
+        if (DriverUtilities.localeIsRTL()) {
+            goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        } else {
+            goBtnLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        }
+
         goBtn.setLayoutParams(goBtnLayoutParams);
 
         goBtn.setId(R.id.record_save_button_id);

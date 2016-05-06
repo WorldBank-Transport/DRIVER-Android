@@ -236,7 +236,6 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
             @Override
             public void run() {
                 Log.d(LOG_LABEL, "navigating back to login screen");
-                showProgressBar(false);
                 Intent intent = new Intent(RecordListActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // clear back history
                 startActivity(intent);
@@ -401,6 +400,9 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (progressBar == null) {
+                    return; // view is gone already
+                }
                 Log.d(LOG_LABEL, "uploaded one record, updating progress...");
                 progressBar.incrementProgressBy(1);
             }
@@ -454,18 +456,25 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (show) {
-                    progressBar.setIndeterminate(true);
-                    progressBar.requestLayout();
-                    progressBar.setVisibility(View.VISIBLE);
-                    recordListView.setVisibility(View.INVISIBLE);
-                    fab.setVisibility(View.INVISIBLE);
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                    recordListView.setVisibility(View.VISIBLE);
-                    fab.setVisibility(View.VISIBLE);
+                if (progressBar == null || fab == null || recordListView == null) {
+                    return; // view is gone or disappearing
                 }
 
+                try {
+                    if (show) {
+                        progressBar.setIndeterminate(true);
+                        progressBar.requestLayout();
+                        progressBar.setVisibility(View.VISIBLE);
+                        recordListView.setVisibility(View.INVISIBLE);
+                        fab.setVisibility(View.INVISIBLE);
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                        recordListView.setVisibility(View.VISIBLE);
+                        fab.setVisibility(View.VISIBLE);
+                    }
+                } catch (NullPointerException ex) {
+                    Log.e(LOG_LABEL, "Could not show/hide progress; view may have gone away");
+                }
             }
         });
     }

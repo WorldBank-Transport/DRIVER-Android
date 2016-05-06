@@ -425,7 +425,7 @@ public class LoginActivity extends AppCompatActivity implements LoginTask.LoginC
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(LOG_LABEL, "Google SSO API connection failed!");
-        Log.e(LOG_LABEL, connectionResult.getErrorMessage());
+        Log.e(LOG_LABEL, "Connection error message: " + connectionResult.getErrorMessage());
         loginError(getString(R.string.error_login_unknown));
         loginCancelled();
     }

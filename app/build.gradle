@@ -32,7 +32,7 @@ android {
     }
     
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
     // Must specify individually all duplicated files from libraries to exclude or pickFirst
     packagingOptions {
         exclude 'NOTICE'
