@@ -265,7 +265,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 switch (fieldType) {
                     case image:
                         Log.d(LOG_LABEL, "found image field");
-                        String appName = getApplicationInfo().loadLabel(getPackageManager()).toString();
 
                         if (!field.getType().equals(SerializableMedia.class)) {
                             Log.e(LOG_LABEL, "image field has wrong type: " + field.getType());
