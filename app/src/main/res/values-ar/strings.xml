@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">DRIVER</string>
+
+    <!-- main menu -->
+    <string name="action_upload">تحميل سجلات</string>
+    <string name="action_update_schema">تحديث المخطط</string>
+    <string name="action_logout">تسجيل الخروج</string>
+
+    <!-- login -->
+    <string name="title_activity_login">تسجيل الدخول</string>
+    <string name="prompt_email">إسم المستخدم </string>
+    <string name="prompt_password">كلمة المرور</string>
+    <string name="action_sign_in">تسجيل الدخول</string>
+    <string name="action_sign_in_short">تسجيل الدخول</string>
+    <string name="error_invalid_email">اسم المستخدم غير صالح</string>
+    <string name="error_invalid_password">كلمة المرور قصيرة</string>
+    <string name="error_incorrect_password">كلمة المرور غير صحيحة</string>
+    <string name="error_field_required">ملء هذه الخانة مطلوب</string>
+    <string name="error_incorrect_username_or_password">اسم المستخدم أو كلمة المرور غير صحيحة</string>
+    <string name="error_server_login">خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى في وقت آخر</string>
+    <string name="error_user_cannot_write_records">المستخدم الحالي ليس لديه حق تحرير السجلات. الرجاء مراجعة مسؤول النظام لحيازة هذا الحق.</string>
+    <string name="error_login_unknown">خطأ غير معروف اثناء تسجيل الدخول </string>
+    <string name="error_login_network">خطأ بالشبكة اللاسلكية</string>
+
+    <!-- logout -->
+    <string name="logout_dialog_title">تأكيد تسجيل الخروج؟</string>
+    <string name="logout_dialog_message"> بعد تسجيل الخروج سوف تحتاج إلى تسجيل الدخول مرة أخرى للدخول أو لإدارة السجلات. تسجيل الدخول يتطلب الإتصال بالإنترنت. هل أنت متأكد أنك تريد تسجيل الخروج الآن؟</string>
+
+    <!-- network -->
+    <string name="error_no_network">الشبكة اللاسلكية غير متوفره الآن</string>
+
+    <!-- schema check -->
+    <string name="error_schema_check">خطأ من مركز الخدمات في التحقق من نسخة المخطط. يرجى المحاولة مرة أخرى في وقت لاحق</string>
+    <string name="schema_current">نسخة المخطط محدثة</string>
+    <string name="schema_not_updated_have_records">نسخة المخطط غير قابلة للتحديث. هناك نسخة جديد للمخطط ولكنها غير قابلة للإستعمال حتى يتم تحميل أو حذف جميع السجلات </string>
+
+    <!-- schema update -->
+    <string name="error_schema_update">تمت العثور على خطأ أثناء تحديث المخطط. يرجى المحاولة مرة أخرى في وقت لاحق.</string>
+    <string name="schema_update_not_ready">تحديث المخطط غير متاح الآن. الرجاء محاولة التحديث مرة أخرى في بضع دقائق</string>
+    <string name="schema_updated">تم تحديث المخطط</string>
+
+    <!-- record upload -->
+    <string name ="error_record_upload">خطأ في التحميل</string>
+    <string name="records_uploaded_checking_schema">تم تحميل السجلات، والآن يتم التحقق من تحديث المخطط ...</string>
+    <string name="records_uploaded_some_failed">فشل في تحميل ــــــــ سجل </string>
+    <string name="records_nothing_to_upload">لا توجد سجلات لتحميل</string>
+
+    <!-- record delete -->
+    <string name="record_delete_success">تم حدف السجل</string>
+    <string name="record_delete_failure">فشل في محاولة حدف السجل!</string>
+    <string name="record_deletion_dialog_title">حذف السجل؟</string>
+    <string name="record_deletion_dialog_message">تأكيد علي حذف السجل؟</string>
+
+    <!-- record form -->
+    <string name="record_save_button">حفظ</string>
+    <string name="record_next_button">تالي</string>
+    <string name="record_previous_button">رجوع</string>
+    <string name="record_delete_button">حذف</string>
+    <string name="record_save_and_exit">حفظ وخروج</string>
+    <string name="record_delete">حذف سجل</string>
+
+    <!-- record item list -->
+    <string name="record_form_list_item_image_description">Picture of record form item</string>
+    <string name="record_form_list_item_empty_list">لا توجد مواد مضافة حتى الان. الرجاء الضغط على الزر الدائري للإضافة</string>
+
+    <!-- record form list -->
+    <string name="record_select_title">تحميل سجل واحد</string>
+    <string name="record_select_message">هل أنت متأكد من تحميل هذا السجل الآن؟</string>
+    <string name="record_form_list_empty">لا توجد اية سجلات على الجهاز. اضغط الزر الدائر لإضافة السجل.</string>
+
+    <!-- record status messages -->
+    <string name="record_save_success">السجل محفوظ</string>
+    <string name="record_save_failure">فشل في حفظ السجل!</string>
+    <string name="record_item_delete_success">تم حدف المادة</string>
+    <string name="record_item_delete_failure">فشل في حذف المادة!</string>
+    <string name="record_validation_errors">يرجى تصحيح المعلومة قبل المتابعة</string>
+
+    <!-- record unsaved changes dialog -->
+    <string name="record_unsaved_changes_dialog_title">هل تريد حفظ السجل؟</string>
+    <string name="record_unsaved_changes_dialog_message">حفظ التغييرات الطارئة على سجل قبل أن المغادرة؟</string>
+
+    <!-- Shared preferences -->
+    <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
+    <string name="shared_preferences_username_key" translatable="false">user_name</string>
+    <string name="shared_preferences_user_id_key" translatable="false">user_id</string>
+    <string name="shared_preferences_token_key" translatable="false">user_token</string>
+    <string name="shared_preferences_email_key" translatable="false">user_email</string>
+    <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
+    <string name="shared_preferences_schema_version" translatable="false">schema_version</string>
+
+    <!-- device location -->
+    <string name="location_fine_permission_rationale">يجب السماح باستخدام موقع الجهاز. السجلات لا يمكن إدخالها دون تحديد المكان.</string>
+    <string name="location_gps_needed_rationale">يجب تشغيل نظام تحديد المواقع GPS للحصول على موقع دقيق للسجل.</string>
+    <string name="location_requires_gps">الجهاز لا يحتوي على نظام تحديد المواقع GPS. الرجاء استخدام جهاز آخر.</string>
+    <string name="location_gps_fix_found">تم الحصول على الموقع. جاري انتظار تحديد الموقع ...</string>
+    <string name="location_best_found">تم تحديد الموقع.</string>
+    <string name="location_awaiting_gps_fix">في انتظار إصلاح نظام تحديد المواقع GPS ...</string>
+    <string name="location_service_off">نظام تحديد الموقع GPS لا يعمل.</string>
+    <string name="location_display" translatable="false">%1$.6f, %2$.6f</string>
+
+    <!-- location warning dialogs -->
+    <string name="location_not_set_dialog_title">الموقع غير مَعروف</string>
+    <string name="location_not_set_dialog_warning">لا يمكن تحميل السجل دون تحديد المكان. الرجاء الاستمرار في الانتظار لتحديد الموقع</string>
+    <string name="location_settling_dialog_title">جاري تحديد الموقع</string>
+    <string name="location_settling_dialog_warning">حالياً يتم تحسين قراءة الموقع. هذه العملية سوف تستغرق أقل من 20 ثانية. الرجاء الاستمرار في الانتظار؟</string>
+
+    <string name="confirm_action">نعم</string>
+    <string name="stop_action">لا</string>
+
+</resources>
