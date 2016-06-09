@@ -79,15 +79,6 @@
     <string name="record_unsaved_changes_dialog_title">هل تريد حفظ السجل؟</string>
     <string name="record_unsaved_changes_dialog_message">حفظ التغييرات الطارئة على سجل قبل أن المغادرة؟</string>
 
-    <!-- Shared preferences -->
-    <string name="shared_preferences_file" translatable="false">org.worldbank.transport.driver.SHARED_PREFERENCES</string>
-    <string name="shared_preferences_username_key" translatable="false">user_name</string>
-    <string name="shared_preferences_user_id_key" translatable="false">user_id</string>
-    <string name="shared_preferences_token_key" translatable="false">user_token</string>
-    <string name="shared_preferences_email_key" translatable="false">user_email</string>
-    <string name="shared_preferences_groups_key" translatable="false">user_groups</string>
-    <string name="shared_preferences_schema_version" translatable="false">schema_version</string>
-
     <!-- device location -->
     <string name="location_fine_permission_rationale">يجب السماح باستخدام موقع الجهاز. السجلات لا يمكن إدخالها دون تحديد المكان.</string>
     <string name="location_gps_needed_rationale">يجب تشغيل نظام تحديد المواقع GPS للحصول على موقع دقيق للسجل.</string>
@@ -96,7 +87,6 @@
     <string name="location_best_found">تم تحديد الموقع.</string>
     <string name="location_awaiting_gps_fix">في انتظار إصلاح نظام تحديد المواقع GPS ...</string>
     <string name="location_service_off">نظام تحديد الموقع GPS لا يعمل.</string>
-    <string name="location_display" translatable="false">%1$.6f, %2$.6f</string>
 
     <!-- location warning dialogs -->
     <string name="location_not_set_dialog_title">الموقع غير مَعروف</string>
