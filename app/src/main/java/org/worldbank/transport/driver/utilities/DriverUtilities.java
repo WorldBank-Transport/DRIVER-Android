@@ -32,6 +32,7 @@ public class DriverUtilities {
         JsonPropertyOrder ordering = (JsonPropertyOrder) model.getAnnotation(JsonPropertyOrder.class);
 
         Field[] fields = model.getDeclaredFields();
+
         ArrayList<String> fieldOrder = new ArrayList<>(fields.length);
 
         if (ordering != null) {
@@ -60,20 +61,24 @@ public class DriverUtilities {
             }
 
             // Sanity check that all fields have an order and that all ordered fields have been found.
+            // If not, add the remaining fields after those that did have an order defined,
+            // in the order of declaration.
             // For non-section fields, there will be a hidden ID field that doesn't get listed in the order.
             int fieldOrderSize = fieldOrder.size();
             if ((fieldOrderSize != serializedNameOrder.length) || (fieldOrderSize < fields.length - 1)) {
-                Log.e(LOG_LABEL, "Mismatch in field count for ordering:");
-                Log.e(LOG_LABEL, "fieldOrder size: " + fieldOrder.size());
-                Log.e(LOG_LABEL, "fields length: " + fields.length);
-                Log.e(LOG_LABEL, "serializedNameOrder length: " + serializedNameOrder.length);
+                for (Field field: fields) {
+                    String fieldName = field.getName();
+                    if (!fieldOrder.contains(fieldName)) {
+                        Log.w(LOG_LABEL, "Adding field without explicit ordering declared: " + fieldName);
+                        fieldOrder.add(fieldName);
+                    }
+                }
             }
 
         } else {
-            Log.e(LOG_LABEL, "Class " + model.getSimpleName() + " has no JsonPropertyOrder");
+            Log.d(LOG_LABEL, "Class " + model.getSimpleName() + " has no JsonPropertyOrder defined; using order of declaration");
 
-            // Should always have JsonPropertyOrder declared by jsonschema2pojo,
-            // but just in case, return in order found by getDeclaredFields.
+            // Return in order found by getDeclaredFields if no ordering defined in schema.
 
             for (Field field: fields) {
                 fieldOrder.add(field.getName());
