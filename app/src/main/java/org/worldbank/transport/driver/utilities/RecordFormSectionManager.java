@@ -46,6 +46,37 @@ public class RecordFormSectionManager {
     public static final String MODEL_PACKAGE = DriverApp.MODELS_BASE_PACKAGE + ".models.";
 
     /**
+     * Remove any characters from the given string that are not valid Java identifiers.
+     * Should match the the identifier name cleaning done in generating the models;
+     * preferably, schema identifiers should not contain invalid identifier characters.
+     *
+     * @param sectionName String to clean
+     * @return sectionName as a valid Java identifier, with invalid characters removed
+     */
+    public static @NonNull String cleanIdentifierName(String sectionName) {
+        if (sectionName == null || sectionName.isEmpty()) {
+            throw new IllegalArgumentException("Section name must not be empty.");
+        }
+
+        for (char x : sectionName.toCharArray()) {
+            if (!Character.isJavaIdentifierPart(x)) {
+                Log.w(LOG_LABEL, "Section name " + sectionName + " contains invalid identifier " + String.valueOf(x));
+                sectionName = StringUtils.remove(sectionName, x);
+            }
+        }
+
+        if (!Character.isJavaIdentifierStart(sectionName.charAt(0))) {
+            sectionName = "_" + sectionName;
+        }
+
+        if (sectionName.isEmpty()) {
+            Log.e(LOG_LABEL, "After cleaning, section name " + sectionName + " is empty!");
+        }
+
+        return sectionName;
+    }
+
+    /**
      * Get the appropriate Activity to launch for a given form section.
      *
      * @param sectionId Offset of section to check within ordered list of DriverSchema fields
@@ -106,6 +137,7 @@ public class RecordFormSectionManager {
     @Nullable
     public static Class getSectionClass(String sectionName) {
         try {
+            sectionName = cleanIdentifierName(sectionName);
             // class names are capitalized; field names of that type may not be
             sectionName = StringUtils.capitalize(sectionName);
             return DriverApp.getSchemaClassLoader().loadClass(MODEL_PACKAGE + sectionName);
@@ -157,13 +189,18 @@ public class RecordFormSectionManager {
      */
     @Nullable
     public static Field getFieldForSectionName(String sectionName) {
+        if (sectionName == null || sectionName.isEmpty()) {
+            throw new IllegalArgumentException("Section name must not be empty.");
+        }
+
         try {
             Class driverClass = DriverApp.getSchemaClass();
             if (driverClass != null) {
-                return driverClass.getField(sectionName);
+                return driverClass.getField(cleanIdentifierName(sectionName));
             }
         } catch (NoSuchFieldException e) {
-            Log.e(LOG_LABEL, "Could not find section field named " + sectionName);
+            Log.e(LOG_LABEL, "Could not find section field " + sectionName +
+                    " looking up cleaned name " + cleanIdentifierName(sectionName));
             e.printStackTrace();
         }
         return null;
