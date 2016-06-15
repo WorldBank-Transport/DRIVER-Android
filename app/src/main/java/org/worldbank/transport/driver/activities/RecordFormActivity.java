@@ -475,10 +475,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
         Field refIdField;
         try {
-            refIdField = refClass.getField("LocalId");
+            refIdField = refClass.getField("localId");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            Log.e(LOG_LABEL, "Failed to find LocalId field on referenced field " + watchTarget);
+            Log.e(LOG_LABEL, "Failed to find localId field on referenced field " + watchTarget);
             return null;
         }
 
