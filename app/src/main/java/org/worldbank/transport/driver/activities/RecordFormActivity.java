@@ -318,6 +318,11 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             continue;
                         }
                         SelectListInfo refSelectInfo = buildReferencedFieldInfo(watchTarget);
+                        if (!isRequired) {
+                            Log.d(LOG_LABEL, "Adding empty option to reference list for " + fieldName);
+                            refSelectInfo.labels.add(0, "");
+                            refSelectInfo.items.add(0, "");
+                        }
                         control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
                                 refSelectInfo.labels, refSelectInfo.items);
 
