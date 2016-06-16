@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.media.SerializableMedia;
+import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -28,8 +29,15 @@ public class DriverUtilities {
      */
     public static String[] getFieldOrder(Class model) {
 
-        // the annotation lists fields by their SerializedName
+        // the annotation lists fields by their SerializedName,
+        // except for the constant fields, which are listed by field name
         JsonPropertyOrder ordering = (JsonPropertyOrder) model.getAnnotation(JsonPropertyOrder.class);
+
+        boolean isConstants = false;
+        if (DriverConstantFields.class.equals(model)) {
+            isConstants = true;
+            Log.d(LOG_LABEL, "Getting field order for constants form class, by field name.");
+        }
 
         Field[] fields = model.getDeclaredFields();
 
@@ -43,9 +51,13 @@ public class DriverUtilities {
             for (Field field: fields) {
                 String fieldName = field.getName();
                 String fieldLabel = fieldName;
-                SerializedName serializedNameAnnotation = field.getAnnotation(SerializedName.class);
-                if (serializedNameAnnotation != null) {
-                    fieldLabel = serializedNameAnnotation.value();
+                if (isConstants) {
+                    fieldLabel = fieldName;
+                } else {
+                    SerializedName serializedNameAnnotation = field.getAnnotation(SerializedName.class);
+                    if (serializedNameAnnotation != null) {
+                        fieldLabel = serializedNameAnnotation.value();
+                    }
                 }
                 nameMap.put(fieldLabel, fieldName);
             }

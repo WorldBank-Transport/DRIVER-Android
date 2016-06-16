@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DRIVER</string>
+    <string name="app_name">سائق</string>
 
     <!-- main menu -->
     <string name="action_upload">تحميل سجلات</string>
@@ -97,4 +97,30 @@
     <string name="confirm_action">نعم</string>
     <string name="stop_action">لا</string>
 
+    <!-- constant fields: names must match the field names in DriverConstantFields.java -->
+    <string name="occurredFrom">حدث</string>
+    <string name="location">الموقع"</string>
+    <string name="Weather">الطقس"</string>
+    <string name="Light">الإضاءه</string>
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="clear_day">يوم صافي</string>
+    <string name="clear_night">ليله صافيه</string>
+    <string name="cloudy">غائم</string>
+    <string name="fog">ضباب</string>
+    <string name="hail">وابل</string>
+    <string name="partly_cloudy_day">نهار شبه غائم</string>
+    <string name="partly_cloudy_night">ليلة شبه غائمة</string>
+    <string name="rain">مطر</string>
+    <string name="sleet">مطر ثلجي</string>
+    <string name="snow">ثلج</string>
+    <string name="thunderstorm">عاصفة رعدية</string>
+    <string name="tornado">عاصفة</string>
+    <string name="wind">رياح</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="dawn">الفجر</string>
+    <string name="day">نهار</string>
+    <string name="dusk">الغسق</string>
+    <string name="night">ليل</string>
 </resources>

@@ -107,4 +107,30 @@
     <string name="confirm_action">Yes</string>
     <string name="stop_action">No</string>
 
+    <!-- constant fields: names must match the field names in DriverConstantFields.java -->
+    <string name="occurredFrom">Occurred</string>
+    <string name="location">Location</string>
+    <string name="Weather">Weather</string>
+    <string name="Light">Light</string>
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="clear_day">Clear day</string>
+    <string name="clear_night">Clear night</string>
+    <string name="cloudy">Cloudy</string>
+    <string name="fog">Fog</string>
+    <string name="hail">Hail</string>
+    <string name="partly_cloudy_day">Partly cloudy day</string>
+    <string name="partly_cloudy_night">Partly cloudy night</string>
+    <string name="rain">Rain</string>
+    <string name="sleet">Sleet</string>
+    <string name="snow">Snow</string>
+    <string name="thunderstorm">Thunderstorm</string>
+    <string name="tornado">Tornado</string>
+    <string name="wind">Wind</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="dawn">Dawn</string>
+    <string name="day">Day</string>
+    <string name="dusk">Dusk</string>
+    <string name="night">Night</string>
 </resources>

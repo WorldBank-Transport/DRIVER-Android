@@ -1,5 +1,6 @@
 package org.worldbank.transport.driver.activities;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -83,6 +84,13 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
     protected boolean goPrevious = false;
     protected boolean goExit = false;
 
+    // if this is the special constants form
+    protected boolean isConstants = false;
+
+    // convenience for dynamic strings.xml lookup
+    private String packageName;
+    private Resources resources;
+
     /**
      * Non-default constructor for testing, to set the application context.
      * @param context Mock context
@@ -105,6 +113,8 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
         mAppContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = mAppContext.getDriverApp();
         currentlyEditing = app.getEditObject();
+        packageName = getPackageName();
+        resources = getResources();
 
         Bundle bundle = getIntent().getExtras();
         sectionId = bundle.getInt(SECTION_ID);
@@ -230,6 +240,11 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             ConstantFieldTypes constantFieldType = null;
             String watchTarget = null;
 
+            // constants form keeps translated field labels in strings
+            if (isConstants) {
+                fieldLabel = getString(resources.getIdentifier(fieldName, "string", packageName));
+            }
+
             Annotation[] annotations = field.getDeclaredAnnotations();
 
             for (Annotation annotation: annotations) {
@@ -246,7 +261,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 } else if (annotationType.equals(FieldType.class)) {
                     FieldType fieldTypeAnnotation = (FieldType) annotation;
                     fieldType = fieldTypeAnnotation.value();
-                } else if (annotationType.equals(SerializedName.class)) {
+                } else if (annotationType.equals(SerializedName.class) && !isConstants) {
                     SerializedName serializedName = (SerializedName) annotation;
                     fieldLabel = serializedName.value();
                 } else if (annotationType.equals(NotNull.class)) {
@@ -403,9 +418,16 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             // the SerializedName annotation.
             try {
                 Field enumField = enumClass.getField(myEnum.name());
-                SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
-                if (serializedName != null) {
-                    prettyLabel = serializedName.value();
+                if (isConstants) {
+                    // labels are in strings.xml for translation
+                    // hyphens are not valid in strings.xml identifiers; replaced with underscores
+                    String resourceLabel = prettyLabel.replace("-", "_");
+                    prettyLabel = getString(resources.getIdentifier(resourceLabel, "string", packageName));
+                } else {
+                    SerializedName serializedName = enumField.getAnnotation(SerializedName.class);
+                    if (serializedName != null) {
+                        prettyLabel = serializedName.value();
+                    }
                 }
             } catch (NoSuchFieldException e) {
                 Log.e(LOG_LABEL, "Failed to find enum field to build label for " + prettyLabel);

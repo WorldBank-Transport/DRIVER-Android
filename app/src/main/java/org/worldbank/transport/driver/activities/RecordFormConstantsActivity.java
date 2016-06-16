@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
-import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 
 import com.azavea.androidvalidatedforms.FormActivityBase;
 import com.azavea.androidvalidatedforms.FormController;
-import com.azavea.androidvalidatedforms.FormElementController;
 import com.azavea.androidvalidatedforms.controllers.DatePickerController;
 import com.azavea.androidvalidatedforms.tasks.ValidationTask;
 
@@ -136,6 +134,8 @@ public class RecordFormConstantsActivity extends RecordFormActivity implements F
     public FormController createFormController() {
 
         Log.d(LOG_LABEL, "createFormController called for constants activity");
+
+        isConstants = true;
 
         sectionField = null; // does not apply here
 
