@@ -98,10 +98,10 @@
     <string name="stop_action">لا</string>
 
     <!-- constant fields: names must match the field names in DriverConstantFields.java -->
-    <string name="occurredFrom">Occurred</string>
-    <string name="location">Location</string>
-    <string name="Weather">Weather</string>
-    <string name="Light">Light</string>
+    <string name="occurredFrom">حدث</string>
+    <string name="location">الموقع"</string>
+    <string name="Weather">الطقس"</string>
+    <string name="Light">الإضاءه</string>
 
     <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
     <string name="clear_day">يوم صافي</string>
