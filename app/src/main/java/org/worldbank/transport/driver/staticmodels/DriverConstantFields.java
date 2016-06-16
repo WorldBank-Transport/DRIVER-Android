@@ -27,8 +27,10 @@ import javax.validation.constraints.Past;
  *
  * Created by kathrynkillebrew on 1/8/16.
  */
+
+// property order for this class uses field names instead of SerializedName gson annotation
 @JsonPropertyOrder({
-        "Occurred",
+        "occurredFrom",
         "Weather",
         "Light"
 })
@@ -39,7 +41,6 @@ public class DriverConstantFields {
     // https://github.com/azavea/ashlar/blob/develop/ashlar/models.py
 
     @Past
-    @SerializedName("Occurred")
     @ConstantFieldType(ConstantFieldTypes.date)
     @NotNull
     public Date occurredFrom;
@@ -47,50 +48,34 @@ public class DriverConstantFields {
     // occurredTo is set to match value of occurredFrom before upload
 
     // location form component is added outside of the form builder
-    @SerializedName("Location")
     @ConstantFieldType(ConstantFieldTypes.location)
     @IsHidden(true)
     public Location location;
 
 
     // select fields with enumerations
-    @SerializedName("Weather")
     @Expose
     @FieldType(FieldTypes.selectlist)
     public WeatherEnum Weather;
 
-    @SerializedName("Light")
     @Expose
     @FieldType(FieldTypes.selectlist)
     public LightEnum Light;
 
     public enum WeatherEnum {
 
-        @SerializedName("Clear day")
         CLEAR_DAY("clear-day"),
-        @SerializedName("Clear night")
         CLEAR_NIGHT("clear-night"),
-        @SerializedName("Cloudy")
         CLOUDY("cloudy"),
-        @SerializedName("Fog")
         NIGHT("fog"),
-        @SerializedName("Hail")
         HAIL("hail"),
-        @SerializedName("Partly cloudy day")
         PARTLY_CLOUDY_DAY("partly-cloudy-day"),
-        @SerializedName("Partly cloudy night")
         PARTLY_CLOUDY_NIGHT("partly-cloudy-night"),
-        @SerializedName("Rain")
         RAIN("rain"),
-        @SerializedName("Sleet")
         SLEET("sleet"),
-        @SerializedName("Snow")
         SNOW("snow"),
-        @SerializedName("Thunderstorm")
         THUNDERSTORM("thunderstorm"),
-        @SerializedName("Tornado")
         TORNADO("tornado"),
-        @SerializedName("Wind")
         WIND("wind");
 
         private final String value;
@@ -123,13 +108,9 @@ public class DriverConstantFields {
 
     public enum LightEnum {
 
-        @SerializedName("Dawn")
         DAWN("dawn"),
-        @SerializedName("Day")
         DAY("day"),
-        @SerializedName("Dusk")
         DUSK("dusk"),
-        @SerializedName("Night")
         NIGHT("night");
 
         private final String value;
