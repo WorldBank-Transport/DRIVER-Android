@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DRIVER</string>
+    <string name="app_name">سائق</string>
 
     <!-- main menu -->
     <string name="action_upload">تحميل سجلات</string>
