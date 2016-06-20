@@ -78,7 +78,7 @@ public class CheckSchemaTaskTests extends AndroidTestCase {
             checkSchemaTask.execute(userInfo);
 
             // should get back schema UUID above
-            Mockito.verify(mockActivity, Mockito.timeout(2000)).foundSchema("e3290fbe-56a4-4527-ad96-e2e6561a9ac5");
+            Mockito.verify(mockActivity, Mockito.timeout(5000)).foundSchema("e3290fbe-56a4-4527-ad96-e2e6561a9ac5");
 
             assertEquals("Should have requested current schema from server", 1, server.getRequestCount());
 
@@ -105,7 +105,7 @@ public class CheckSchemaTaskTests extends AndroidTestCase {
             checkSchemaTask.execute(userInfo);
 
             // should get callback that credentials didn't work
-            Mockito.verify(mockActivity, Mockito.timeout(2000)).haveInvalidCredentials();
+            Mockito.verify(mockActivity, Mockito.timeout(5000)).haveInvalidCredentials();
 
             assertEquals("Should have requested current schema from server", 1, server.getRequestCount());
 
@@ -133,7 +133,7 @@ public class CheckSchemaTaskTests extends AndroidTestCase {
 
             checkSchemaTask.execute(userInfo);
 
-            Mockito.verify(mockActivity, Mockito.timeout(2000))
+            Mockito.verify(mockActivity, Mockito.timeout(5000))
                     .schemaCheckError("Server error checking schema version. Please try again at another time.");
 
             assertEquals("Should have requested current schema from server", 1, server.getRequestCount());
