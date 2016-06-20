@@ -42,7 +42,7 @@
     <!-- record upload -->
     <string name ="error_record_upload">خطأ في التحميل</string>
     <string name="records_uploaded_checking_schema">تم تحميل السجلات، والآن يتم التحقق من تحديث المخطط ...</string>
-    <string name="records_uploaded_some_failed">فشل في تحميل ــــــــ سجل </string>
+    <string name="records_uploaded_some_failed">فشل في تحميل %1$d سجل</string>
     <string name="records_nothing_to_upload">لا توجد سجلات لتحميل</string>
 
     <!-- record delete -->
