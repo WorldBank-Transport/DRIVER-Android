@@ -125,7 +125,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.1.11'
+    compile 'com.github.azavea:AndroidValidatedForms:1.1.12'
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:recyclerview-v7:23.4.0'
