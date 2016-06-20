@@ -34,6 +34,7 @@ import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.tasks.CheckSchemaTask;
 import org.worldbank.transport.driver.tasks.PostRecordsTask;
 import org.worldbank.transport.driver.tasks.UpdateSchemaTask;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -121,7 +122,12 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                     String createdAt = cursor.getString(1);
                     try {
                         Date date = sourceDateFormat.parse(createdAt);
-                        String dateString = displayDateFormatter.format(date);
+                        String dateString;
+                        if (DriverUtilities.languageIsArabic()) {
+                            dateString = DriverUtilities.formatDateAsHijri(date);
+                        } else {
+                            dateString = displayDateFormatter.format(date);
+                        }
                         textView.setText(dateString);
                     } catch (ParseException e) {
                         Log.e(LOG_LABEL, "Failed to parse date string " + createdAt);

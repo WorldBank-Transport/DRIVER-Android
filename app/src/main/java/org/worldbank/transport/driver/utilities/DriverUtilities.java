@@ -5,11 +5,15 @@ import android.util.Log;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.gson.annotations.SerializedName;
 
+import org.joda.time.Chronology;
+import org.joda.time.LocalDateTime;
+import org.joda.time.chrono.IslamicChronology;
 import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -217,9 +221,36 @@ public class DriverUtilities {
     }
 
     public static boolean localeIsRTL(Locale locale) {
-        Log.d(LOG_LABEL, locale.getDisplayName());
+        Log.d(LOG_LABEL, "Locale " + locale.getDisplayName() + " language " + Locale.getDefault().getLanguage());
+
         int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
         return  direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC ||
                 direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT;
+    }
+
+    /**
+     * Check if the system language is Arabic. Use to decide whether to use Hijri date display.
+     *
+     * @return True if device language is Arabic.
+     */
+    public static boolean languageIsArabic() {
+        return Locale.getDefault().getLanguage().startsWith("ar");
+    }
+
+    /**
+     * Convert a date to its Hijri calendar representation.
+     * Uses Joda for the conversion, as it is already included as a dependency.
+     *
+     * @param date ISO date/time to format
+     * @return Hijri date string
+     */
+    public static String formatDateAsHijri(Date date) {
+        final Chronology hijri = IslamicChronology.getInstanceUTC();
+
+        LocalDateTime todayHijri = new LocalDateTime(date, hijri);
+
+        // TODO: use DateTimeFormatter for something prettier? What is a good format?
+        // Does Joda know yet what the month names are?
+        return todayHijri.toString();
     }
 }
