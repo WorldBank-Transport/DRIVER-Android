@@ -127,13 +127,13 @@ dependencies {
     // form builder
     compile 'com.github.azavea:AndroidValidatedForms:1.1.11'
     // Android libraries
-    compile 'com.android.support:appcompat-v7:23.2.0'
-    compile 'com.android.support:recyclerview-v7:23.2.0'
-    compile 'com.android.support:design:23.2.0'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+    compile 'com.android.support:design:23.4.0'
     compile 'com.android.support:multidex:1.0.1'
     // for device location API access
-    compile 'com.google.android.gms:play-services-location:8.4.0'
-    compile 'com.google.android.gms:play-services-auth:8.4.0'
+    compile 'com.google.android.gms:play-services-location:9.0.2'
+    compile 'com.google.android.gms:play-services-auth:9.0.2'
 
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
