@@ -3,13 +3,24 @@ package org.worldbank.transport.driver.utilities;
 import android.util.Log;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.github.msarhan.ummalqura.calendar.UmmalquraCalendar;
+import com.github.msarhan.ummalqura.calendar.UmmalquraDateFormatSymbols;
+import com.github.msarhan.ummalqura.calendar.text.UmmalquraFormatData_ar;
 import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.media.SerializableMedia;
+import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -217,9 +228,48 @@ public class DriverUtilities {
     }
 
     public static boolean localeIsRTL(Locale locale) {
-        Log.d(LOG_LABEL, locale.getDisplayName());
+        Log.d(LOG_LABEL, "Locale " + locale.getDisplayName() + " language " + Locale.getDefault().getLanguage());
+
         int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
         return  direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC ||
                 direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT;
+    }
+
+    /**
+     * Determine if device locale is in Saudi Arabia. Set configurables.xml flag
+     * always_use_sa_locale to true to always return true from this function.
+     *
+     * Use the method isInSaudiArabia() on DriverApp, which caches the result of this,
+     * instead of calling this method directly.
+     *
+     * @return True if user is in Saudi Arabia
+     */
+    public static boolean isInSaudiArabia() {
+        // http://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+        return Locale.getDefault().getCountry().equals("SA") ||
+                DriverApp.getContext().getResources().getBoolean(R.bool.always_use_sa_locale);
+    }
+
+    /**
+     * Convert date to its Hijri Ummalqura calendar representation.
+     *
+     * @param date Date to format
+     * @param dateFormat Formatter with pattern set
+     * @param locale Locale to use for presentation (determines language to use)
+     * @return Formatted date/time string
+     */
+    public static String formatDateAsUmmalqura(Date date, SimpleDateFormat dateFormat, Locale locale) {
+        Calendar cal = new UmmalquraCalendar(locale);
+        cal.setTime(date);
+        dateFormat.setCalendar(cal);
+
+        // explicitly set the date format symbols; otherwise months display as incorrect Gregorian
+        UmmalquraDateFormatSymbols ummalquara = new UmmalquraDateFormatSymbols();
+        DateFormatSymbols symbols = new DateFormatSymbols(locale);
+        symbols.setMonths(ummalquara.getMonths());
+        symbols.setShortMonths(ummalquara.getShortMonths());
+        dateFormat.setDateFormatSymbols(symbols);
+
+        return dateFormat.format(cal.getTime());
     }
 }

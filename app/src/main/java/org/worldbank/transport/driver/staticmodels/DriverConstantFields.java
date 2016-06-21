@@ -4,7 +4,6 @@ import android.location.Location;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;

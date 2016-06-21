@@ -34,6 +34,7 @@ import org.worldbank.transport.driver.staticmodels.DriverAppContext;
 import org.worldbank.transport.driver.tasks.CheckSchemaTask;
 import org.worldbank.transport.driver.tasks.PostRecordsTask;
 import org.worldbank.transport.driver.tasks.UpdateSchemaTask;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.LocationServiceManager;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
@@ -62,6 +63,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     ProgressBar progressBar;
     FloatingActionButton fab;
     ListView recordListView;
+    boolean useUmmalqura;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = appContext.getDriverApp();
+        useUmmalqura = app.isInSaudiArabia();
 
         // add record button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
@@ -102,15 +105,20 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                 0);
 
         // use 24-hour date format if system does so
-        final DateFormat displayDateFormatter;
+        final SimpleDateFormat displayDateFormatter;
+        String dateFormatString = "EEEE d MMMM, y ";
+        final Locale locale = Locale.getDefault();
         if (android.text.format.DateFormat.is24HourFormat(this)) {
-            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy HH:mm:ss z", Locale.getDefault());
+            dateFormatString += "HH:mm:ss z";
         } else {
-            displayDateFormatter = new SimpleDateFormat("MMM d, yyyy hh:mm:ss z", Locale.getDefault());
+            dateFormatString += "hh:mm:ss z";
         }
 
-        sourceDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        displayDateFormatter = new SimpleDateFormat(dateFormatString, locale);
         displayDateFormatter.setTimeZone(TimeZone.getDefault());
+
+        sourceDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
         adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -121,7 +129,13 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                     String createdAt = cursor.getString(1);
                     try {
                         Date date = sourceDateFormat.parse(createdAt);
-                        String dateString = displayDateFormatter.format(date);
+                        String dateString;
+                        if (useUmmalqura) {
+                            // format in Umm al-Qura Hijri calendar
+                            dateString = DriverUtilities.formatDateAsUmmalqura(date, displayDateFormatter, locale);
+                        } else {
+                            dateString = displayDateFormatter.format(date);
+                        }
                         textView.setText(dateString);
                     } catch (ParseException e) {
                         Log.e(LOG_LABEL, "Failed to parse date string " + createdAt);
