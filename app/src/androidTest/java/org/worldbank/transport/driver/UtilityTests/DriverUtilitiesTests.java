@@ -6,8 +6,14 @@ import android.util.Log;
 import org.worldbank.transport.driver.TestModels.TestPerson;
 import org.worldbank.transport.driver.utilities.DriverUtilities;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Tests for DriverUtilities methods.
@@ -80,6 +86,17 @@ public class DriverUtilitiesTests extends AndroidTestCase {
         String bigBirdLabel = itemLabels.get(0);
         assertEquals("Unexpected default " +
                 "item label", "Test Person - 1", bigBirdLabel);
+    }
+
+    public void testUmmalQuara() {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.ENGLISH);
+        // Friday, December 31, 1999 11:59:59 PM UTC
+        Date date = new Date(946684799000L);
+        calendar.setTime(date);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE d MMMM, y", Locale.ENGLISH);
+        String formattedDate = DriverUtilities.formatDateAsUmmalqura(date, sdf, Locale.ENGLISH);
+        assertEquals("Incorrect date format for " + date.toString(), "Friday 23 Ramadhan, 1420", formattedDate);
     }
 
 }
