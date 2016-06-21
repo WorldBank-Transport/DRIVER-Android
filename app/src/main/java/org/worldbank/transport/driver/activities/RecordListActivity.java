@@ -63,6 +63,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
     ProgressBar progressBar;
     FloatingActionButton fab;
     ListView recordListView;
+    boolean useUmmalqura;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = appContext.getDriverApp();
+        useUmmalqura = DriverUtilities.isInSaudiArabia();
 
         // add record button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
@@ -128,7 +130,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                     try {
                         Date date = sourceDateFormat.parse(createdAt);
                         String dateString;
-                        if (DriverUtilities.isInSaudiArabia()) {
+                        if (useUmmalqura) {
                             // format in Umm al-Qura Hijri calendar
                             dateString = DriverUtilities.formatDateAsUmmalqura(date, displayDateFormatter, locale);
                         } else {

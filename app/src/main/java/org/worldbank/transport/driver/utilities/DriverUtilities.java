@@ -9,6 +9,8 @@ import com.github.msarhan.ummalqura.calendar.text.UmmalquraFormatData_ar;
 import com.google.gson.annotations.SerializedName;
 
 import org.jsonschema2pojo.media.SerializableMedia;
+import org.worldbank.transport.driver.R;
+import org.worldbank.transport.driver.staticmodels.DriverApp;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 
 import java.lang.reflect.Field;
@@ -234,12 +236,15 @@ public class DriverUtilities {
     }
 
     /**
-     * Determine if device locale is in Saudi Arabia
+     * Determine if device locale is in Saudi Arabia. Set configurables.xml flag
+     * always_use_sa_locale to true to always return true from this function.
+     *
      * @return True if user is in Saudi Arabia
      */
     public static boolean isInSaudiArabia() {
         // http://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
-        return Locale.getDefault().getCountry().equals("SA");
+        return Locale.getDefault().getCountry().equals("SA") ||
+                DriverApp.getContext().getResources().getBoolean(R.bool.always_use_sa_locale);
     }
 
     /**

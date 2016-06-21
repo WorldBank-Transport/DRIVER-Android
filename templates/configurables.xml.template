@@ -2,4 +2,6 @@
 <resources>
     <string name="api_server_url" translatable="false">http://example.com</string>
     <string name="oauth_client_id" translatable="false"></string>
+    <!-- debug setting for testing the calendar formatting -->
+    <bool name="always_use_sa_locale" translatable="false">false</bool>
 </resources>
