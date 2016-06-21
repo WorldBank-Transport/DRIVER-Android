@@ -15,6 +15,7 @@ import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.datastore.RecordDatabaseManager;
+import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.io.File;
@@ -72,6 +73,7 @@ public class DriverApp extends Application {
     private static RecordDatabaseManager databaseManager;
 
     private boolean amTesting = false;
+    private boolean amInSaudiArabia = false;
     private SecureDexClassLoader schemaClassLoader = null;
     private static Map<String, URL> packageNameCertMap = null;
 
@@ -122,6 +124,7 @@ public class DriverApp extends Application {
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         record = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
+        amInSaudiArabia = DriverUtilities.isInSaudiArabia();
     }
 
     public static Context getContext() {
@@ -163,6 +166,10 @@ public class DriverApp extends Application {
             userInfo.readFromSharedPreferences(mContext);
         }
         return userInfo;
+    }
+
+    public boolean isInSaudiArabia() {
+        return amInSaudiArabia;
     }
 
     public Object getEditObject() {

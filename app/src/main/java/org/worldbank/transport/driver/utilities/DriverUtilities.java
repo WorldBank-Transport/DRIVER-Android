@@ -239,6 +239,9 @@ public class DriverUtilities {
      * Determine if device locale is in Saudi Arabia. Set configurables.xml flag
      * always_use_sa_locale to true to always return true from this function.
      *
+     * Use the method isInSaudiArabia() on DriverApp, which caches the result of this,
+     * instead of calling this method directly.
+     *
      * @return True if user is in Saudi Arabia
      */
     public static boolean isInSaudiArabia() {

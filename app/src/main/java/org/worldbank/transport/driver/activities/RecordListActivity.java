@@ -77,7 +77,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
 
         DriverAppContext appContext = new DriverAppContext((DriverApp) getApplicationContext());
         app = appContext.getDriverApp();
-        useUmmalqura = DriverUtilities.isInSaudiArabia();
+        useUmmalqura = app.isInSaudiArabia();
 
         // add record button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.record_list_fab);
