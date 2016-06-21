@@ -319,13 +319,16 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                                 enumListInfo.labels.add(0, "");
                                 enumListInfo.items.add(0, "");
                             }
-                            control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                            control = new SelectionController(this, fieldName, fieldLabel, isRequired, "",
                                     enumListInfo.labels, enumListInfo.items);
                         }
 
                         break;
                     case text:
-                        control = new EditTextController(this, fieldName, fieldLabel);
+                        // TODO: pass input type as extra final argument if not single-line text
+                        // InputType.TYPE_CLASS_NUMBER for number formats;
+                        // also types for decimal entry and multi-line fields
+                        control = new EditTextController(this, fieldName, fieldLabel, "", isRequired);
                         break;
                     case reference:
                         if (watchTarget == null) {
@@ -338,7 +341,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             refSelectInfo.labels.add(0, "");
                             refSelectInfo.items.add(0, "");
                         }
-                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "Select",
+                        control = new SelectionController(this, fieldName, fieldLabel, isRequired, "",
                                 refSelectInfo.labels, refSelectInfo.items);
 
                         break;
