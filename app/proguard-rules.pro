@@ -76,6 +76,11 @@
     @org.codehaus.jackson.annotate.* <init>(...);
 }
 
+# calendar formatter
+-keep class com.github.msarhan.ummalqura.** { *; }
+-keep interface com.github.msarhan.ummalqura.calendar.**{ *; }
+-keepnames class com.github.msarhan.ummalqura.**
+
 # form builder
 -keep class com.github.dkharrat.nexusdialog.** { public *; }
 -keep interface com.github.dkharrat.nexusdialog.** { public *; }

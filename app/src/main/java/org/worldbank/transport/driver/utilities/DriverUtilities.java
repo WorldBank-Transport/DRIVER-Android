@@ -3,17 +3,22 @@ package org.worldbank.transport.driver.utilities;
 import android.util.Log;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.github.msarhan.ummalqura.calendar.UmmalquraCalendar;
+import com.github.msarhan.ummalqura.calendar.UmmalquraDateFormatSymbols;
+import com.github.msarhan.ummalqura.calendar.text.UmmalquraFormatData_ar;
 import com.google.gson.annotations.SerializedName;
 
-import org.joda.time.Chronology;
-import org.joda.time.LocalDateTime;
-import org.joda.time.chrono.IslamicChronology;
 import org.jsonschema2pojo.media.SerializableMedia;
 import org.worldbank.transport.driver.staticmodels.DriverConstantFields;
 
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -229,28 +234,34 @@ public class DriverUtilities {
     }
 
     /**
-     * Check if the system language is Arabic. Use to decide whether to use Hijri date display.
-     *
-     * @return True if device language is Arabic.
+     * Determine if device locale is in Saudi Arabia
+     * @return True if user is in Saudi Arabia
      */
-    public static boolean languageIsArabic() {
-        return Locale.getDefault().getLanguage().startsWith("ar");
+    public static boolean isInSaudiArabia() {
+        // http://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+        return Locale.getDefault().getCountry().equals("SA");
     }
 
     /**
-     * Convert a date to its Hijri calendar representation.
-     * Uses Joda for the conversion, as it is already included as a dependency.
+     * Convert date to its Hijri Ummalqura calendar representation.
      *
-     * @param date ISO date/time to format
-     * @return Hijri date string
+     * @param date Date to format
+     * @param dateFormat Formatter with pattern set
+     * @param locale Locale to use for presentation (determines language to use)
+     * @return Formatted date/time string
      */
-    public static String formatDateAsHijri(Date date) {
-        final Chronology hijri = IslamicChronology.getInstanceUTC();
+    public static String formatDateAsUmmalqura(Date date, SimpleDateFormat dateFormat, Locale locale) {
+        Calendar cal = new UmmalquraCalendar(locale);
+        cal.setTime(date);
+        dateFormat.setCalendar(cal);
 
-        LocalDateTime todayHijri = new LocalDateTime(date, hijri);
+        // explicitly set the date format symbols; otherwise months display as incorrect Gregorian
+        UmmalquraDateFormatSymbols ummalquara = new UmmalquraDateFormatSymbols();
+        DateFormatSymbols symbols = new DateFormatSymbols(locale);
+        symbols.setMonths(ummalquara.getMonths());
+        symbols.setShortMonths(ummalquara.getShortMonths());
+        dateFormat.setDateFormatSymbols(symbols);
 
-        // TODO: use DateTimeFormatter for something prettier? What is a good format?
-        // Does Joda know yet what the month names are?
-        return todayHijri.toString();
+        return dateFormat.format(cal.getTime());
     }
 }
