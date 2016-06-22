@@ -76,6 +76,9 @@
     @org.codehaus.jackson.annotate.* <init>(...);
 }
 
+# TODO: okio is a test-only dependency; why is this needed here?
+-dontwarn okio.**
+
 # calendar formatter
 -keep class com.github.msarhan.ummalqura.** { *; }
 -keep interface com.github.msarhan.ummalqura.calendar.**{ *; }
