@@ -104,7 +104,7 @@ dependencies {
         all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
     compile 'com.google.code.gson:gson:2.4'
-    compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.19-images') {
+    compile('com.github.WorldBank-Transport:jsonschema2pojo:jsonschema2pojo-0.4.24-annotate-format') {
         // only want core
         exclude module: 'jsonschema2pojo-ant'
         exclude module: 'jsonschema2pojo-cli'
