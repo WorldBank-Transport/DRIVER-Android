@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +23,8 @@ import com.azavea.androidvalidatedforms.controllers.LabeledFieldController;
 import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
 import org.apache.commons.lang.StringUtils;
+import org.jsonschema2pojo.annotations.FieldFormat;
+import org.jsonschema2pojo.annotations.FieldFormats;
 import org.jsonschema2pojo.annotations.FieldType;
 import org.jsonschema2pojo.annotations.FieldTypes;
 import org.jsonschema2pojo.annotations.IsHidden;
@@ -236,6 +239,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             String fieldName = field.getName();
             String fieldLabel = fieldName;
             FieldTypes fieldType = null;
+            FieldFormats format = null;
             boolean isRequired = false;
             ConstantFieldTypes constantFieldType = null;
             String watchTarget = null;
@@ -261,6 +265,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                 } else if (annotationType.equals(FieldType.class)) {
                     FieldType fieldTypeAnnotation = (FieldType) annotation;
                     fieldType = fieldTypeAnnotation.value();
+                } else if (annotationType.equals(FieldFormat.class)) {
+                    FieldFormat formatAnnotation = (FieldFormat) annotation;
+                    format = formatAnnotation.value();
+                    Log.d(LOG_LABEL, "Format for field " + fieldName + " is : " + format);
                 } else if (annotationType.equals(SerializedName.class) && !isConstants) {
                     SerializedName serializedName = (SerializedName) annotation;
                     fieldLabel = serializedName.value();
@@ -325,10 +333,28 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
                         break;
                     case text:
-                        // TODO: pass input type as extra final argument if not single-line text
-                        // InputType.TYPE_CLASS_NUMBER for number formats;
-                        // also types for decimal entry and multi-line fields
-                        control = new EditTextController(this, fieldName, fieldLabel, "", isRequired);
+                        // check the field format for setting the text field input type
+                        int inputType = InputType.TYPE_CLASS_TEXT;
+                        if (format != null) {
+                            if (format.equals(FieldFormats.number)) {
+                                inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL |
+                                        InputType.TYPE_NUMBER_FLAG_SIGNED |
+                                        InputType.TYPE_CLASS_NUMBER;
+                            } else if (format.equals(FieldFormats.integer)) {
+                                inputType = InputType.TYPE_CLASS_NUMBER |
+                                        InputType.TYPE_NUMBER_FLAG_SIGNED;
+                            } else if (format.equals(FieldFormats.textarea)) {
+                                inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                            } else if (format.equals(FieldFormats.tel)) {
+                                inputType |= InputType.TYPE_CLASS_PHONE;
+                            } else if (format.equals(FieldFormats.email)) {
+                                inputType |= InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+                            } else if (format.equals(FieldFormats.url)) {
+                                inputType |= InputType.TYPE_TEXT_VARIATION_URI;
+                            }
+                        }
+
+                        control = new EditTextController(this, fieldName, fieldLabel, "", isRequired, inputType);
                         break;
                     case reference:
                         if (watchTarget == null) {
