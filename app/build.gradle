@@ -112,6 +112,8 @@ dependencies {
         exclude module: 'jsonschema2pojo-gradle-plugin'
         exclude module: 'jsonschema2pojo-integration-tests'
 
+        exclude group: 'com.squareup.moshi', module: 'moshi'
+        exclude group: 'com.squareup.okio', module: 'okio'
         exclude group: 'javax.validation', module: 'validation-api'
         exclude group: 'junit', module: 'junit'
         exclude group: 'android', module: 'net'

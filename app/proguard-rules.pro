@@ -76,8 +76,10 @@
     @org.codehaus.jackson.annotate.* <init>(...);
 }
 
-# TODO: okio is a test-only dependency; why is this needed here?
--dontwarn okio.**
+# ignore jsonschema2pojo's moshi annotator, excluded as it pulls in a transient depencency
+# on okio, breaking tests and adding unnecessary dependencies
+-dontwarn org.jsonschema2pojo.Moshi1Annotator.**
+-dontwarn com.squareup.moshi.**
 
 # calendar formatter
 -keep class com.github.msarhan.ummalqura.** { *; }
