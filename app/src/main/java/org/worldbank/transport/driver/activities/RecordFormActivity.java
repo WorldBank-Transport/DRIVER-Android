@@ -353,7 +353,6 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                                 inputType |= InputType.TYPE_TEXT_VARIATION_URI;
                             }
                         }
-
                         control = new EditTextController(this, fieldName, fieldLabel, "", isRequired, inputType);
                         break;
                     case reference:
@@ -362,6 +361,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                             continue;
                         }
                         SelectListInfo refSelectInfo = buildReferencedFieldInfo(watchTarget);
+                        if (refSelectInfo == null) {
+                            Log.e(LOG_LABEL, "Could not find referenced watch target! Skipping field.");
+                            break;
+                        }
                         if (!isRequired) {
                             Log.d(LOG_LABEL, "Adding empty option to reference list for " + fieldName);
                             refSelectInfo.labels.add(0, "");
@@ -369,7 +372,17 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                         }
                         control = new SelectionController(this, fieldName, fieldLabel, isRequired, "",
                                 refSelectInfo.labels, refSelectInfo.items);
-
+                        break;
+                    case integer:
+                        inputType = InputType.TYPE_CLASS_NUMBER |
+                                InputType.TYPE_NUMBER_FLAG_SIGNED;
+                        control = new EditTextController(this, fieldName, fieldLabel, "", isRequired, inputType);
+                        break;
+                    case number:
+                        inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL |
+                                InputType.TYPE_NUMBER_FLAG_SIGNED |
+                                InputType.TYPE_CLASS_NUMBER;
+                        control = new EditTextController(this, fieldName, fieldLabel, "", isRequired, inputType);
                         break;
                     default:
                         Log.e(LOG_LABEL, "Don't know what to do with field type " + fieldType.toString());
@@ -504,10 +517,10 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
 
         Field refIdField;
         try {
-            refIdField = refClass.getField("LocalId");
+            refIdField = refClass.getField("localId");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            Log.e(LOG_LABEL, "Failed to find LocalId field on referenced field " + watchTarget);
+            Log.e(LOG_LABEL, "Failed to find localId field on referenced field " + watchTarget);
             return null;
         }
 
@@ -517,7 +530,7 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
             try {
                 refIDs.add(refIdField.get(refItem));
             } catch (IllegalAccessException e) {
-                Log.e(LOG_LABEL, "Failed to get LocalId for item on referenced field " + watchTarget);
+                Log.e(LOG_LABEL, "Failed to get localId for item on referenced field " + watchTarget);
                 e.printStackTrace();
                 return null;
             }
