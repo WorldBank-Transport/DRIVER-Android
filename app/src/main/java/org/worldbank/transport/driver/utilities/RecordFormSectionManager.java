@@ -102,15 +102,15 @@ public class RecordFormSectionManager {
      * @param identifier Name of a potential Java identifier to sanitize
      * @return identifier with all non-allowed characters removed
      */
-    public static String getSanitizedIdentifier(String identifier) {
+    public static String getSanitizedIdentifier(String identifier, String replace) {
         for (char character: identifier.toCharArray()) {
             if (!Character.isJavaIdentifierPart(character)) {
-                identifier = identifier.replace(String.valueOf(character), "");
+                identifier = identifier.replace(String.valueOf(character), replace);
             }
         }
 
         if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
-            identifier = identifier.substring(1);
+            identifier = replace + identifier.substring(1);
         }
 
         return identifier;
@@ -127,7 +127,7 @@ public class RecordFormSectionManager {
     public static Class getSectionClass(String sectionName) {
         try {
             // class names are capitalized; field names of that type may not be
-            sectionName = getSanitizedIdentifier(sectionName);
+            sectionName = getSanitizedIdentifier(sectionName, "");
             sectionName = StringUtils.capitalize(sectionName);
             return DriverApp.getSchemaClassLoader().loadClass(MODEL_PACKAGE + sectionName);
         } catch (ClassNotFoundException e) {
@@ -181,7 +181,7 @@ public class RecordFormSectionManager {
         try {
             Class driverClass = DriverApp.getSchemaClass();
             if (driverClass != null) {
-                sectionName = getSanitizedIdentifier(sectionName);
+                sectionName = getSanitizedIdentifier(sectionName, "");
                 return driverClass.getField(sectionName);
             }
         } catch (NoSuchFieldException e) {
