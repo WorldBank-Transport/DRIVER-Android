@@ -42,12 +42,12 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         }
         driverSchema = driverClass.newInstance();
 
-        personClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Person");
+        personClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "شخصPerson");
         detailsClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "IncidentDetails");
-        vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
+        vehicleClass = modelClassLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "مركبةVehicle");
 
-        personField = driverSchema.getClass().getField("person");
-        nameField = personClass.getField("Name");
+        personField = driverSchema.getClass().getField("شخصPerson");
+        nameField = personClass.getField("الاسمName");
     }
 
     @Override
@@ -72,7 +72,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         assertEquals("incidentDetails", sectionName);
 
         sectionName = RecordFormSectionManager.getSectionName(2);
-        assertEquals("person", sectionName);
+        assertEquals("شخصPerson", sectionName);
 
         // no fourth section
         sectionName = RecordFormSectionManager.getSectionName(42);
@@ -81,11 +81,11 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testGetSectionClass() {
-        Class foundClass = RecordFormSectionManager.getSectionClass("person");
+        Class foundClass = RecordFormSectionManager.getSectionClass("شخصPerson");
         if (foundClass == null) {
             fail("class not found");
         }
-        assertEquals("Did not find expected class for Person", "Person", foundClass.getSimpleName());
+        assertEquals("Did not find expected class for Person", "شخصPerson", foundClass.getSimpleName());
     }
 
     @SmallTest
@@ -108,19 +108,19 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testFieldForSectionName() {
-        Field foundField = RecordFormSectionManager.getFieldForSectionName("person");
+        Field foundField = RecordFormSectionManager.getFieldForSectionName("شخصPerson");
         assertNotNull(foundField);
-        assertEquals("Did not find expected person field", "person", foundField.getName());
+        assertEquals("Did not find expected person field", "شخصPerson", foundField.getName());
     }
 
     @SmallTest
     public void testGetPluralTitle() {
-        Field foundField = RecordFormSectionManager.getFieldForSectionName("person");
+        Field foundField = RecordFormSectionManager.getFieldForSectionName("شخصPersonn");
         String foundPlural = RecordFormSectionManager.getPluralTitle(foundField, "some default");
         assertEquals("Unexpected plural title", "People", foundPlural);
 
         try {
-            Field invalidField = personClass.getField("Injury");
+            Field invalidField = personClass.getField("الإصابةInjury");
             foundPlural  = RecordFormSectionManager.getPluralTitle(invalidField, "some default");
             assertEquals("Did not get default plural title", foundPlural, "some default");
         } catch (NoSuchFieldException e) {
@@ -137,7 +137,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
         try {
             // this field is not a section, and so does not have a title
-            Field invalidField = personClass.getField("Injury");
+            Field invalidField = personClass.getField("الإصابةInjury");
             foundTitle  = RecordFormSectionManager.getSingleTitle(invalidField, "some default");
             assertEquals("Did not get default plural title", foundTitle, "some default");
         } catch (NoSuchFieldException e) {
@@ -181,7 +181,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetCreateDeleteListItems() {
         // create new list and add an object to it
-        Field foundField = RecordFormSectionManager.getFieldForSectionName("person");
+        Field foundField = RecordFormSectionManager.getFieldForSectionName("شخصPerson");
         Object obj = RecordFormSectionManager.getOrCreateListItem(foundField, personClass, driverSchema, 0);
         assertNotNull(obj);
         assertEquals(obj.getClass(), personClass);
@@ -241,7 +241,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             ArrayList gotPeople = RecordFormSectionManager.getSectionList(personField.get(driverSchema));
             assertEquals(gotPeople, personField.get(driverSchema));
 
-            Field vehicleField = driverSchema.getClass().getField("vehicle");
+            Field vehicleField = driverSchema.getClass().getField("مركبةVehicle");
             ArrayList gotVehicles = RecordFormSectionManager.getSectionList(vehicleField.get(driverSchema));
             assertEquals(gotVehicles.size(), 0);
 

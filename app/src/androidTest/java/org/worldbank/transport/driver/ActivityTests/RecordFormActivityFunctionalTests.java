@@ -56,7 +56,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         Intent intent = new Intent(getInstrumentation().getTargetContext(), RecordFormItemActivity.class);
 
         // go to Persons section
-        intent.putExtra(RecordFormActivity.SECTION_ID, 2);
+        intent.putExtra(RecordFormActivity.SECTION_ID, 4);
         intent.putExtra(RecordFormItemActivity.ITEM_INDEX, 0);
 
         setActivityIntent(intent);
@@ -107,7 +107,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
     public void testReferenceTypeField() {
         FormController formController = activity.getFormController();
 
-        SelectionController vehicleCtl = (SelectionController)formController.getElement("vehicle");
+        SelectionController vehicleCtl = (SelectionController)formController.getElement("مركبةVehicle");
         assertNotNull(vehicleCtl);
 
         Object vehicleObj = vehicleCtl.getModel().getValue(vehicleCtl.getName());
@@ -217,12 +217,12 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
         }
 
         try {
-            Field vehicleField = driverClass.getField("vehicle");
-            Field personField = driverClass.getField("person");
+            Field vehicleField = driverClass.getField("مركبةVehicle");
+            Field personField = driverClass.getField("شخصPerson");
 
             SecureDexClassLoader classLoader = DriverApp.getSchemaClassLoader();
             assertNotNull(classLoader);
-            Class vehicleClass = classLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Vehicle");
+            Class vehicleClass = classLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "مركبةVehicle");
             Object testVehicleOne = vehicleClass.newInstance();
             Object testVehicleTwo = vehicleClass.newInstance();
 
@@ -230,7 +230,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
 
             Object[] vehicleTypes = null;
             for (Class clazz: vehicleInnerClasses) {
-                if (clazz.getSimpleName().equals("VehicleTypeEnum")) {
+                if (clazz.getSimpleName().equals("نوعالمركبةVehicleTypeEnum")) {
                     vehicleTypes = clazz.getEnumConstants();
                 }
             }
@@ -239,7 +239,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
                 fail("Vehicle types not found");
             }
 
-            Field vehicleTypeField = vehicleClass.getField("VehicleType");
+            Field vehicleTypeField = vehicleClass.getField("نوعالمركبةVehicleType");
 
             vehicleTypeField.set(testVehicleOne, vehicleTypes[0]);
             vehicleTypeField.set(testVehicleTwo, vehicleTypes[1]);
@@ -249,11 +249,11 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
             vehicles.add(testVehicleTwo);
             vehicleField.set(editObj, vehicles);
 
-            Object testPerson = classLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "Person").newInstance();
-            testPerson.getClass().getField("Name").set(testPerson, "Evel Knievel");
+            Object testPerson = classLoader.loadClass(RecordFormSectionManager.MODEL_PACKAGE + "شخصPerson").newInstance();
+            testPerson.getClass().getField("الاسمName").set(testPerson, "Evel Knievel");
 
-            Field vehicleIdField = vehicleClass.getField("LocalId");
-            testPerson.getClass().getField("vehicle").set(testPerson, vehicleIdField.get(testVehicleOne));
+            Field vehicleIdField = vehicleClass.getField("localId");
+            testPerson.getClass().getField("المركبةVehicle").set(testPerson, vehicleIdField.get(testVehicleOne));
 
             ArrayList<Object> people = new ArrayList<>(1);
             people.add(testPerson);
@@ -261,7 +261,7 @@ public class RecordFormActivityFunctionalTests extends ActivityInstrumentationTe
 
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            fail("field not found");
+            fail("field not found: " + e.getMessage());
         } catch (InstantiationException e) {
             e.printStackTrace();
             fail("could not instantiate");
