@@ -71,10 +71,9 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         String sectionName = RecordFormSectionManager.getSectionName(0);
         assertEquals("incidentDetails", sectionName);
 
-        sectionName = RecordFormSectionManager.getSectionName(2);
+        sectionName = RecordFormSectionManager.getSectionName(3);
         assertEquals("شخصPerson", sectionName);
 
-        // no fourth section
         sectionName = RecordFormSectionManager.getSectionName(42);
         assertNull("Should not have a name for a non-extant section", sectionName);
     }
@@ -93,7 +92,7 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
         boolean hasNext = RecordFormSectionManager.sectionHasNext(0);
         assertTrue(hasNext);
 
-        hasNext = RecordFormSectionManager.sectionHasNext(3);
+        hasNext = RecordFormSectionManager.sectionHasNext(4);
         assertFalse(hasNext);
     }
 
@@ -115,9 +114,10 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
     @SmallTest
     public void testGetPluralTitle() {
-        Field foundField = RecordFormSectionManager.getFieldForSectionName("شخصPersonn");
+        Field foundField = RecordFormSectionManager.getFieldForSectionName("شخصPerson");
+        assertNotNull(foundField);
         String foundPlural = RecordFormSectionManager.getPluralTitle(foundField, "some default");
-        assertEquals("Unexpected plural title", "People", foundPlural);
+        assertEquals("Unexpected plural title", "أشخاص / People", foundPlural);
 
         try {
             Field invalidField = personClass.getField("الإصابةInjury");
@@ -132,8 +132,9 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
     @SmallTest
     public void testGetSingleTitle() {
         Field foundField = RecordFormSectionManager.getFieldForSectionName("incidentDetails");
+        assertNotNull(foundField);
         String foundTitle = RecordFormSectionManager.getSingleTitle(foundField, "some default");
-        assertEquals("Unexpected title", "Incident Details", foundTitle);
+        assertEquals("Unexpected title", "حادث / Incident Details", foundTitle);
 
         try {
             // this field is not a section, and so does not have a title
@@ -158,22 +159,22 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
             Field detailField = driverSchema.getClass().getField("incidentDetails");
             assertEquals(detailField, detailsField);
             Object details = detailField.get(driverSchema);
-            details.getClass().getField("Description").set(details, "blah blah blah");
+            details.getClass().getField("englishDescription").set(details, "blah blah blah");
 
             obj = RecordFormSectionManager.getOrCreateSectionObject(detailsField, detailsClass, driverSchema);
             assertNotNull(obj);
             assertEquals(obj.getClass(), detailsClass);
 
             assertEquals(obj.getClass(), detailsClass);
-            Object foundDescription = obj.getClass().getField("Description").get(obj);
+            Object foundDescription = obj.getClass().getField("englishDescription").get(obj);
             assertEquals(foundDescription, "blah blah blah");
 
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-            fail("could not access field");
+            fail("could not access field " + e.getMessage());
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            fail("could not find field");
+            fail("could not find field " + e.getMessage());
         }
     }
 
@@ -247,13 +248,13 @@ public class RecordFormSectionManagerTests extends AndroidTestCase {
 
         } catch (InstantiationException e) {
             e.printStackTrace();
-            fail("could not instantiate");
+            fail("could not instantiate " + e.getMessage());
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-            fail("could not access");
+            fail("could not access " + e.getMessage());
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            fail("field not found");
+            fail("field not found " + e.getMessage());
         }
     }
 }
