@@ -23,6 +23,7 @@ public class CheckSchemaUrlBuilder implements CheckSchemaTask.CurrentSchemaUrl {
                     .appendEncodedPath(RECORDTYPE_ENDPOINT)
                     .appendQueryParameter("active", "True") // must be capitalized for DRF
                     .appendQueryParameter("label", recordTypeLabel)
+                    .appendEncodedPath("") // ensure trailing slash at end of URL
                     .build()
                     .toString());
         } catch (MalformedURLException e) {

@@ -199,6 +199,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 urlConnection.setDoOutput(false);
                 urlConnection.setDoInput(true);
                 urlConnection.setRequestProperty("Authorization", "Token " + auth.token);
+                urlConnection.connect();
 
                 in = new BufferedInputStream(urlConnection.getInputStream());
                 ir = new BufferedReader(new InputStreamReader(in));
@@ -210,9 +211,7 @@ public class LoginTask extends AsyncTask<String, String, DriverUserInfo> {
                 in.close();
                 responseStr = stringBuilder.toString();
 
-                Log.d(LOG_LABEL, "User info request response:");
-                Log.d(LOG_LABEL, responseStr);
-
+                Log.d(LOG_LABEL, "User info request response: " + responseStr);
                 userInfo = gson.fromJson(responseStr, DriverUserInfo.class);
 
                 if (!userInfo.hasWritePermission()) {

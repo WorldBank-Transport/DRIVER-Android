@@ -22,6 +22,7 @@ public class UpdateSchemaUrlBuilder implements UpdateSchemaTask.RecordSchemaUrl 
                     .appendEncodedPath(RECORDSCHEMA_ENDPOINT)
                     .appendEncodedPath(recordSchemaEndpoint)
                     .appendQueryParameter("format", "jar")
+                    .appendEncodedPath("") // ensure trailing slash at end of URL
                     .build()
                     .toString());
         } catch (MalformedURLException e) {
