@@ -40,6 +40,7 @@ public class LoginUrlBuilder implements LoginTask.LoginUrls {
                     .buildUpon()
                     .appendEncodedPath(USER_ENDPOINT)
                     .appendPath(String.valueOf(userId))
+                    .appendEncodedPath("") // ensure trailing slash at end of URL
                     .build()
                     .toString());
         } catch (MalformedURLException e) {
