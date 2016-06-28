@@ -73,7 +73,7 @@ public class DriverApp extends Application {
     private static RecordDatabaseManager databaseManager;
 
     private boolean amTesting = false;
-    private boolean amInSaudiArabia = false;
+    private boolean useHijri = false;
     private SecureDexClassLoader schemaClassLoader = null;
     private static Map<String, URL> packageNameCertMap = null;
 
@@ -124,7 +124,7 @@ public class DriverApp extends Application {
         connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         record = null;
         databaseManager = new RecordDatabaseManager(mContext, amTesting);
-        amInSaudiArabia = DriverUtilities.isInSaudiArabia();
+        useHijri = DriverUtilities.isInSaudiArabiaOrArabic();
     }
 
     public static Context getContext() {
@@ -168,8 +168,8 @@ public class DriverApp extends Application {
         return userInfo;
     }
 
-    public boolean isInSaudiArabia() {
-        return amInSaudiArabia;
+    public boolean useHijri() {
+        return useHijri;
     }
 
     public Object getEditObject() {

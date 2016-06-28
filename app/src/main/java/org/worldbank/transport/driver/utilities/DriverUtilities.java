@@ -236,17 +236,19 @@ public class DriverUtilities {
     }
 
     /**
-     * Determine if device locale is in Saudi Arabia. Set configurables.xml flag
-     * always_use_sa_locale to true to always return true from this function.
+     * Determine if device locale is in Saudi Arabia or system language is Arabic.
+     * Set configurables.xml flag always_use_sa_locale to true
+     * to always return true from this function.
      *
-     * Use the method isInSaudiArabia() on DriverApp, which caches the result of this,
+     * Use the method useHijri() on DriverApp, which caches the result of this,
      * instead of calling this method directly.
      *
      * @return True if user is in Saudi Arabia
      */
-    public static boolean isInSaudiArabia() {
+    public static boolean isInSaudiArabiaOrArabic() {
         // http://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
-        return Locale.getDefault().getCountry().equals("SA") ||
+        Locale locale = Locale.getDefault();
+        return locale.getCountry().equals("SA") || locale.getLanguage().startsWith("ar") ||
                 DriverApp.getContext().getResources().getBoolean(R.bool.always_use_sa_locale);
     }
 

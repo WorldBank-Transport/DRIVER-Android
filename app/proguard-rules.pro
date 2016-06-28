@@ -83,7 +83,7 @@
 
 # calendar formatter
 -keep class com.github.msarhan.ummalqura.** { *; }
--keep interface com.github.msarhan.ummalqura.calendar.**{ *; }
+-keep interface com.github.msarhan.ummalqura.calendar.** { *; }
 -keepnames class com.github.msarhan.ummalqura.**
 
 # form builder
