@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="api_server_url" translatable="false">http://example.com</string>
+    <string name="api_server_url" translatable="false">https://example.com</string>
+    <string name="signing_cert_pem_url" translatable="false">https://worldbank-transport.github.io/DRIVER-Android/sa/driver_android_certificate.pem</string>
     <string name="oauth_client_id" translatable="false"></string>
     <!-- debug setting for testing the calendar formatting -->
     <bool name="always_use_sa_locale" translatable="false">false</bool>
