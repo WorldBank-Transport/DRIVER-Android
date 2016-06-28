@@ -126,18 +126,16 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
-    // form builder
-    compile 'com.github.azavea:AndroidValidatedForms:1.1.15'
-    // calendar formatting
-    compile 'com.github.azavea:ummalqura-calendar:1.1.7-public'
+    // form builder (includes calendar formatter)
+    compile 'com.github.azavea:AndroidValidatedForms:1.1.16'
     // Android libraries
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:recyclerview-v7:23.4.0'
     compile 'com.android.support:design:23.4.0'
     compile 'com.android.support:multidex:1.0.1'
     // for device location API access
-    compile 'com.google.android.gms:play-services-location:9.0.2'
-    compile 'com.google.android.gms:play-services-auth:9.0.2'
+    compile 'com.google.android.gms:play-services-location:9.2.0'
+    compile 'com.google.android.gms:play-services-auth:9.2.0'
 
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
