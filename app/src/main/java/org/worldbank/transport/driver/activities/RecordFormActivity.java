@@ -397,7 +397,13 @@ public abstract class RecordFormActivity extends FormWithAppCompatActivity {
                     // have a constant field type
                     switch (constantFieldType) {
                         case date:
-                            control = new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
+                            DatePickerController datePickerController =
+                                    new DatePickerController(this, fieldName, fieldLabel, isRequired, DEFAULT_DATE_FORMAT, true);
+                            if (app.useHijri()) {
+                                datePickerController.setUseHijri();
+                            }
+
+                            control = datePickerController;
                             break;
                         default:
                             Log.e(LOG_LABEL, "Unrecognized constant field type " + constantFieldType);
