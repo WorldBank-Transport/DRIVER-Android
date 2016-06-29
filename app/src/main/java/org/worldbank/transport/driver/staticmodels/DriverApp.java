@@ -51,8 +51,7 @@ public class DriverApp extends Application {
     // track current schema version
     private static String currentSchemaVersion;
 
-    // TODO: publish on app server; must be on HTTPS and a direct link (no redirect)
-    private static final String SCHEMA_CERT_URL = "https://worldbank-transport.github.io/DRIVER-Android/driver_android_certificate.pem";
+    private static String SCHEMA_CERT_URL;
 
     public static final String BACKUP_JAR_NAME = "models.jar";
     public static final String BACKUP_JAR_SCHEMA_VERSION = "b9f5c292-7393-4f15-b298-7d1cf9c9a942";
@@ -96,6 +95,8 @@ public class DriverApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        SCHEMA_CERT_URL = getString(R.string.signing_cert_pem_url);
 
         packageNameCertMap = new HashMap<>(1);
         try {
