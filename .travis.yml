@@ -15,6 +15,10 @@ jdk:
   - oraclejdk8
 
 android:
+  licenses:
+    - '.*intel.+'
+    - 'android-sdk-license-.+'
+
   components:
     - platform-tools
     - tools
@@ -26,10 +30,6 @@ android:
     - sys-img-armeabi-v7a-android-17
     - addon-google_apis-google-17
     - build-tools-24.0.2
-
-  licenses:
-    - 'android-*'
-    - '.*intel.+'
 
 before_install:
   - free -m # show available memory on VM
