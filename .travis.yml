@@ -18,6 +18,7 @@ android:
   components:
     - platform-tools
     - tools
+    - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-android-support
