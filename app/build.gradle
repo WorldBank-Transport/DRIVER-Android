@@ -24,15 +24,9 @@ configurations {
 apply plugin: 'com.android.application'
 
 android {
-
-    if (!travisBuild) {
-        signingConfigs {
-            release
-        }
-    }
     
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
     // Must specify individually all duplicated files from libraries to exclude or pickFirst
     packagingOptions {
         exclude 'NOTICE'
@@ -48,12 +42,30 @@ android {
     defaultConfig {
         applicationId "org.worldbank.transport.driver"
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4096M"
+        // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
+        preDexLibraries = preDexEnabled && !travisBuild
+    }
+    lintOptions {
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+    if (!travisBuild) {
+        signingConfigs {
+            release
+        }
     }
     buildTypes {
         debug {
@@ -77,19 +89,6 @@ android {
                 signingConfig signingConfigs.release
             }
         }
-    }
-    dexOptions {
-        incremental true
-        javaMaxHeapSize "4096M"
-        // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
-        preDexLibraries = preDexEnabled && !travisBuild
-    }
-    lintOptions {
-        abortOnError false
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
@@ -127,15 +126,15 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder (includes calendar formatter)
-    compile 'com.github.azavea:AndroidValidatedForms:1.1.17'
+    compile 'com.github.azavea:AndroidValidatedForms:1.2.0'
     // Android libraries
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:recyclerview-v7:23.4.0'
-    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:multidex:1.0.1'
     // for device location API access
-    compile 'com.google.android.gms:play-services-location:9.2.0'
-    compile 'com.google.android.gms:play-services-auth:9.2.0'
+    compile 'com.google.android.gms:play-services-location:9.4.0'
+    compile 'com.google.android.gms:play-services-auth:9.4.0'
 
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'

@@ -1,8 +1,6 @@
 package org.worldbank.transport.driver.ActivityTests;
 
-import android.app.Instrumentation;
 import android.content.Intent;
-import android.support.v7.widget.AppCompatTextView;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.ViewAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -11,13 +9,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.azavea.androidvalidatedforms.FormController;
 import com.azavea.androidvalidatedforms.FormElementController;
-import com.azavea.androidvalidatedforms.FormModel;
+import com.azavea.androidvalidatedforms.FormModelEnclosure.FormModel;
 import com.azavea.androidvalidatedforms.controllers.FormSectionController;
 import com.azavea.androidvalidatedforms.controllers.SelectionController;
 
@@ -25,12 +21,10 @@ import org.worldbank.transport.driver.R;
 import org.worldbank.transport.driver.activities.RecordFormActivity;
 import org.worldbank.transport.driver.activities.RecordFormItemActivity;
 import org.worldbank.transport.driver.staticmodels.DriverApp;
-import org.worldbank.transport.driver.utilities.DriverUtilities;
 import org.worldbank.transport.driver.utilities.RecordFormSectionManager;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
