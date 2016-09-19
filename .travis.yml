@@ -5,6 +5,15 @@ language: android
 # sudo: true
 # dist: trusty
 
+sudo: false
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+jdk:
+  - oraclejdk8
+
 android:
   components:
     - platform-tools
