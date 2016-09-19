@@ -12,10 +12,10 @@ android:
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-android-support
-    - android-23
+    - android-24
     - sys-img-armeabi-v7a-android-17
     - addon-google_apis-google-17
-    - build-tools-23.0.3
+    - build-tools-24.0.2
 
   licenses:
     - 'android-*'
@@ -24,8 +24,8 @@ android:
 before_install:
   - free -m # show available memory on VM
   - cp templates/configurables.xml.template app/src/main/res/values/configurables.xml
-  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
-  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter "build-tools-23.0.3" --force > /dev/null
+  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter android-24,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
+  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter "build-tools-24.0.2" --force > /dev/null
 
 before_script:
   - ulimit -c unlimited -S # increase stack size
