@@ -1,31 +1,36 @@
 language: android
 
-# to use trusty beta builds for more memory
-# https://docs.travis-ci.com/user/ci-environment/
-# sudo: true
-# dist: trusty
+sudo: required
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+jdk:
+  - oraclejdk8
 
 android:
+  licenses:
+    - '.*intel.+'
+    - 'android-sdk-license-.+'
+
   components:
     - platform-tools
     - tools
+    - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-android-support
-    - android-23
+    - android-24
     - sys-img-armeabi-v7a-android-17
     - addon-google_apis-google-17
-    - build-tools-23.0.3
-
-  licenses:
-    - 'android-*'
-    - '.*intel.+'
+    - build-tools-24.0.2
 
 before_install:
   - free -m # show available memory on VM
   - cp templates/configurables.xml.template app/src/main/res/values/configurables.xml
-  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter android-23,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
-  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter "build-tools-23.0.3" --force > /dev/null
+  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter android-24,tools,platform-tools,addon-google_apis-google-17,extra-android-m2repository,extra-google-m2repository,extra-android-support --force > /dev/null
+  - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui -a --filter "build-tools-24.0.2" --force > /dev/null
 
 before_script:
   - ulimit -c unlimited -S # increase stack size
@@ -45,7 +50,7 @@ env:
     - ADB_INSTALL_TIMEOUT=8 # in minutes (defaults to 2)
     - TERM=dumb
     - MALLOC_ARENA_MAX=2
-    - GRADLE_OPTS='-Dorg.gradle.jvmargs="-Xmx2560m -XX:+HeapDumpOnOutOfMemoryError"'
+    - GRADLE_OPTS='-Dorg.gradle.jvmargs="-Xmx4608m -XX:+HeapDumpOnOutOfMemoryError"'
 
 script:
   - ./gradlew connectedCheck --stacktrace
