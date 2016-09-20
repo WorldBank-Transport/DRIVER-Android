@@ -126,7 +126,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     // form builder (includes calendar formatter)
-    compile 'com.github.azavea:AndroidValidatedForms:1.2.0'
+    compile 'com.github.azavea:AndroidValidatedForms:1.2.1'
     // Android libraries
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:recyclerview-v7:24.2.1'
