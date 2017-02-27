@@ -133,8 +133,8 @@ dependencies {
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:multidex:1.0.1'
     // for device location API access
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-auth:9.4.0'
+    compile 'com.google.android.gms:play-services-location:10.2.0'
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
 
     // secure class loading for downloaded model files
     compile 'it.necst.grabnrun:grabnrun:1.0.4'
