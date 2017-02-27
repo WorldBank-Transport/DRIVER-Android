@@ -54,7 +54,7 @@ public class DriverApp extends Application {
     private static String SCHEMA_CERT_URL;
 
     public static final String BACKUP_JAR_NAME = "models.jar";
-    public static final String BACKUP_JAR_SCHEMA_VERSION = "b9f5c292-7393-4f15-b298-7d1cf9c9a942";
+    public static final String BACKUP_JAR_SCHEMA_VERSION = "21fcc10b-f9c1-400f-8a45-8582deffd2e6";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
 
     /**
