@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DRIVER</string>
+    <string name="app_name">DRIVER-Demo</string>
 
     <!-- main menu -->
     <string name="action_upload">Upload Records</string>
