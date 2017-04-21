@@ -30,7 +30,7 @@ import java.util.UUID;
 public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
 
     /* The name of the record type in use by the app; should match default in web app */
-    private static final String RECORD_TYPE_LABEL = "Incident";
+    private static final String RECORD_TYPE_LABEL = "Vụ tai nạn";
 
     private static final String LOG_LABEL = "CheckSchemaTask";
 

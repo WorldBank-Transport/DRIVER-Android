@@ -1,0 +1,128 @@
+<resources>
+    <string name="app_name">Người lái xe</string>
+
+    <!-- main menu -->
+    <string name="action_upload">Tải các hồ sơ lên</string>
+    <string name="action_update_schema">Tải giản đồ lên</string>
+
+    <!-- login -->
+    <string name="title_activity_login">Đăng nhập</string>
+    <string name="prompt_email">Tên người dùng</string>
+    <string name="prompt_password">Mật khẩu</string>
+    <string name="action_sign_in">Đăng nhập</string>
+    <string name="action_sign_in_short">Đăng nhập</string>
+    <string name="error_invalid_email">Tên người dùng không đúng</string>
+    <string name="error_invalid_password">Mật khẩu quá ngắn</string>
+    <string name="error_incorrect_password">Mật khẩu không đúng</string>
+    <string name="error_field_required">Trường bắt buộc</string>
+    <string name="error_incorrect_username_or_password">Tên người dùng hoặc mật khẩu không đúng</string>
+    <string name="error_server_login">Lỗi đăng nhập do máy chủ. Vui lòng đăng nhập sau.</string>
+    <string name="error_user_cannot_write_records">Tài khoản người dùng không được phép tạo hồ sơ. Vui lòng liên hệ người quản lý hệ thống để được cấp quyền.</string>
+    <string name="error_login_unknown">Lỗi đăng nhập không xác định.</string>
+    <string name="error_login_network">Lỗi mạng không xác định.</string>
+
+    <!-- logout -->
+    <string name="logout_dialog_title">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="logout_dialog_message">Sau khi đăng xuất, bạn sẽ phải đăng nhập lại để nhập hoặc quản lý các hồ sơ. Đăng nhập lại yêu cầu phải có kết nối Internet. Bạn có chắc chắn muốn đăng xuất bây giờ?</string>
+
+    <!-- network -->
+    <string name="error_no_network">Không có mạng.</string>
+
+    <!-- schema check -->
+    <string name="error_schema_check">Lỗi hệ thống khi kiểm tra phiên bản giản đồ. Vui lòng thử lại sau.</string>
+    <string name="schema_current">Giản đồ hiện tại là bản mới nhất.</string>
+    <string name="schema_not_updated_have_records">Giản đồ chưa cập nhật. Phiên bản giản đồ mới đã có, nhưng chưa thể dùng được cho đến khi tất các các hồ sơ đã được tải lên hoặc xóa đi.</string>
+
+    <!-- schema update -->
+    <string name="error_schema_update">Lỗi xuất hiện khi cập nhật giản đồ. Vui lòng thử lại sau.</string>
+    <string name="schema_update_not_ready">Cập nhật giản đồ hiện chưa sẵn sàng. Vui lòng cập nhật lại trong vài phút nữa.</string>
+    <string name="schema_updated">Giản đồ đã được cập nhật.</string>
+
+    <!-- record upload -->
+    <string name ="error_record_upload">Lỗi hệ thống khi tải hồ sơ lên.</string>
+    <string name="records_uploaded_checking_schema">Hồ sơ đã được tải lên, đang kiểm tra cập nhật giản đồ…</string>
+    <string name="records_uploaded_some_failed">%1$d Không thể tải hồ sơ lên.</string>
+    <string name="records_nothing_to_upload">Không tìm thấy hồ sơ để tải lên.</string>
+
+    <!-- record delete -->
+    <string name="record_delete_success">Đã xóa hồ sơ.</string>
+    <string name="record_delete_failure">Không thể xóa hồ sơ!</string>
+    <string name="record_deletion_dialog_title">Xóa hồ sơ?</string>
+    <string name="record_deletion_dialog_message">Bạn có chắc chắn muốn xóa hồ sơ này?</string>
+
+    <!-- record form -->
+    <string name="record_save_button">Lưu</string>
+    <string name="record_next_button">Tiếp theo</string>
+    <string name="record_previous_button">Quay lại</string>
+    <string name="record_delete_button">Xóa</string>
+    <string name="record_save_and_exit">Lưu &amp; Thoát</string>
+    <string name="record_delete">Xóa hồ sơ</string>
+
+    <!-- record item list -->
+    <string name="record_form_list_item_image_description">Hình ảnh của mục hồ sơ</string>
+    <string name="record_form_list_item_empty_list">Chưa có mục nào được thêm vào. Ấn vào nút tròn để thêm một mục.</string>
+
+    <!-- record form list -->
+    <string name="record_select_title">Tải một hồ sơ đơn lên</string>
+    <string name="record_select_message">Bạn có chắc chắn muốn tải hồ sơ này lên?</string>
+    <string name="record_form_list_empty">Không tìm thấy hồ sơ nào trên thiết bị. Ấn vào nút tròn để thêm một hồ sơ.</string>
+
+    <!-- record status messages -->
+    <string name="record_save_success">Hồ sơ đã được lưu</string>
+    <string name="record_save_failure">Không thể lưu hồ sơ!</string>
+    <string name="record_item_delete_success">Mục đã bị xóa</string>
+    <string name="record_item_delete_failure">Không thể xóa mục này!</string>
+    <string name="record_validation_errors">Vui lòng sửa dữ liệu đầu vào trước khi tiến hành</string>
+
+    <!-- record unsaved changes dialog -->
+    <string name="record_unsaved_changes_dialog_title">Lưu hồ sơ?</string>
+    <string name="record_unsaved_changes_dialog_message">Lưu thay đổi hồ sơ trước khi thoát?</string>
+
+    <!-- Shared preferences -->
+
+    <!-- device location -->
+    <string name="location_fine_permission_rationale">Yêu cầu cho phép định vị thiết bị. Hồ sơ không thể tạo nếu không có vị trí.</string>
+    <string name="location_gps_needed_rationale">Yêu cầu bật GPS để có vị trí chính xác của hồ sơ.</string>
+    <string name="location_requires_gps">Thiết bị không có GPS để xác định vị trí. Vui lòng sử dụng một thiết bị khác.</string>
+    <string name="location_gps_fix_found">Đã tìm thấy GPS. Đang xác định vị trí&#8230;</string>
+    <string name="location_best_found">Vị trí đã xác định.</string>
+    <string name="location_awaiting_gps_fix">Chờ tìm GPS&#8230;</string>
+    <string name="location_service_off">Việc kiểm tra vị trí đang không hoạt động</string>
+
+    <!-- location warning dialogs -->
+    <string name="location_not_set_dialog_title">Vị trí không được thiết lập!</string>
+    <string name="location_not_set_dialog_warning">Không thể tải hồ sơ lên mà không có vị trí. Tiếp tục chờ đợi GPS tìm vị trí?</string>
+    <string name="location_settling_dialog_title">Vị trí vẫn đang được cập nhật</string>
+    <string name="location_settling_dialog_warning">Đang cải thiện việc tìm vị trí. Việc này sẽ mất khoảng dưới 20 giây. Tiếp tục chờ đợi?</string>
+
+    <string name="confirm_action">Có</string>
+    <string name="stop_action">Không</string>
+
+    <!-- constant fields: names must match the field names in DriverConstantFields.java -->
+    <string name="occurredFrom">Đã xảy ra</string>
+    <string name="location">Địa điểm</string>
+    <string name="Weather">Thời tiết</string>
+    <string name="Light">Ánh sáng</string>
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="clear_day">Ngày quang mây</string>
+    <string name="clear_night">Đêm quang mây</string>
+    <string name="cloudy">Mây mù</string>
+    <string name="fog">Sương mù</string>
+    <string name="hail">Mưa đá</string>
+    <string name="partly_cloudy_day">Ngày có ít mây</string>
+    <string name="partly_cloudy_night">Đêm có ít mây</string>
+    <string name="rain">Mưa</string>
+    <string name="sleet">Mưa tuyết</string>
+    <string name="snow">Tuyết</string>
+    <string name="thunderstorm">Dông</string>
+    <string name="tornado">Vòi rồng</string>
+    <string name="wind">Gió</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="dawn">Bình minh</string>
+    <string name="day">Ngày</string>
+    <string name="dusk">Bụi</string>
+    <string name="night">Đêm</string>
+    <string name="action_logout">Đăng xuất</string>
+</resources>
