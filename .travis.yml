@@ -25,6 +25,7 @@ android:
     - android-24
     - sys-img-armeabi-v7a-android-17
     - addon-google_apis-google-17
+    - android-17
     - build-tools-24.0.2
 
 before_install:
