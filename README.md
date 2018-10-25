@@ -70,8 +70,8 @@ A library jar lives at `app/src/main/assets/models.jar` that is used as the init
 definition, the backup model classes in case of update failure, and also for running tests. This jar
 file must be signed with the release key. To generate this file, select the schema that you want to
 use as your initial class definition, and then access
-https://{your-driver-domain}/api/jars/{schema-uuid}/. You will receive a 201 response. Wait about a
-minute and then reload. You should receive a jar file that you can use for models.jar.  If you
+`https://{your-driver-domain}/api/jars/{schema-uuid}/`. You will receive a 201 response. Wait about a
+minute and then reload, passing in the query parameter `format=jar` to download the jar file (eg. `https://{your-driver-domain}/api/jars/{schema-uuid}/?format=jar`). You should receive a jar file that you can use for models.jar. If you
 update models.jar, also update the UUID `BACKUP_JAR_SCHEMA_VERSION` in `DriverApp`.
 
 ## Building for Release
