@@ -25,7 +25,7 @@ Next, you will also need to generate a certificate from the keystore. To do this
 `keytool -exportcert -keystore driver.keystore -alias driver -file driver_android_certificate.pem`
 
 The keystore file should be kept private since it is used to verify the authenticity of the Android
-app that you build. The certificate file should be placed on a publicly accessible web server.
+app that you build. The certificate file should be placed on a publicly accessible web server at a URL that _uses HTTPS and does not redirect_.
 GitHub Pages is a good option.
 
 You should [copy the keystore file](https://github.com/WorldBank-Transport/DRIVER/#developing) to the `gradle/data` file of your DRIVER installation and
@@ -83,3 +83,49 @@ To build a signed version of the app that will reload model files when there is 
   - Go to Build -> Generate Signed APK... and follow the prompts.
   - Assuming building is successful, you will have an `app-release.apk` file. This file can be
     placed at any secure web-accessible location and downloaded to users' Android phones.
+
+## Troubleshooting
+
+### JAR file structure
+
+A proper models JAR should have a structure like so (you can use the `jar` command or simply unzip the file since JAR files are ZIP files):
+
+```
+$ jar tvf app/src/main/assets/models.jar
+   163 Wed Oct 31 13:34:54 EDT 2018 META-INF/MANIFEST.MF
+   254 Wed Oct 31 13:34:54 EDT 2018 META-INF/DRIVER.SF
+  5229 Wed Oct 31 13:34:54 EDT 2018 META-INF/DRIVER.RSA
+     0 Wed Oct 31 13:34:54 EDT 2018 META-INF/
+ 35600 Wed Oct 31 13:34:54 EDT 2018 classes.dex
+```
+
+### Verifying Signature/Certificate
+
+The app requires `app/driver.keystore` to have been used to sign the JAR file at `app/src/main/assets/models.jar`. You can use `jarsigner` to verify that the models JAR file has been signed correctly:
+
+```
+$ jarsigner -verify -certs -keystore app/driver.keystore app/src/main/assets/models.jar
+
+jar verified.
+```
+
+You can also use `keytool` to confirm that the password used when creating the keystore is what you expect:
+
+```
+keytool -list -v -keystore app/driver.keystore -storepass <secret>
+```
+
+The output from this command can also be used to verify that the certificate matches up with the publicly-accessible certificate that the app is using to check against the keystore (see [Generating a Keystore](#generating-a-keystore)).
+
+Note that the certificate 1) must be accessible over HTTPS and 2) the URL cannot redirect. You can do `curl <signing_cert_pem_url>` to easily verify that there is no redirect.
+
+### Updating models JAR
+
+If you are running (or debugging) the app and your changes to the default `models.jar` do not appear to be taking effect, this may be due to the model classes having already been loaded by the class loader persisting in memory.
+
+To see changes to `models.jar`, you may need to try the following:
+
+* Clear the cache in Android Studio and restart
+* Manually uninstall the app on the device
+* Restart the device before reinstall
+* Ensure there's only one model JAR in the project
