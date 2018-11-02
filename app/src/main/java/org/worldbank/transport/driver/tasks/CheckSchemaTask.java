@@ -29,9 +29,6 @@ import java.util.UUID;
  */
 public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
 
-    /* The name of the record type in use by the app; should match default in web app */
-    private static final String RECORD_TYPE_LABEL = "Incident";
-
     private static final String LOG_LABEL = "CheckSchemaTask";
 
     public interface CheckSchemaCallbackListener {
@@ -100,7 +97,9 @@ public class CheckSchemaTask extends AsyncTask<DriverUserInfo, String, String> {
         }
 
         try {
-            URL url = currentSchemaUrl.currentSchemaUrl(serverUrl, RECORD_TYPE_LABEL);
+            // The name of the record type in use by the app; should match default in web app
+            String recordTypeLabel = context.getString(R.string.record_type_label);
+            URL url = currentSchemaUrl.currentSchemaUrl(serverUrl, recordTypeLabel);
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");

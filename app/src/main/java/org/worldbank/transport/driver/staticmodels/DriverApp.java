@@ -54,7 +54,6 @@ public class DriverApp extends Application {
     private static String SCHEMA_CERT_URL;
 
     public static final String BACKUP_JAR_NAME = "models.jar";
-    public static final String BACKUP_JAR_SCHEMA_VERSION = "b9f5c292-7393-4f15-b298-7d1cf9c9a942";
     public static final String UPDATED_JAR_NAME = "updatedModels.jar";
 
     /**
@@ -318,7 +317,7 @@ public class DriverApp extends Application {
      * Helper to revert to the backup model classes, if updates not found or could not be loaded.
      */
     public void loadBackupSchema() {
-        if (loadSchemaClasses(BACKUP_JAR_NAME, BACKUP_JAR_SCHEMA_VERSION)) {
+        if (loadSchemaClasses(BACKUP_JAR_NAME, getString(R.string.backup_jar_schema_version))) {
             Log.d(LOG_LABEL, "Reverted to backup schema");
         } else {
             Log.e(LOG_LABEL, "Could not load backup schema!");
