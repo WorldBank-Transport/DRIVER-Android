@@ -40,11 +40,12 @@ cp templates/configurables.xml.template app/src/main/res/values/configurables.xm
 ```
 
 - Set the URL for your DRIVER API server in `configurables.xml` under `api_server_url`.
-- Set the "signing\_cert\_pem\_url" to be the URL to the keystore certificate file (if building for
+- Set the `signing_cert_pem_url` to be the URL to the keystore certificate file (if building for
   an existing stack, this should already be available; if building for a new stack, you will need to
   upload the certificate file somewhere)
+- Set `record_type_label` to be the label for the default record type (eg. "Incident"). NOTE: you can see all record types by going to `https://{your-driver-domain}/api/recordtypes/`.
 - If you want to support Google Sign-In, follow the instructions below to set it up, and then fill
-  in the "oauth\_client\_id".
+  in the `oauth_client_id`.
 
 ```
 cp templates/release.properties.template app/release.properties
@@ -72,7 +73,7 @@ file must be signed with the release key. To generate this file, select the sche
 use as your initial class definition, and then access
 `https://{your-driver-domain}/api/jars/{schema-uuid}/`. You will receive a 201 response. Wait about a
 minute and then reload, passing in the query parameter `format=jar` to download the jar file (eg. `https://{your-driver-domain}/api/jars/{schema-uuid}/?format=jar`). You should receive a jar file that you can use for models.jar. If you
-update models.jar, also update the UUID `BACKUP_JAR_SCHEMA_VERSION` in `DriverApp`.
+update models.jar, also update the UUID in `backup_jar_schema_version` in `configurables.xml`.
 
 ## Building for Release
 To build a signed version of the app that will reload model files when there is a schema update:
