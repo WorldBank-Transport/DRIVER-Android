@@ -70,21 +70,16 @@
     <string name="location">ที่ตั้ง</string>
     <string name="Weather">สภาพอากาศ</string>
     <string name="Light">เบา</string>
-    <string name="clear_day">ท้องฟ้าแจ่มใส - กลางวัน</string>
-    <string name="clear_night">ท้องฟ้าแจ่มใส - กลางคืน</string>
-    <string name="cloudy">มีเมฆมาก</string>
-    <string name="fog">หมอก</string>
-    <string name="hail">ลูกเห็บ</string>
-    <string name="partly_cloudy_day"> มีเมฆมากบางส่วน - กลางวัน</string>
-    <string name="partly_cloudy_night"> มีเมฆมากบางส่วน - กลางคืน</string>
-    <string name="rain"> ฝน</string>
-    <string name="sleet"> หิมะฝน</string>
-    <string name="snow"> หิมะ</string>
-    <string name="thunderstorm"> ฝนฟ้าคะนอง</string>
-    <string name="tornado"> พายุทอร์นาโด</string>
-    <string name="wind"> ลม</string>
-    <string name="dawn">รุ่งอรุณ</string>
-    <string name="day">กลางวัน</string>
-    <string name="dusk">พลบค่ำ</string>
-    <string name="night">กลางคืน</string>
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="fair">Fair</string>
+    <string name="rain">Rain</string>
+    <string name="wind">Wind</string>
+    <string name="fog">Fog</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="day">Day</string>
+    <string name="dawn_dusk">Dawn/Dusk</string>
+    <string name="night_lit">Night (lit)</string>
+    <string name="night_unlit">Night (unlit)</string>
 </resources>

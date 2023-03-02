@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -24,6 +25,7 @@ import org.worldbank.transport.driver.utilities.UploadRecordUrlBuilder;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -70,7 +72,7 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
         this(listener, userInfo, new UploadRecordUrlBuilder(), DriverApp.getDatabaseManager());
     }
 
-     // Invoke this constructor directly in test.
+    // Invoke this constructor directly in test.
     public PostRecordsTask(PostRecordsListener listener, DriverUserInfo userInfo,
                            UploadRecordUrl uploadRecordUrl, RecordDatabaseManager databaseManager) {
 
@@ -272,6 +274,22 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
         PostRecordsListener caller = listener.get();
         if (caller != null) {
             caller.recordUploadFinished(failed);
+        }
+        // Delete the data images should all records be successfully uploaded
+        if (failed == 0) {
+            File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                    + "/Android/data/"
+                    + this.context.getPackageName()
+                    + "/Files");
+
+            if (mediaStorageDir.isDirectory())
+            {
+                String[] children = mediaStorageDir.list();
+                for (int i = 0; i < children.length; i++)
+                {
+                    new File(mediaStorageDir, children[i]).delete();
+                }
+            }
         }
     }
 

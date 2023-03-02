@@ -114,23 +114,14 @@
     <string name="Light">Light</string>
 
     <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
-    <string name="clear_day">Clear day</string>
-    <string name="clear_night">Clear night</string>
-    <string name="cloudy">Cloudy</string>
-    <string name="fog">Fog</string>
-    <string name="hail">Hail</string>
-    <string name="partly_cloudy_day">Partly cloudy day</string>
-    <string name="partly_cloudy_night">Partly cloudy night</string>
+    <string name="fair">Fair</string>
     <string name="rain">Rain</string>
-    <string name="sleet">Sleet</string>
-    <string name="snow">Snow</string>
-    <string name="thunderstorm">Thunderstorm</string>
-    <string name="tornado">Tornado</string>
     <string name="wind">Wind</string>
+    <string name="fog">Fog</string>
 
     <!-- light constants: names must match enum values -->
-    <string name="dawn">Dawn</string>
     <string name="day">Day</string>
-    <string name="dusk">Dusk</string>
-    <string name="night">Night</string>
+    <string name="dawn_dusk">Dawn/Dusk</string>
+    <string name="night_lit">Night (lit)</string>
+    <string name="night_unlit">Night (unlit)</string>
 </resources>
