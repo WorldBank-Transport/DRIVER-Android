@@ -74,7 +74,7 @@ public class RecordDatabaseManager {
         writableDb = dbHelper.getWritableDatabase();
         readableDb = dbHelper.getReadableDatabase();
 
-        storeDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        storeDateFormat.setTimeZone(TimeZone.getDefault());
     }
 
     /**
