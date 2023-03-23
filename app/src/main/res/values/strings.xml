@@ -114,14 +114,18 @@
     <string name="Light">Light</string>
 
     <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
-    <string name="fair">Fair</string>
-    <string name="rain">Rain</string>
-    <string name="wind">Wind</string>
-    <string name="fog">Fog</string>
+    <string name="Fair">Fair</string>
+    <string name="Rain">Rain</string>
+    <string name="Wind">Wind</string>
+    <string name="Fog">Fog</string>
 
     <!-- light constants: names must match enum values -->
-    <string name="day">Day</string>
-    <string name="dawn_dusk">Dawn/Dusk</string>
-    <string name="night_lit">Night (lit)</string>
-    <string name="night_unlit">Night (unlit)</string>
+    <string name="Day">Day</string>
+    <string name="Dawn_dusk">Dawn/Dusk</string>
+    <string name="Night_lit">Night (lit)</string>
+    <string name="Night_unlit">Night (unlit)</string>
+
+    <!--Storage Permission-->
+    <string name="storage_permission_granted">Storage Permission Granted</string>
+    <string name="storage_permission_not_granted">Storage Permission Not Granted! Please enable storage permission from settings</string>
 </resources>

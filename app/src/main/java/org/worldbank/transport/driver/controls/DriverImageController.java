@@ -14,6 +14,7 @@ import com.azavea.androidvalidatedforms.controllers.ImageController;
 import com.azavea.androidvalidatedforms.tasks.ResizeImageTask;
 
 import org.jsonschema2pojo.media.SerializableMedia;
+import org.worldbank.transport.driver.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,6 +29,7 @@ import java.util.Date;
  * Created by kathrynkillebrew on 2/4/16.
  */
 public class DriverImageController extends ImageController {
+
     public DriverImageController(Context ctx, String name, String labelText, boolean isRequired) {
         super(ctx, name, labelText, isRequired);
     }
@@ -39,6 +41,11 @@ public class DriverImageController extends ImageController {
         if (current != null && current.getClass().equals(SerializableMedia.class)) {
             return ((SerializableMedia)current).path;
         }
+        Bitmap placeholderBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.placeholder);
+        final int thumbSize = 64;
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(placeholderBitmap, thumbSize, thumbSize);
+        File placeholderFile = storeImage(thumbImage);
+        setModelValue(placeholderFile.getAbsolutePath());
 
         return null;
     }
@@ -152,13 +159,17 @@ public class DriverImageController extends ImageController {
 
     /** Create a File for saving an image or video */
     private  File getOutputMediaFile(){
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/"
-                + this.getContext().getPackageName()
-                + "/Files");
+        String appName = getContext().getApplicationInfo().loadLabel(getContext().getPackageManager()).toString();
 
-        if (!mediaStorageDir.exists()){
-            if (!mediaStorageDir.mkdirs()){
+        File picturePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+        File mediaStorageDir = new File(picturePath, appName);
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.e("TAG", "failed to create directory");
                 return null;
             }
         }

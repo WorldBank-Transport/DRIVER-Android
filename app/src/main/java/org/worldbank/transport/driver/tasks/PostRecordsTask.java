@@ -34,6 +34,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Set;
 
+import static org.worldbank.transport.driver.staticmodels.DriverApp.getContext;
+
 /**
  * Upload records to server, then delete them from the local database.
  *
@@ -277,17 +279,17 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
         }
         // Delete the data images should all records be successfully uploaded
         if (failed == 0) {
-            File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
-                    + "/Android/data/"
-                    + this.context.getPackageName()
-                    + "/Files");
-
+            String appName = getContext().getApplicationInfo().loadLabel(getContext().getPackageManager()).toString();
+            File picturePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File mediaStorageDir = new File(picturePath, appName);
             if (mediaStorageDir.isDirectory())
             {
                 String[] children = mediaStorageDir.list();
-                for (int i = 0; i < children.length; i++)
-                {
-                    new File(mediaStorageDir, children[i]).delete();
+                for (String child : children) {
+                    File file = new File(mediaStorageDir, child);
+                    if (file.getName().contains("MI_")) {
+                        file.delete();
+                    }
                 }
             }
         }

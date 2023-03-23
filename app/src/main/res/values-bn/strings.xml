@@ -106,15 +106,19 @@
 
 
     <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
-    <string name="fair">ভাল</string>
-    <string name="rain">বৃষ্টি</string>
-    <string name="wind">ঝড়</string>
-    <string name="fog">কুয়াশা</string>
+    <string name="Fair">ভাল</string>
+    <string name="Rain">বৃষ্টি</string>
+    <string name="Wind">ঝড়</string>
+    <string name="Fog">কুয়াশা</string>
 
     <!-- light constants: names must match enum values -->
-    <string name="day">দিন</string>
-    <string name="dawn_dusk">ভোর/সন্ধ্যা</string>
-    <string name="night_lit">আলোকিত সড়ক (রাতে)</string>
-    <string name="night_unlit">অনালোকিত সড়ক (রাতে)</string>
+    <string name="Day">দিন</string>
+    <string name="Dawn_dusk">ভোর/সন্ধ্যা</string>
+    <string name="Night_lit">আলোকিত সড়ক (রাতে)</string>
+    <string name="Night_unlit">অনালোকিত সড়ক (রাতে)</string>
+
+    <!--Storage Permission-->
+    <string name="storage_permission_granted">স্টোরেজ অনুমতি দেওয়া হয়েছে</string>
+    <string name="storage_permission_not_granted">স্টোরেজ অনুমতি দেওয়া হয়নি! সেটিংস থেকে স্টোরেজ অনুমতি সক্ষম করুন</string>
 
 </resources>

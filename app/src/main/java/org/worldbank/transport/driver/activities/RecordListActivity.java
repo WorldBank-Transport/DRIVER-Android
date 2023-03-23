@@ -1,14 +1,18 @@
 package org.worldbank.transport.driver.activities;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -51,6 +55,7 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
         PostRecordsTask.PostRecordsListener, UpdateSchemaTask.UpdateSchemaCallbackListener {
 
     private static final String LOG_LABEL = "RecordListActivity";
+    private static final int WRITE_EXTERNAL_STORAGE_CODE = 1;
 
     private static final DateFormat sourceDateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
@@ -172,7 +177,24 @@ public class RecordListActivity extends AppCompatActivity implements CheckSchema
                 return true;
             }
         });
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_CODE);
+        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == WRITE_EXTERNAL_STORAGE_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showToast(getString(R.string.storage_permission_granted), false);
+            } else {
+                showToast(getString(R.string.storage_permission_not_granted), true);
+            }
+        }
+    }
+
 
     @Override
     protected void onPostResume() {
