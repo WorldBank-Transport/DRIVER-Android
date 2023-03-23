@@ -70,21 +70,20 @@
     <string name="location">ສະຖານທີ່ຕັ້ງ</string>
     <string name="Weather">ສະພາບອາກາດ</string>
     <string name="Light">ແສງໄຟ</string>
-    <string name="clear_day">ອາກາດຕອນກາງເວັນປອດໂປ່ງ</string>
-    <string name="clear_night">ອາກາດຕອນກາງຄືນປອດໂປ່ງ</string>
-    <string name="cloudy">ມີເມກ</string>
-    <string name="fog">ໝອກ</string>
-    <string name="hail">ໝາກເຫັບ</string>
-    <string name="partly_cloudy_day">ອາກາດກາງເວັນມີໝອກບາງສ່ວນ</string>
-    <string name="partly_cloudy_night">ອາກາດກາງຄືນມີໝອກບາງສ່ວນ</string>
-    <string name="rain">ຝົນ</string>
-    <string name="sleet">ນ້ຳຄ້າງ</string>
-    <string name="snow">ຫິມມະ</string>
-    <string name="thunderstorm">ຟ້າລົມຝົນຕົກ</string>
-    <string name="tornado">ພາຍຸໝູນ/ພາຍຸໂທນາໂດ</string>
-    <string name="wind">ລົມ</string>
-    <string name="dawn">ຕອນເຊົ້າ</string>
-    <string name="day">ຕອນກາງເວັນ</string>
-    <string name="dusk">ຕອນແລງ</string>
-    <string name="night">ຕອນກາງຄືນ</string>
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="Fair">Fair</string>
+    <string name="Rain">Rain</string>
+    <string name="Wind">Wind</string>
+    <string name="Fog">Fog</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="Day">Day</string>
+    <string name="Dawn_dusk">Dawn/Dusk</string>
+    <string name="Night_lit">Night (lit)</string>
+    <string name="Night_unlit">Night (unlit)</string>
+
+    <!--Storage Permission-->
+    <string name="storage_permission_granted">Storage Permission Granted</string>
+    <string name="storage_permission_not_granted">Storage Permission Not Granted! Please enable storage permission from settings</string>
 </resources>

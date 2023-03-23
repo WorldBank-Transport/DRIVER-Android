@@ -3,6 +3,7 @@ package org.worldbank.transport.driver.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -24,6 +25,7 @@ import org.worldbank.transport.driver.utilities.UploadRecordUrlBuilder;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -31,6 +33,8 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Set;
+
+import static org.worldbank.transport.driver.staticmodels.DriverApp.getContext;
 
 /**
  * Upload records to server, then delete them from the local database.
@@ -70,7 +74,7 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
         this(listener, userInfo, new UploadRecordUrlBuilder(), DriverApp.getDatabaseManager());
     }
 
-     // Invoke this constructor directly in test.
+    // Invoke this constructor directly in test.
     public PostRecordsTask(PostRecordsListener listener, DriverUserInfo userInfo,
                            UploadRecordUrl uploadRecordUrl, RecordDatabaseManager databaseManager) {
 
@@ -272,6 +276,22 @@ public class PostRecordsTask extends AsyncTask<Long, Integer, Integer> {
         PostRecordsListener caller = listener.get();
         if (caller != null) {
             caller.recordUploadFinished(failed);
+        }
+        // Delete the data images should all records be successfully uploaded
+        if (failed == 0) {
+            String appName = getContext().getApplicationInfo().loadLabel(getContext().getPackageManager()).toString();
+            File picturePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File mediaStorageDir = new File(picturePath, appName);
+            if (mediaStorageDir.isDirectory())
+            {
+                String[] children = mediaStorageDir.list();
+                for (String child : children) {
+                    File file = new File(mediaStorageDir, child);
+                    if (file.getName().contains("MI_")) {
+                        file.delete();
+                    }
+                }
+            }
         }
     }
 

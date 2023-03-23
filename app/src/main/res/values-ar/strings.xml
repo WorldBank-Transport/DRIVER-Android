@@ -104,23 +104,18 @@
     <string name="Light">الإضاءه</string>
 
     <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
-    <string name="clear_day">يوم صافي</string>
-    <string name="clear_night">ليله صافيه</string>
-    <string name="cloudy">غائم</string>
-    <string name="fog">ضباب</string>
-    <string name="hail">وابل</string>
-    <string name="partly_cloudy_day">نهار شبه غائم</string>
-    <string name="partly_cloudy_night">ليلة شبه غائمة</string>
-    <string name="rain">مطر</string>
-    <string name="sleet">مطر ثلجي</string>
-    <string name="snow">ثلج</string>
-    <string name="thunderstorm">عاصفة رعدية</string>
-    <string name="tornado">عاصفة</string>
-    <string name="wind">رياح</string>
+    <string name="Fair">Fair</string>
+    <string name="Rain">Rain</string>
+    <string name="Wind">Wind</string>
+    <string name="Fog">Fog</string>
 
     <!-- light constants: names must match enum values -->
-    <string name="dawn">الفجر</string>
-    <string name="day">نهار</string>
-    <string name="dusk">الغسق</string>
-    <string name="night">ليل</string>
+    <string name="Day">Day</string>
+    <string name="Dawn_dusk">Dawn/Dusk</string>
+    <string name="Night_lit">Night (lit)</string>
+    <string name="Night_unlit">Night (unlit)</string>
+
+    <!--Storage Permission-->
+    <string name="storage_permission_granted">Storage Permission Granted</string>
+    <string name="storage_permission_not_granted">Storage Permission Not Granted! Please enable storage permission from settings</string>
 </resources>

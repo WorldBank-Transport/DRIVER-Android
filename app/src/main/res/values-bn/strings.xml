@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ড্রাইভার</string>
+
+
+    <string name="action_upload">আপলোড রেকর্ড</string>
+    <string name="action_update_schema">স্কিমা আপডেট করুন</string>
+    <string name="action_logout">প্রস্থান</string>
+
+
+    <string name="title_activity_login">সাইন ইন করুন</string>
+    <string name="prompt_email">ব্যবহারকারীর নাম</string>
+    <string name="prompt_password">পাসওয়ার্ড</string>
+    <string name="action_sign_in">সাইন ইন করুন</string>
+    <string name="action_sign_in_short">সাইন ইন করুন</string>
+    <string name="error_invalid_email">এই ব্যবহারকারীর নামটি অবৈধ৷</string>
+    <string name="error_invalid_password">এই পাসওয়ার্ড খুব ছোট</string>
+    <string name="error_incorrect_password">এই পাসওয়ার্ডটি ভুল</string>
+    <string name="error_field_required">ঘরটি অবশ্যই পূরণ করতে হবে</string>
+    <string name="error_incorrect_username_or_password">ব্যবহারকারী নাম বা পাসওয়ার্ড ভুল.</string>
+    <string name="error_server_login">লগ ইন করার সময় সার্ভারের ত্রুটি৷ অনুগ্রহ করে অন্য সময়ে আবার চেষ্টা করুন৷</string>
+    <string name="error_user_cannot_write_records">ব্যবহারকারীর অ্যাকাউন্টে রেকর্ড যোগ করার অ্যাক্সেস নেই। লেখার অ্যাক্সেস পেতে অনুগ্রহ করে একজন সিস্টেম প্রশাসকের সাথে যোগাযোগ করুন।</string>
+    <string name="error_login_unknown">লগ ইন করার সময় অজানা ত্রুটি৷</string>
+    <string name="error_login_network">লগ ইন করার সময় নেটওয়ার্ক ত্রুটি৷</string>
+
+
+    <string name="logout_dialog_title">আপনি লগ আউট করতে চান?</string>
+    <string name="logout_dialog_message">লগ আউট করার পরে রেকর্ড প্রবেশ বা পরিচালনা করতে আপনাকে আবার লগ ইন করতে হবে। লগ ইন করার জন্য ইন্টারনেট অ্যাক্সেস প্রয়োজন হবে। আপনি কি নিশ্চিত আপনি এখন লগ আউট করতে চান?</string>
+
+
+    <string name="error_no_network">নেটওয়ার্ক উপলব্ধ নেই.</string>
+
+
+    <string name="error_schema_check">স্কিমা সংস্করণ পরীক্ষা করা সার্ভার ত্রুটি. অন্য সময়ে আবার চেষ্টা করুন.</string>
+    <string name="schema_current">বর্তমান স্কিমা আপ-টু-ডেট।</string>
+    <string name="schema_not_updated_have_records">স্কিমা আপডেট করা হচ্ছে না। নতুন স্কিমা উপলব্ধ, কিন্তু সমস্ত রেকর্ড আপলোড বা মুছে না হওয়া পর্যন্ত ব্যবহার করা যাবে না।</string>
+
+
+    <string name="error_schema_update">স্কিমা আপডেট করার সময় ত্রুটির সম্মুখীন হয়েছে৷ অন্য সময়ে আবার চেষ্টা করুন.</string>
+    <string name="schema_update_not_ready">স্কিমা আপডেট এখনও প্রস্তুত নয়। কয়েক মিনিটের মধ্যে আবার আপডেট করার চেষ্টা করুন.</string>
+    <string name="schema_updated">স্কিমা আপডেট করা হয়েছে।</string>
+
+
+    <string name="error_record_upload">সার্ভার ত্রুটি রেকর্ড আপলোড.</string>
+    <string name="records_uploaded_checking_schema">রেকর্ড আপলোড করা হয়েছে, এখন স্কিমা আপডেটের জন্য পরীক্ষা করা হচ্ছে&#8230;</string>
+    <string name="records_uploaded_some_failed">%1$d রেকর্ড আপলোড করতে ব্যর্থ হয়েছে৷</string>
+    <string name="records_nothing_to_upload">আপলোড করার জন্য কোন রেকর্ড পাওয়া যায়নি।</string>
+
+
+    <string name="record_delete_success">রেকর্ড মুছে ফেলা হয়েছে।</string>
+    <string name="record_delete_failure">রেকর্ড মুছে ফেলতে ব্যর্থ!</string>
+    <string name="record_deletion_dialog_title">রেকর্ড মুছবেন?</string>
+    <string name="record_deletion_dialog_message">আপনি কি নিশ্চিত আপনি এই রেকর্ড মুছে ফেলতে চান?</string>
+
+
+    <string name="record_save_button">সংরক্ষণ</string>
+    <string name="record_next_button">পরবর্তী</string>
+    <string name="record_previous_button">পেছনে</string>
+    <string name="record_delete_button">মুছে ফেলা</string>
+    <string name="record_save_and_exit">সংরক্ষণ</string>
+    <string name="record_delete">রেকর্ড মুছুন</string>
+
+
+    <string name="record_form_list_item_image_description">রেকর্ড ফর্ম আইটেম ছবি</string>
+    <string name="record_form_list_item_empty_list">কোনো আইটেম এখনো যোগ করা হয়নি. একটি আইটেম যোগ করতে রাউন্ড বোতামে আলতো চাপুন।</string>
+
+
+    <string name="record_select_title">একক রেকর্ড আপলোড করুন</string>
+    <string name="record_select_message">আপনি কি এখন এই রেকর্ড আপলোড করার বিষয়ে নিশ্চিত?</string>
+    <string name="record_form_list_empty">ডিভাইসে কোনো রেকর্ড নেই। একটি রেকর্ড যোগ করতে বৃত্তাকার বোতামটি আলতো চাপুন।</string>
+
+
+    <string name="record_save_success">রেকর্ড সংরক্ষিত</string>
+    <string name="record_save_failure">রেকর্ড সংরক্ষণ করতে ব্যর্থ!</string>
+    <string name="record_item_delete_success">আইটেম মুছে ফেলা হয়েছে</string>
+    <string name="record_item_delete_failure">আইটেম মুছে ফেলতে ব্যর্থ!</string>
+    <string name="record_validation_errors">এগিয়ে যাওয়ার আগে ইনপুট সংশোধন করুন</string>
+
+
+    <string name="record_unsaved_changes_dialog_title">রেকর্ড সংরক্ষণ করবেন?</string>
+    <string name="record_unsaved_changes_dialog_message">প্রস্থান করার আগে রেকর্ডে পরিবর্তনগুলি সংরক্ষণ করবেন?</string>
+
+
+    <string name="location_fine_permission_rationale">ডিভাইস অবস্থান অনুমতি প্রয়োজন. অবস্থান ছাড়া রেকর্ড প্রবেশ করা যাবে না.</string>
+    <string name="location_gps_needed_rationale">রেকর্ডের জন্য একটি সঠিক অবস্থান পেতে GPS সক্রিয় করা আবশ্যক।</string>
+    <string name="location_requires_gps">ডিভাইসে জিপিএস নেই, যা অবস্থান পেতে প্রয়োজন। একটি ভিন্ন ডিভাইস ব্যবহার করুন.</string>
+    <string name="location_gps_fix_found">জিপিএস ফিক্স পাওয়া গেছে। অবস্থান পাওয়া যাচ্ছে&#8230;</string>
+    <string name="location_best_found">অবস্থান পাওয়া গেছে।</string>
+    <string name="location_awaiting_gps_fix">GPS ফিক্সের জন্য অপেক্ষা করা হচ্ছে&#8230;</string>
+    <string name="location_service_off">লোকেশন চেক চলছে না।</string>
+
+
+    <string name="location_not_set_dialog_title">অবস্থান নির্ধারণ করা হয়নি!</string>
+    <string name="location_not_set_dialog_warning">অবস্থান ছাড়া রেকর্ড আপলোড করা যাবে না। জিপিএস পড়ার জন্য অপেক্ষা করতে চান?</string>
+    <string name="location_settling_dialog_title">অবস্থান এখনও আপডেট করা হচ্ছে</string>
+    <string name="location_settling_dialog_warning">বর্তমানে লোকেশন রিডিং উন্নত করা হচ্ছে। এটি 20 সেকেন্ডের কম সময় নেবে। অপেক্ষা করা চালিয়ে যাবেন?</string>
+
+    <string name="confirm_action">হ্যাঁ</string>
+    <string name="stop_action">না</string>
+
+
+    <string name="occurredFrom">ঘটেছে</string>
+    <string name="location">অবস্থান</string>
+    <string name="Weather">আবহাওয়া</string>
+    <string name="Light">আলো</string>
+
+
+    <!-- weather constants: names must match enum values, with underscores substituted for hyphens -->
+    <string name="Fair">ভাল</string>
+    <string name="Rain">বৃষ্টি</string>
+    <string name="Wind">ঝড়</string>
+    <string name="Fog">কুয়াশা</string>
+
+    <!-- light constants: names must match enum values -->
+    <string name="Day">দিন</string>
+    <string name="Dawn_dusk">ভোর/সন্ধ্যা</string>
+    <string name="Night_lit">আলোকিত সড়ক (রাতে)</string>
+    <string name="Night_unlit">অনালোকিত সড়ক (রাতে)</string>
+
+    <!--Storage Permission-->
+    <string name="storage_permission_granted">স্টোরেজ অনুমতি দেওয়া হয়েছে</string>
+    <string name="storage_permission_not_granted">স্টোরেজ অনুমতি দেওয়া হয়নি! সেটিংস থেকে স্টোরেজ অনুমতি সক্ষম করুন</string>
+
+</resources>

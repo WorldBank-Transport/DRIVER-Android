@@ -63,19 +63,10 @@ public class DriverConstantFields {
 
     public enum WeatherEnum {
 
-        CLEAR_DAY("clear-day"),
-        CLEAR_NIGHT("clear-night"),
-        CLOUDY("cloudy"),
-        NIGHT("fog"),
-        HAIL("hail"),
-        PARTLY_CLOUDY_DAY("partly-cloudy-day"),
-        PARTLY_CLOUDY_NIGHT("partly-cloudy-night"),
-        RAIN("rain"),
-        SLEET("sleet"),
-        SNOW("snow"),
-        THUNDERSTORM("thunderstorm"),
-        TORNADO("tornado"),
-        WIND("wind");
+        FAIR("Fair"),
+        RAIN("Rain"),
+        WIND("Wind"),
+        FOG("Fog");
 
         private final String value;
         private final static Map<String, DriverConstantFields.WeatherEnum> CONSTANTS = new HashMap<>();
@@ -107,10 +98,10 @@ public class DriverConstantFields {
 
     public enum LightEnum {
 
-        DAWN("dawn"),
-        DAY("day"),
-        DUSK("dusk"),
-        NIGHT("night");
+        DAY("Day"),
+        DAWN_DUSK("Dawn_dusk"),
+        NIGHT_LIT("Night_lit"),
+        NIGHT_UNLIT("Night_unlit");
 
         private final String value;
         private final static Map<String, LightEnum> CONSTANTS = new HashMap<>();
